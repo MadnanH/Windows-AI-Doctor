@@ -1,4 +1,4 @@
-[
+{"schemaVersion":2,"entries":[
   {"id":"ssd-failure","cause":"Likely storage device failure","explanation":"Windows lost power unexpectedly while the storage subsystem was reporting hardware and NTFS errors. The system drive may be failing.","severity":"Critical","repairPriority":1,"repairId":null,"baseConfidence":82,"requiredCodes":["EVENT_41","SMART_WARNING"],"anyCodes":["NTFS_ERROR","STORAGE_LOW"]},
   {"id":"component-store","cause":"Windows component store corruption","explanation":"Windows Update and servicing failures point to corruption in the component store used to repair system files.","severity":"Critical","repairPriority":1,"repairId":"waid.dism","baseConfidence":88,"requiredCodes":["CBS_CORRUPTION"],"anyCodes":["UPDATE_EVENT_20","UPDATE_EVENT_25","DISM_FAILURE"]},
   {"id":"system-files","cause":"Protected Windows files are damaged","explanation":"System File Checker or Windows servicing reported damaged protected files.","severity":"Critical","repairPriority":1,"repairId":"waid.sfc","baseConfidence":86,"requiredCodes":["SFC_CORRUPTION"],"anyCodes":["CBS_CORRUPTION","APP_CRASH"]},
@@ -11,4 +11,4 @@
   {"id":"service-failure","cause":"A required Windows service is repeatedly failing","explanation":"A critical automatic service is stopped or has generated repeated Service Control Manager failures.","severity":"Warning","repairPriority":2,"repairId":null,"baseConfidence":74,"requiredCodes":["SERVICE_FAILURE"],"anyCodes":["EVENT_7000","EVENT_7001","EVENT_7031"]},
   {"id":"startup-load","cause":"Startup applications are degrading sign-in performance","explanation":"A large startup workload is likely increasing sign-in time and background resource use.","severity":"Warning","repairPriority":4,"repairId":null,"baseConfidence":70,"requiredCodes":["STARTUP_OVERLOAD"],"anyCodes":["CPU_HIGH","MEMORY_LOW"]},
   {"id":"gpu-instability","cause":"Graphics driver or GPU instability","explanation":"Display-driver recovery or GPU errors correlate with application crashes or blue screens.","severity":"Critical","repairPriority":1,"repairId":null,"baseConfidence":79,"requiredCodes":["GPU_ERROR"],"anyCodes":["EVENT_4101","BSOD_DUMP","APP_CRASH"]}
-]
+]}

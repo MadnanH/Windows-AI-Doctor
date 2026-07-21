@@ -8,6 +8,28 @@ namespace WAID.Diagnosis.Tests;
 
 public sealed class DiagnosticEngineTests
 {
+    [Fact] public void Embedded_knowledge_is_schema_valid() => Assert.NotEmpty(new DiagnosticKnowledgeBase().Rules);
+    [Fact] public void Legacy_schema_migrates_deterministically()
+    {
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("[{\"id\":\"x\",\"cause\":\"c\",\"explanation\":\"e\",\"severity\":\"Warning\",\"repairPriority\":1,\"repairId\":null,\"baseConfidence\":50,\"requiredCodes\":[],\"anyCodes\":[]}]"));
+        var migrated = KnowledgeBaseSchema.Read<KnowledgeRule>(stream);
+        Assert.Equal(KnowledgeBaseSchema.CurrentVersion, migrated.SchemaVersion); Assert.Single(migrated.Entries);
+    }
+    [Fact] public void Unsupported_schema_is_rejected()
+    {
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{\"schemaVersion\":99,\"entries\":[]}"));
+        Assert.Throws<NotSupportedException>(() => KnowledgeBaseSchema.Read<KnowledgeRule>(stream));
+    }
+    [Fact] public void Duplicate_rules_are_rejected()
+    {
+        var rule = new KnowledgeRule("x", "c", "e", DiagnosticSeverity.Warning, 1, null, 50, [], []);
+        Assert.Throws<InvalidOperationException>(() => new DiagnosticKnowledgeBase([rule, rule]));
+    }
+    [Fact] public void Unknown_repair_mapping_is_rejected()
+    {
+        var rule = new KnowledgeRule("x", "c", "e", DiagnosticSeverity.Warning, 1, "invalid", 50, [], []);
+        Assert.Throws<InvalidOperationException>(() => new DiagnosticKnowledgeBase([rule]));
+    }
     [Theory]
     [InlineData("ssd-failure")]
     [InlineData("component-store")]

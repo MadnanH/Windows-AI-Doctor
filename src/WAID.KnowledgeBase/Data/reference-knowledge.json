@@ -1,4 +1,4 @@
-[
+{"schemaVersion":2,"entries":[
   {"category":"WindowsEvent","code":"41","meaning":"The computer restarted without a clean shutdown.","severity":"Critical","repairId":null},
   {"category":"WindowsEvent","code":"55","meaning":"NTFS detected file-system corruption.","severity":"Critical","repairId":"waid.sfc"},
   {"category":"WindowsEvent","code":"7","meaning":"The storage device reported a bad block.","severity":"Critical","repairId":null},
@@ -23,4 +23,4 @@
   {"category":"BugCheck","code":"0x0000001A","meaning":"Windows detected a severe memory-management error.","severity":"Critical","repairId":null},
   {"category":"Repair","code":"CBS_CORRUPTION","meaning":"Repair the component store before retrying dependent repairs.","severity":"Critical","repairId":"waid.dism"},
   {"category":"Repair","code":"SFC_CORRUPTION","meaning":"Verify and repair protected Windows system files.","severity":"Critical","repairId":"waid.sfc"}
-]
+]}

@@ -48,6 +48,7 @@ public static class DependencyInjection
             .AddSingleton<ISystemConditionService,WindowsSystemConditionService>()
             .AddSingleton<IStartupLaunchService>(_ => new WindowsStartupLaunchService(Environment.ProcessPath ?? throw new InvalidOperationException("The application executable path is unavailable.")))
             .AddSingleton<IDiagnosticReportExporter>(_ => new DiagnosticReportExporter(Path.Combine(dataDirectory,"Reports")))
+            .AddSingleton<IPdfReportExporter>(_ => new PdfDiagnosticReportExporter(Path.Combine(dataDirectory,"Reports")))
             .AddSingleton<ISystemScanner,OperatingSystemScanner>()
             .AddSingleton<ISystemScanner,WindowsEventViewerScanner>()
             .AddSingleton<ISystemScanner,ReliabilityMonitorScanner>()
@@ -84,6 +85,13 @@ public static class DependencyInjection
             .AddSingleton<AIReportBuilder>()
             .AddSingleton<DiagnosisEngine>()
             .AddSingleton<IAiAnalyzer,OfflineDiagnosisAnalyzer>()
+            .AddSingleton(new ScannerPolicyRegistry(new ScannerExecutionPolicy(TimeSpan.FromSeconds(45), 1),
+                new Dictionary<string, ScannerExecutionPolicy>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["waid.windows-update"] = new(TimeSpan.FromSeconds(90)),
+                    ["waid.reliability"] = new(TimeSpan.FromSeconds(90)),
+                    ["waid.bsod"] = new(TimeSpan.FromSeconds(60))
+                }))
             .AddSingleton<ScanOrchestrator>()
             .AddSingleton<ScanCoordinator>()
             .AddSingleton<BackgroundHealthMonitoringService>()
@@ -100,7 +108,10 @@ public static class DependencyInjection
     }
     public static IServiceCollection AddWaidPlugins(this IServiceCollection services,string pluginDirectory,Version hostVersion)
     {
-        foreach(IWaidPlugin plugin in new PluginLoader().Load(pluginDirectory,hostVersion)) plugin.ConfigureServices(services);
+        var catalog=new PluginCatalog();
+        foreach(IWaidPlugin plugin in new PluginLoader().Load(pluginDirectory,hostVersion,new PluginSecurityPolicy(["WAID Engineering"]),catalog))
+            try{plugin.ConfigureServices(services);}catch(Exception exception){Serilog.Log.Error(exception,"Plugin {PluginId} service registration failed",plugin.Metadata.Id);}
+        services.AddSingleton(catalog);
         return services;
     }
 }

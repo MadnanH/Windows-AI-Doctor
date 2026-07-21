@@ -38,4 +38,17 @@ public sealed class ContinuousReportingTests
         }
         finally{if(Directory.Exists(root))Directory.Delete(root,true);}
     }
+
+    [Fact] public async Task Pdf_report_is_valid_versioned_and_redacted()
+    {
+        var root=Path.Combine(Path.GetTempPath(),$"waid-pdf-{Guid.NewGuid():N}");
+        try
+        {
+            var report=new DiagnosticReportData("0.7.0-dev",DateTimeOffset.UtcNow,"Windows token=do-not-export",null,[],[],[],["Hardware-dependent"],"Sensitive data is excluded.");
+            var path=await new PdfDiagnosticReportExporter(root).ExportPdfAsync(report,CancellationToken.None);
+            var bytes=await File.ReadAllBytesAsync(path);Assert.Equal("%PDF-",Encoding.ASCII.GetString(bytes,0,5));
+            Assert.DoesNotContain("do-not-export",Encoding.Latin1.GetString(bytes),StringComparison.Ordinal);
+        }
+        finally{if(Directory.Exists(root))Directory.Delete(root,true);}
+    }
 }

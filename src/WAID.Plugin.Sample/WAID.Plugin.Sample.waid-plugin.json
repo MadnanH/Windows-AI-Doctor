@@ -1,0 +1,1 @@
+{"id":"com.waid.sample","name":"WAID Sample Scanner","version":"1.0.0","publisher":"WAID Engineering","minimumHostVersion":"1.0.0","entryAssembly":"WAID.Plugin.Sample.dll","apiVersion":"1","capabilities":["read-environment"]}

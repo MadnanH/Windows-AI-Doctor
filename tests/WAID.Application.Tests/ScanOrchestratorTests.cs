@@ -33,6 +33,23 @@ public sealed class ScanOrchestratorTests
         Assert.Null(repository.Saved);
     }
 
+    [Fact] public async Task Timeout_is_reported_and_does_not_block_remaining_scanners()
+    {
+        var repository = new RecordingRepository();
+        var policy = new ScannerPolicyRegistry(new ScannerExecutionPolicy(TimeSpan.FromMilliseconds(20)));
+        var orchestrator = new ScanOrchestrator([new SlowScanner(), new FakeScanner()], repository, TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, policy);
+        var result = await orchestrator.RunAsync(false, null, CancellationToken.None);
+        var timeout = Assert.Single(result.Findings.Where(f => f.Code == "SCANNER_TIMED_OUT"));
+        Assert.Equal("TimedOut", timeout.Evidence["status"]);
+        Assert.Contains(result.Findings, f => f.Code == "TEST001");
+    }
+
+    [Fact] public async Task Permission_denial_has_a_distinct_status()
+    {
+        var result = await CreateOrchestrator([new PermissionScanner()], new RecordingRepository()).RunAsync(false, null, CancellationToken.None);
+        Assert.Contains(result.Findings, f => f.Code == "SCANNER_PERMISSION_DENIED" && f.Evidence["status"] == "PermissionDenied");
+    }
+
     private static ScanOrchestrator CreateOrchestrator(IEnumerable<ISystemScanner> scanners, IScanRepository repository) =>
         new(scanners, repository, TimeProvider.System, NullLogger<ScanOrchestrator>.Instance);
 
@@ -47,6 +64,16 @@ public sealed class ScanOrchestratorTests
     {
         public string Id => "test"; public string DisplayName => "Test";
         public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) => Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>([new DiagnosticFinding(Id, "TEST001", "Finding", "Description", DiagnosticSeverity.Information)]);
+    }
+    private sealed class SlowScanner : ISystemScanner
+    {
+        public string Id => "slow"; public string DisplayName => "Slow";
+        public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) { await Task.Delay(TimeSpan.FromSeconds(2), token); return []; }
+    }
+    private sealed class PermissionScanner : ISystemScanner
+    {
+        public string Id => "permission"; public string DisplayName => "Permission";
+        public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) => throw new UnauthorizedAccessException();
     }
     private sealed class RecordingRepository : IScanRepository
     {
