@@ -16,4 +16,4 @@ jobs:
       - run: dotnet list WindowsAIDoctor.sln package --vulnerable --include-transitive
       - run: dotnet publish src/WAID.Desktop/WAID.Desktop.csproj -c Release -r win-x64 --self-contained true --no-restore
       - run: dotnet build src/WAID.Desktop/WAID.Desktop.csproj -c Release -p:Platform=ARM64 -r win-arm64
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
