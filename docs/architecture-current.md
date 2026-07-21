@@ -52,6 +52,8 @@ There are no circular project references. The compiled dependency graph is check
 
 `App` is the single composition root. It creates versioned `WaidHostOptions`, calls the modular Infrastructure and plugin registrations, adds view models and the main window, then calls `BuildValidatedWaidServiceProvider`. Validation checks required registrations, singleton lifetimes, constructor graphs, scopes, options, and unique scanner/repair IDs before the schedule loop or UI can start. A typed failure opens a safe recovery window and starts no diagnostic or repair operation. Service registration is covered by provider, configuration, duplicate, lifetime, and architecture regression tests.
 
+Configuration is resolved behind Application-owned contracts. Infrastructure combines validated machine and administrator-policy files with SQLite user/profile state and in-memory session overrides. The resolver produces a frozen operation snapshot; policy is always last, and experimental flags fail closed behind an explicit master gate.
+
 The two `GetRequiredService` calls in `App.OnLaunched` are composition-root resolution, not domain-level service locator usage. Factory registrations inside `DependencyInjection` resolve constructor dependencies and remain inside the composition boundary. No other production layer receives `IServiceProvider`.
 
 ## Coupling and mutable-state findings

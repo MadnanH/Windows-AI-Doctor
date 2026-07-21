@@ -2,7 +2,7 @@
 
 WAID owns one local SQLite database at `%LOCALAPPDATA%\Windows AI Doctor\waid.db`. Infrastructure is the only layer that references `Microsoft.Data.Sqlite`; application and domain projects contain contracts and business models, not persistence entities.
 
-## Schema 7
+## Schema 8
 
 | Area | Tables | Retention and ownership |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ WAID owns one local SQLite database at `%LOCALAPPDATA%\Windows AI Doctor\waid.db
 | Diagnosis and reports | `diagnosis_reports`, `reports` | Diagnosis rows belong to scan sessions; report metadata contains local output references. |
 | Repairs and recovery | `repair_history`, `repair_approvals`, `rollback_records` | Repair history owns rollback metadata. Approval records remain auditable. |
 | Monitoring | `health_snapshots`, `timeline_events`, `metrics`, `alerts`, `scan_schedule` | Time-indexed operational history and the singleton schedule. |
-| Product state | `settings`, `policies`, `plugins`, `chats` | JSON payloads are private application state and are validated by their repositories. |
+| Product state | `settings`, `configuration_state`, `policies`, `plugins`, `chats` | Versioned configuration state preserves legacy settings, sources, active profile, and feature choices. |
 | Governance | `audit_events`, `schema_migrations` | Reserved durable audit catalog and applied migration record. Prompt 03 security audit JSONL remains the active append-only audit store. |
 
 The schema uses foreign keys, indexed chronological queries, a WAID application identifier, and `PRAGMA user_version`. WAL mode, full synchronous durability, foreign keys, a five-second busy timeout, and bounded WAL checkpoints are configured for local concurrency and recovery.
@@ -26,8 +26,9 @@ Migrations are monotonic and run in individual transactions:
 5. Scan schedule.
 6. Repair approvals.
 7. Commercial persistence catalog, indexes, and migration history.
+8. Versioned configuration state with deterministic legacy-settings migration.
 
-Fresh databases apply all steps. Versions 1–6 upgrade in order. Existing data is preserved through `CREATE ... IF NOT EXISTS`. Each active step commits its schema and version together; an error or interruption rolls back that step. A retry resumes from the last committed version. A database newer than the host is opened without migration and startup stops with `WAID-DB-NEWER`.
+Fresh databases apply all steps. Versions 1–7 upgrade in order. Existing data is preserved through `CREATE ... IF NOT EXISTS`. Each active step commits its schema and version together; an error or interruption rolls back that step. A retry resumes from the last committed version. A database newer than the host is opened without migration and startup stops with `WAID-DB-NEWER`.
 
 Before upgrading a non-empty versioned database, WAID uses SQLite's online backup API to create a consistent `waid-pre-migration-v*.db` copy. The five newest migration backups are retained. Migration status is available in Settings.
 

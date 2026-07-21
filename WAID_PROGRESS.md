@@ -8,7 +8,7 @@ Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v7, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v8, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with configurable per-scanner timeouts, one bounded read-only retry, and explicit `Success`, `Unavailable`, `TimedOut`, `PermissionDenied`, `Cancelled`, and `Failed` states. Degraded findings retain reason, attempts, timeout, and partial-evidence count while remaining scanners continue.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -22,6 +22,7 @@ Active branch: `main`
 - Commercial hardening Prompt 02 composition root: modular feature registration, versioned non-secret host options, replaceable Windows adapters, host-owned Serilog provider, typed actionable startup failures, validated required services/lifetimes/duplicate scanner and repair IDs, module diagnostics, recovery UI, and service-locator regression enforcement.
 - Commercial hardening Prompt 03 diagnostics foundation: local structured JSON logging, typed event taxonomy, asynchronous correlation and operation context, redacted append-only daily audit records, bounded retention, searchable Logs & Audit UI, sanitized support export, and non-fatal diagnostic-storage failures.
 - Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1–7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
+- Commercial hardening Prompt 05 unified configuration: deterministic default/machine/user/profile/session/policy precedence, immutable operation snapshots, enforced policy locks, fail-closed feature flags, schema-8 legacy migration, privacy-safe profile import/export, reset/audit behavior, and categorized searchable Settings UI.
 
 ## Fully working features
 
@@ -32,10 +33,12 @@ Active branch: `main`
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
 - Migration-safe SQLite initialization and database maintenance with preserved upgrade data, per-step rollback, concurrency serialization, verified online backup/restore, and visible schema, journal, backup, and migration status.
+- Versioned local configuration with policy enforcement, source attribution, session isolation, validated machine/policy files, profile acknowledgement for experimental changes, and safe defaults that prevent invalid configuration from enabling experimental flags.
 
 ## Partially working features
 
 - Plugin enable/disable persistence is implemented in the service layer; the Plugins page currently presents state and diagnostics, while changing state is performed by administration tooling and takes effect after restart.
+- Feature-flag resolution and UI are working; the cloud-provider flag is intentionally reserved and has no network provider implementation.
 - Automated accessibility checks validate navigation targets, identifiers, and XAML parseability; screen-reader, focus, high-contrast, and 200% scaling acceptance still requires archived manual evidence.
 - Packaging inputs and publish paths are ready, but production MSIX signing and store/update distribution require protected release credentials and a release environment.
 
@@ -55,7 +58,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for schema-7 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added in Prompt 04.
+- Implement repositories for schema-8 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added in Prompt 04 or 05.
 
 ## Known limitations
 
@@ -67,6 +70,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Diagnostic packages should still be reviewed before external sharing despite defense-in-depth redaction.
 - Append-only audit files are not cryptographically signed and can be altered by a local administrator. Audit-storage failure is reported and logged without crashing or silently changing a repair outcome.
 - Automated database tests cover fresh installs, schema 1 and 6 upgrades, interrupted migration, concurrent initialization, corruption, newer schemas, backup, restore, and retention. Live Settings recovery UI still requires manual Windows acceptance.
+- Machine and policy enforcement depends on deployment applying administrator-only ACLs to `%PROGRAMDATA%\Windows AI Doctor`; local administrators can change those files. Search, policy-lock, profile, and experimental-warning UI still require manual accessibility acceptance.
 
 ## Build status
 
@@ -81,12 +85,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 137/137 tests**
+**Passing - 148/148 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 21 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 60 passed
+- `WAID.Infrastructure.Tests`: 71 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -99,9 +103,9 @@ Milestone 7 hardens scanner execution, knowledge documents, plugins, diagnostic 
 
 ## Next milestone
 
-**Commercial hardening Prompt 05 - Configuration, Settings, Profiles, and Feature Flags**
+**Commercial hardening Prompt 06 - Scanner Framework Reliability and Extensibility**
 
-Apply only Prompt 05 from the ordered commercial-grade prompt set. Preserve schema 7 and the validated composition, diagnostics, audit, backup, and recovery boundaries; restore/build/test independently and commit before starting Prompt 06.
+Apply only Prompt 06 from the ordered commercial-grade prompt set. Preserve schema 8, immutable configuration snapshots, policy enforcement, and the validated composition, diagnostics, audit, backup, and recovery boundaries; restore/build/test independently and commit before starting Prompt 07.
 
 ## Update procedure
 

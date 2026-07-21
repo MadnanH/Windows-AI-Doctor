@@ -9,7 +9,7 @@ Audit date: 2026-07-21. Baseline commit: `c1277a6`. Scope: solution projects, de
 | Scanner framework and 18 scanners | Complete | Registered in DI; Dashboard and monitoring invoke the shared coordinator | DI, scanner, orchestration and workflow tests | Provider variations on supported hardware |
 | Offline diagnosis/correlation/health | Complete | Diagnosis, Health, Evidence and Repairs screens consume persisted reports | 46 diagnosis tests and workflow test | None for deterministic engine |
 | Safe repair framework and six repairs | Complete | Repair screens require confirmation; executor owns admin/safeguard/rollback/audit flow | Executor, policy, rollback and workflow tests | Destructive disposable-VM evidence |
-| SQLite persistence | Complete for schema 7 | All repositories and maintenance operations use `WaidDatabase`; Settings exposes health and recovery | Repository, migration, corruption, concurrency, backup, and recovery tests | Continue adding repositories as reserved schema areas gain behavior |
+| SQLite persistence | Complete for schema 8 | All repositories, versioned configuration state, and maintenance operations use `WaidDatabase`; Settings exposes health and recovery | Repository, migration, configuration, corruption, concurrency, backup, and recovery tests | Continue adding repositories as reserved schema areas gain behavior |
 | Monitoring/schedules/crashes/evidence | Complete while app runs | Monitoring & Reports page | Cancellation, schedule, minidump, redaction and persistence tests | Real battery/hardware/provider evidence |
 | Reports | Complete | HTML/JSON/ZIP/PDF controls are reachable | Export/redaction/PDF tests | Visual PDF acceptance with large reports |
 | Plugins | Partial | Manifest validation, isolation/quarantine and diagnostics page exist | Plugin scanner/state/failure tests | UI enable/disable control, signed third-party corpus |
@@ -30,7 +30,7 @@ No production `NotImplementedException`, fake scanner data, registry cleaner, RA
 
 ## Persistence baseline
 
-SQLite is owned exclusively by Infrastructure and stored under the app's local data directory. Foreign keys are enabled for every connection. Current `PRAGMA user_version` is 7.
+SQLite is owned exclusively by Infrastructure and stored under the app's local data directory. Foreign keys are enabled for every connection. Current `PRAGMA user_version` is 8.
 
 | Object | Owner/data | Retention |
 |---|---|---|

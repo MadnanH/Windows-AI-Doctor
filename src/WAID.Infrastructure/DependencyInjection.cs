@@ -10,6 +10,7 @@ using WAID.Diagnosis;
 using WAID.EventAnalysis;
 using WAID.Health;
 using WAID.Infrastructure.Ai;
+using WAID.Infrastructure.Configuration;
 using WAID.Infrastructure.Diagnostics;
 using WAID.Infrastructure.Persistence;
 using WAID.Infrastructure.Plugins;
@@ -74,7 +75,13 @@ public static class DependencyInjection
         services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
             .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()))
-            .AddSingleton<IDatabaseMaintenanceService>(provider => new DatabaseMaintenanceService(db, Path.Combine(options.DataDirectory, "Backups", "Database"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<DatabaseMaintenanceService>>(), provider.GetRequiredService<IAuditTrailService>()));
+            .AddSingleton<IDatabaseMaintenanceService>(provider => new DatabaseMaintenanceService(db, Path.Combine(options.DataDirectory, "Backups", "Database"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<DatabaseMaintenanceService>>(), provider.GetRequiredService<IAuditTrailService>()))
+            .AddSingleton<IConfigurationStateRepository, SqliteConfigurationStateRepository>()
+            .AddSingleton<IConfigurationLayerSource>(_ => new LocalConfigurationLayerSource(
+                options.MachineConfigurationPath ?? Path.Combine(options.DataDirectory, "Configuration", "machine-settings.json"),
+                options.PolicyConfigurationPath ?? Path.Combine(options.DataDirectory, "Configuration", "policy-settings.json")))
+            .AddSingleton<IConfigurationService>(provider => new ConfigurationService(provider.GetRequiredService<IConfigurationStateRepository>(), provider.GetRequiredService<IConfigurationLayerSource>(),
+                Path.Combine(options.DataDirectory, "Profiles"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<ConfigurationService>>(), provider.GetRequiredService<IAuditTrailService>()));
         modules.Add("persistence", "SQLite persistence"); return services;
     }
 

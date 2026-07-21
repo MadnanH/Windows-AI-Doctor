@@ -4,7 +4,7 @@ WAID has one production composition root: `WAID.Desktop.App`. Application servic
 
 ## Host configuration
 
-`WaidHostOptions` is the version 1 host contract. It contains only non-secret runtime locations, plugin host/security policy, and the executable path. Paths must be absolute, the configuration version must match, the host version must be valid, and at least one publisher must be allow-listed. Passwords, tokens, certificate private keys, and signing credentials are not valid host options and must remain in protected deployment infrastructure.
+`WaidHostOptions` is the version 1 host contract. It contains only non-secret runtime locations, plugin host/security policy, machine/policy configuration paths, and the executable path. Paths must be absolute, the configuration version must match, the host version must be valid, and at least one publisher must be allow-listed. Passwords, tokens, certificate private keys, and signing credentials are not valid host options and must remain in protected deployment infrastructure.
 
 The desktop creates defaults once and passes the validated record to Infrastructure and plugin registration. Tests and future hosts should construct the same record explicitly. The legacy `AddWaidInfrastructure(string dataDirectory)` overload remains supported and delegates to the typed defaults.
 

@@ -1,19 +1,29 @@
 <Page x:Class="WAID.Desktop.Views.SettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
- <ScrollViewer><StackPanel Padding="32" Spacing="20" MaxWidth="760" HorizontalAlignment="Left">
+ <ScrollViewer><StackPanel Padding="32" Spacing="20" MaxWidth="800" HorizontalAlignment="Left">
   <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-  <ToggleSwitch Header="Scan when WAID starts" IsOn="{Binding RunScansAtStartup,Mode=TwoWay}"/>
-  <ToggleSwitch Header="Enable local AI analysis" IsOn="{Binding EnableAiAnalysis,Mode=TwoWay}"/>
-  <ToggleSwitch Header="Share anonymous diagnostics" IsOn="{Binding AllowTelemetry,Mode=TwoWay}"/>
-  <ComboBox Header="App theme" SelectedValue="{Binding Theme,Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="System"/><ComboBoxItem Content="Light"/><ComboBoxItem Content="Dark"/></ComboBox>
-  <Button Content="Save settings" Command="{Binding SaveCommand}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left"/>
-  <TextBlock Text="Database health and recovery" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,16,0,0"/>
-  <InfoBar IsOpen="True" Title="{Binding DatabaseState}" Message="{Binding DatabaseDetail}" IsClosable="False"/>
-  <TextBlock Text="{Binding MigrationStatus}" TextWrapping="Wrap"/>
-  <TextBlock Text="Backup folder" FontWeight="SemiBold"/><TextBlock Text="{Binding BackupLocation}" TextWrapping="Wrap"/>
-  <StackPanel Orientation="Horizontal" Spacing="12"><Button Content="Refresh database health" Command="{Binding RefreshDatabaseCommand}" AutomationProperties.AutomationId="RefreshDatabaseHealth"/><Button Content="Create verified backup" Command="{Binding BackupDatabaseCommand}" AutomationProperties.AutomationId="BackupDatabase"/></StackPanel>
-  <TextBox Header="Verified backup file to restore" Text="{Binding RestorePath,Mode=TwoWay}" PlaceholderText="Enter the full path to a WAID database backup"/>
-  <CheckBox Content="I understand this replaces local WAID history and settings" IsChecked="{Binding RestoreApproved,Mode=TwoWay}"/>
-  <Button Content="Restore verified backup" Command="{Binding RestoreDatabaseCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="RestoreDatabase"/>
+  <TextBox Header="Search settings" Text="{Binding SearchText,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search general, privacy, profiles, experimental, or database" AutomationProperties.AutomationId="SettingsSearch"/>
+  <InfoBar IsOpen="True" Title="Configuration policy" Message="{Binding PolicyStatus}" IsClosable="False"/>
+  <StackPanel Spacing="12" Visibility="{Binding GeneralVisibility}"><TextBlock Text="General" Style="{StaticResource SubtitleTextBlockStyle}"/>
+   <ToggleSwitch Header="Scan when WAID starts" IsOn="{Binding RunScansAtStartup,Mode=TwoWay}" IsEnabled="{Binding CanEditStartup}"/>
+   <ToggleSwitch Header="Enable local AI analysis" IsOn="{Binding EnableAiAnalysis,Mode=TwoWay}" IsEnabled="{Binding CanEditAi}"/>
+   <ComboBox Header="App theme" SelectedValue="{Binding Theme,Mode=TwoWay}" SelectedValuePath="Content" IsEnabled="{Binding CanEditTheme}"><ComboBoxItem Content="System"/><ComboBoxItem Content="Light"/><ComboBoxItem Content="Dark"/></ComboBox>
+   <NumberBox Header="Scanner timeout in seconds" Minimum="10" Maximum="3600" Value="{Binding ScanTimeoutSeconds,Mode=TwoWay}" IsEnabled="{Binding CanEditTimeout}"/>
+  </StackPanel>
+  <StackPanel Spacing="12" Visibility="{Binding PrivacyVisibility}"><TextBlock Text="Privacy" Style="{StaticResource SubtitleTextBlockStyle}"/><ToggleSwitch Header="Share anonymous diagnostics" OffContent="Nothing is sent" OnContent="Anonymous diagnostics allowed" IsOn="{Binding AllowTelemetry,Mode=TwoWay}" IsEnabled="{Binding CanEditTelemetry}"/><TextBlock Text="WAID remains offline-first. Profiles never include logs, evidence, tokens, product keys, or system identifiers." TextWrapping="Wrap"/></StackPanel>
+  <StackPanel Spacing="12" Visibility="{Binding ExperimentalVisibility}"><TextBlock Text="Experimental features" Style="{StaticResource SubtitleTextBlockStyle}"/><InfoBar IsOpen="True" Severity="Warning" Title="Experimental" Message="Experimental features may change and are disabled by default. They never authorize repairs." IsClosable="False"/>
+   <ToggleSwitch Header="Allow experimental features" IsOn="{Binding EnableExperimentalFeatures,Mode=TwoWay}" IsEnabled="{Binding CanEditExperimental}"/>
+   <ToggleSwitch Header="Advanced local event correlation" IsOn="{Binding AdvancedEventCorrelation,Mode=TwoWay}"/><ToggleSwitch Header="Experimental repair planning" IsOn="{Binding ExperimentalRepairPlanning,Mode=TwoWay}"/><ToggleSwitch Header="Cloud AI provider flag (no provider is implemented)" IsOn="{Binding CloudAiProvider,Mode=TwoWay}"/>
+  </StackPanel>
+  <StackPanel Spacing="12" Visibility="{Binding ProfilesVisibility}"><TextBlock Text="Profiles and reset" Style="{StaticResource SubtitleTextBlockStyle}"/><TextBlock Text="Active profile" FontWeight="SemiBold"/><TextBlock Text="{Binding ActiveProfile}"/>
+   <TextBox Header="Profile file to import" Text="{Binding ProfilePath,Mode=TwoWay}" PlaceholderText="Full path to a .waid-profile.json file"/><CheckBox Content="I acknowledge this profile requests experimental settings" IsChecked="{Binding ProfileExperimentalApproved,Mode=TwoWay}"/><Button Content="Import validated profile" Command="{Binding ImportProfileCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="ImportSettingsProfile"/>
+   <TextBox Header="Export profile name" Text="{Binding ProfileName,Mode=TwoWay}"/><TextBox Header="Export folder (blank uses WAID Profiles)" Text="{Binding ProfileDirectory,Mode=TwoWay}"/><Button Content="Export privacy-safe profile" Command="{Binding ExportProfileCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="ExportSettingsProfile"/>
+   <Button Content="Reset user settings and active profile" Command="{Binding ResetCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="ResetSettings"/>
+  </StackPanel>
+  <StackPanel Spacing="12" Visibility="{Binding DatabaseVisibility}"><TextBlock Text="Database health and recovery" Style="{StaticResource SubtitleTextBlockStyle}"/><InfoBar IsOpen="True" Title="{Binding DatabaseState}" Message="{Binding DatabaseDetail}" IsClosable="False"/><TextBlock Text="{Binding MigrationStatus}" TextWrapping="Wrap"/><TextBlock Text="Backup folder" FontWeight="SemiBold"/><TextBlock Text="{Binding BackupLocation}" TextWrapping="Wrap"/>
+   <StackPanel Orientation="Horizontal" Spacing="12"><Button Content="Refresh database health" Command="{Binding RefreshDatabaseCommand}" AutomationProperties.AutomationId="RefreshDatabaseHealth"/><Button Content="Create verified backup" Command="{Binding BackupDatabaseCommand}" AutomationProperties.AutomationId="BackupDatabase"/></StackPanel>
+   <TextBox Header="Verified backup file to restore" Text="{Binding RestorePath,Mode=TwoWay}" PlaceholderText="Enter the full path to a WAID database backup"/><CheckBox Content="I understand this replaces local WAID history and settings" IsChecked="{Binding RestoreApproved,Mode=TwoWay}"/><Button Content="Restore verified backup" Command="{Binding RestoreDatabaseCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="RestoreDatabase"/>
+  </StackPanel>
+  <StackPanel Orientation="Horizontal" Spacing="12"><Button Content="Save user settings" Command="{Binding SaveCommand}" Style="{StaticResource AccentButtonStyle}"/><TextBlock Text="Policy-controlled values cannot be changed." VerticalAlignment="Center"/></StackPanel>
   <TextBlock Text="{Binding Status}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
  </StackPanel></ScrollViewer>
 </Page>

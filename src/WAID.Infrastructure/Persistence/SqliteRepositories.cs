@@ -34,8 +34,27 @@ public sealed class SqliteScanRepository(WaidDatabase database) : IScanRepositor
 }
 public sealed class SqliteSettingsRepository(WaidDatabase database) : ISettingsRepository
 {
-    public async Task<ApplicationSettings> GetAsync(CancellationToken token) { await using var c=database.OpenConnection(); await using var cmd=c.CreateCommand(); cmd.CommandText="SELECT json FROM settings WHERE id=1"; var json=await cmd.ExecuteScalarAsync(token) as string; return json is null ? new ApplicationSettings() : (JsonSerializer.Deserialize<ApplicationSettings>(json) ?? new()).Validate(); }
-    public async Task SaveAsync(ApplicationSettings settings, CancellationToken token) { settings.Validate(); await using var c=database.OpenConnection(); await using var cmd=c.CreateCommand(); cmd.CommandText="INSERT INTO settings(id,json,updated_utc) VALUES(1,$json,$now) ON CONFLICT(id) DO UPDATE SET json=$json,updated_utc=$now"; cmd.Parameters.AddWithValue("$json",JsonSerializer.Serialize(settings)); cmd.Parameters.AddWithValue("$now",DateTimeOffset.UtcNow.ToString("O")); await cmd.ExecuteNonQueryAsync(token); }
+    private readonly SqliteConfigurationStateRepository _configuration = new(database);
+    public async Task<ApplicationSettings> GetAsync(CancellationToken token)
+    {
+        var values = (await _configuration.GetAsync(token).ConfigureAwait(false)).User.Values;
+        return new ApplicationSettings
+        {
+            RunScansAtStartup = values.RunScansAtStartup ?? false,
+            EnableAiAnalysis = values.EnableAiAnalysis ?? false,
+            AllowTelemetry = values.AllowTelemetry ?? false,
+            AiProvider = values.AiProvider ?? "None",
+            Theme = values.Theme ?? "System",
+            ScanTimeoutSeconds = values.ScanTimeoutSeconds ?? 120,
+            EnableExperimentalFeatures = values.EnableExperimentalFeatures ?? false
+        }.Validate();
+    }
+    public async Task SaveAsync(ApplicationSettings settings, CancellationToken token)
+    {
+        settings.Validate(); var state = await _configuration.GetAsync(token).ConfigureAwait(false);
+        var user = state.User with { Values = ConfigurationValues.From(settings) };
+        await _configuration.SaveAsync(state with { User = user, UpdatedAtUtc = DateTimeOffset.UtcNow }, token).ConfigureAwait(false);
+    }
 }
 public sealed class SqliteDiagnosisRepository(WaidDatabase database) : IDiagnosisRepository
 {

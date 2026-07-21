@@ -17,7 +17,7 @@ public sealed class DatabaseReliabilityTests
         Assert.Equal(WaidDatabase.CurrentSchemaVersion, await ScalarIntAsync(connection, "PRAGMA user_version;"));
         Assert.Equal("wal", await ScalarAsync(connection, "PRAGMA journal_mode;"));
         Assert.Equal("ok", await ScalarAsync(connection, "PRAGMA quick_check;"));
-        Assert.Equal(19, await ScalarIntAsync(connection, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"));
+        Assert.Equal(20, await ScalarIntAsync(connection, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"));
     }
 
     [Theory]
@@ -72,7 +72,7 @@ public sealed class DatabaseReliabilityTests
         await Task.WhenAll(Enumerable.Range(0, 12).Select(_ => fixture.Database.InitializeAsync(CancellationToken.None)));
         await using var connection = fixture.Database.OpenConnection();
         Assert.Equal(WaidDatabase.CurrentSchemaVersion, await ScalarIntAsync(connection, "PRAGMA user_version;"));
-        Assert.Equal(1, await ScalarIntAsync(connection, "SELECT count(*) FROM schema_migrations WHERE version=7;"));
+        Assert.Equal(1, await ScalarIntAsync(connection, "SELECT count(*) FROM schema_migrations WHERE version=8;"));
     }
 
     [Fact]
