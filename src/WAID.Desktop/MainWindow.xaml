@@ -6,6 +6,7 @@
       <NavigationViewItem Content="Boot Health" Tag="boot" AutomationProperties.AutomationId="NavBoot"><NavigationViewItem.Icon><SymbolIcon Symbol="Clock"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Update Health" Tag="updates" AutomationProperties.AutomationId="NavUpdates"><NavigationViewItem.Icon><SymbolIcon Symbol="Sync"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Storage Health" Tag="storage" AutomationProperties.AutomationId="NavStorage"><NavigationViewItem.Icon><SymbolIcon Symbol="Save"/></NavigationViewItem.Icon></NavigationViewItem>
+      <NavigationViewItem Content="Security Posture" Tag="security" AutomationProperties.AutomationId="NavSecurity"><NavigationViewItem.Icon><SymbolIcon Symbol="Permissions"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="AI Diagnosis" Tag="diagnosis" AutomationProperties.AutomationId="NavDiagnosis"><NavigationViewItem.Icon><SymbolIcon Symbol="Find"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Health Dashboard" Tag="health" AutomationProperties.AutomationId="NavHealth"><NavigationViewItem.Icon><SymbolIcon Symbol="View"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Monitoring &amp; Reports" Tag="operations" AutomationProperties.AutomationId="NavOperations"><NavigationViewItem.Icon><SymbolIcon Symbol="View"/></NavigationViewItem.Icon></NavigationViewItem>
