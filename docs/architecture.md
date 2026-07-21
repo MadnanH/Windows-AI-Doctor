@@ -13,6 +13,10 @@ WAID follows the dependency rule: Desktop and Infrastructure depend on Applicati
 
 The application layer owns workflow policy. Infrastructure adapters can be replaced without changing the UI or domain. All long-running operations accept cancellation tokens. Repairs return explicit success, detail, and restart state rather than throwing for expected operating-system failures.
 
+## Safe repair lifecycle
+
+All registered repairs execute through the single-reader `RepairQueue` and `RepairExecutor`. The executor requires explicit user confirmation and administrator privileges, creates a System Restore Point when the Windows capability is available, captures declared registry/file resources, and only then invokes the repair module. Failed repairs restore captured resources when the module policy permits rollback. Every attempt, including rejection and cancellation, is persisted to repair history and written to the Serilog audit trail.
+
 ## Data
 
 SQLite uses a private application database with foreign keys and an explicit schema version. Scan sessions and findings are append-only. Settings use a single validated JSON document to permit additive settings without a migration per preference.

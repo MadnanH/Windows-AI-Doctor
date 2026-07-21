@@ -62,4 +62,25 @@ public sealed class SqliteRepositoriesTests : IAsyncLifetime
 
         Assert.Equal(settings, loaded);
     }
+
+    [Fact]
+    public async Task Repair_history_round_trip_preserves_safety_metadata()
+    {
+        var created = DateTimeOffset.UtcNow.AddSeconds(-5);
+        var transaction = new WAID.Domain.Repairs.RepairTransaction(Guid.NewGuid(), "waid.sfc", created);
+        transaction.BeginPreparation();
+        transaction.RecordBackup("C:\\waid-backup");
+        transaction.RecordRestorePoint("Before SFC");
+        transaction.BeginExecution();
+        transaction.Complete(WAID.Domain.Repairs.RepairResult.Success("SFC completed"), created.AddSeconds(5));
+        var repository = new SqliteRepairHistoryRepository(_database);
+
+        await repository.SaveAsync(transaction, CancellationToken.None);
+        var loaded = Assert.Single(await repository.GetRecentAsync(10, CancellationToken.None));
+
+        Assert.Equal(transaction.Id, loaded.TransactionId);
+        Assert.Equal(WAID.Domain.Repairs.RepairTransactionStatus.Succeeded, loaded.Status);
+        Assert.Equal("C:\\waid-backup", loaded.BackupLocation);
+        Assert.Equal("Before SFC", loaded.RestorePointDescription);
+    }
 }

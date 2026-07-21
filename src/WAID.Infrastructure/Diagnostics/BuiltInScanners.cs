@@ -8,7 +8,7 @@ public sealed class DiskSpaceScanner : ISystemScanner
     public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token)
     {
         var findings=new List<DiagnosticFinding>();
-        foreach(var drive in DriveInfo.GetDrives().Where(x=>x.IsReady && x.DriveType==DriveType.Fixed)) { token.ThrowIfCancellationRequested(); var ratio=(double)drive.AvailableFreeSpace/drive.TotalSize; if(ratio<0.1) findings.Add(new(Id,"STORAGE_LOW",$"Low space on {drive.Name}",$"Only {ratio:P0} free space remains.",ratio<0.05?DiagnosticSeverity.Critical:DiagnosticSeverity.Warning,"waid.cleanup",new Dictionary<string,string>{{"freeBytes",drive.AvailableFreeSpace.ToString()},{"totalBytes",drive.TotalSize.ToString()}})); }
+        foreach(var drive in DriveInfo.GetDrives().Where(x=>x.IsReady && x.DriveType==DriveType.Fixed)) { token.ThrowIfCancellationRequested(); var ratio=(double)drive.AvailableFreeSpace/drive.TotalSize; if(ratio<0.1) findings.Add(new(Id,"STORAGE_LOW",$"Low space on {drive.Name}",$"Only {ratio:P0} free space remains.",ratio<0.05?DiagnosticSeverity.Critical:DiagnosticSeverity.Warning,evidence:new Dictionary<string,string>{{"freeBytes",drive.AvailableFreeSpace.ToString()},{"totalBytes",drive.TotalSize.ToString()}})); }
         return Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>(findings);
     }
 }

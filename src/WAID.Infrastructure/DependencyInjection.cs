@@ -16,7 +16,35 @@ public static class DependencyInjection
     {
         Directory.CreateDirectory(dataDirectory); var db=new WaidDatabase($"Data Source={Path.Combine(dataDirectory,"waid.db")};Foreign Keys=True"); db.InitializeAsync(CancellationToken.None).GetAwaiter().GetResult();
         Log.Logger=new LoggerConfiguration().MinimumLevel.Information().Enrich.FromLogContext().WriteTo.File(Path.Combine(dataDirectory,"logs","waid-.log"),rollingInterval:RollingInterval.Day,retainedFileCountLimit:14).CreateLogger();
-        return services.AddLogging(builder => builder.AddSerilog(dispose: false)).AddSingleton(db).AddSingleton<TimeProvider>(TimeProvider.System).AddSingleton<IScanRepository,SqliteScanRepository>().AddSingleton<ISettingsRepository,SqliteSettingsRepository>().AddSingleton<IPowerShellRunner,PowerShellRunner>().AddSingleton<ISystemScanner,DiskSpaceScanner>().AddSingleton<ISystemScanner,OperatingSystemScanner>().AddSingleton<IRepairAction,WindowsCleanupRepair>().AddSingleton<IAiAnalyzer,RulesBasedAiAnalyzer>().AddSingleton<ScanOrchestrator>();
+        return services
+            .AddLogging(builder => builder.AddSerilog(dispose: false))
+            .AddSingleton(db)
+            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton<IScanRepository,SqliteScanRepository>()
+            .AddSingleton<ISettingsRepository,SqliteSettingsRepository>()
+            .AddSingleton<IRepairHistoryRepository,SqliteRepairHistoryRepository>()
+            .AddSingleton<IPowerShellRunner,PowerShellRunner>()
+            .AddSingleton<IAdministratorService,AdministratorService>()
+            .AddSingleton<IRestorePointManager,RestorePointManager>()
+            .AddSingleton<IBackupManager>(provider => new BackupManager(
+                Path.Combine(dataDirectory, "Backups"),
+                provider.GetRequiredService<IPowerShellRunner>(),
+                provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>()))
+            .AddSingleton<IRollbackManager,RollbackManager>()
+            .AddSingleton<ISystemScanner,DiskSpaceScanner>()
+            .AddSingleton<ISystemScanner,OperatingSystemScanner>()
+            .AddSingleton<IRepairModule,DismRepairModule>()
+            .AddSingleton<IRepairModule,SfcRepairModule>()
+            .AddSingleton<IRepairModule,WindowsUpdateResetModule>()
+            .AddSingleton<IRepairModule,DnsResetModule>()
+            .AddSingleton<IRepairModule,WinsockResetModule>()
+            .AddSingleton<IRepairModule,TcpIpResetModule>()
+            .AddSingleton<IAiAnalyzer,RulesBasedAiAnalyzer>()
+            .AddSingleton<ScanOrchestrator>()
+            .AddSingleton<RepairRegistry>()
+            .AddSingleton<RepairExecutor>()
+            .AddSingleton<RepairQueue>()
+            .AddSingleton<RepairHistory>();
     }
     public static IServiceCollection AddWaidPlugins(this IServiceCollection services,string pluginDirectory,Version hostVersion)
     {

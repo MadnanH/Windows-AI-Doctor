@@ -8,6 +8,7 @@ Windows AI Doctor (WAID) is a commercial-grade Windows diagnostics and repair fo
 - Local AI abstraction with a deterministic offline analyzer
 - SQLite scan history and settings storage
 - Safe parameterized PowerShell execution with structured results
+- Transactional repair execution with confirmation, restore points, backups, rollback, and history
 - Versioned plugin contract and isolated plugin directory
 - Serilog rolling-file diagnostics
 - WinUI 3 dashboard and settings experience
