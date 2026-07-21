@@ -23,6 +23,7 @@ public sealed class WindowsScannerTests
     [InlineData("cpu")]
     [InlineData("gpu")]
     [InlineData("bsod")]
+    [InlineData("battery")]
     public async Task Scanner_handles_empty_result(string name)
     {
         var scanner = Create(name, new FakePowerShellRunner("[]"));
@@ -64,7 +65,7 @@ public sealed class WindowsScannerTests
         "defender" => new WindowsDefenderScanner(runner), "network" => new NetworkConfigurationScanner(runner),
         "storage" => new StorageHealthScanner(runner), "smart" => new SmartScanner(runner),
         "memory" => new MemoryScanner(runner), "cpu" => new CpuScanner(runner), "gpu" => new GpuScanner(runner),
-        "bsod" => new BsodMinidumpScanner(runner), _ => throw new ArgumentOutOfRangeException(nameof(name))
+        "bsod" => new BsodMinidumpScanner(runner), "battery" => new BatteryHealthScanner(runner), _ => throw new ArgumentOutOfRangeException(nameof(name))
     };
 
     private sealed class FakePowerShellRunner(string json) : IPowerShellRunner

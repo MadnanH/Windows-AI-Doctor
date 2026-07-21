@@ -17,7 +17,7 @@ public sealed class DependencyInjectionTests
             var services = new ServiceCollection().AddWaidInfrastructure(root);
             using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
             var scanners = provider.GetServices<ISystemScanner>().Select(scanner => scanner.Id).ToHashSet(StringComparer.Ordinal);
-            string[] expected = ["waid.os", "waid.event-viewer", "waid.reliability", "waid.drivers", "waid.software", "waid.windows-update", "waid.services", "waid.startup", "waid.registry-health", "waid.defender", "waid.network", "waid.storage-health", "waid.smart", "waid.memory", "waid.cpu", "waid.gpu", "waid.bsod"];
+            string[] expected = ["waid.os", "waid.event-viewer", "waid.reliability", "waid.drivers", "waid.software", "waid.windows-update", "waid.services", "waid.startup", "waid.registry-health", "waid.defender", "waid.network", "waid.storage-health", "waid.smart", "waid.memory", "waid.cpu", "waid.gpu", "waid.bsod", "waid.battery"];
 
             Assert.Equal(expected.Length, scanners.Count);
             Assert.All(expected, id => Assert.Contains(id, scanners));

@@ -27,9 +27,12 @@ public sealed class StorageHealthScanner(IPowerShellRunner ps) : PowerShellDiagn
 {
     public override string Id => "waid.storage-health"; public override string DisplayName => "Storage health";
     protected override string Script => """
-        @((Get-Volume -ErrorAction SilentlyContinue | Where-Object {$_.DriveType -eq 'Fixed' -and $_.Size -gt 0 -and ($_.SizeRemaining/$_.Size) -lt .1} | ForEach-Object {
+        $items=@(Get-Volume -ErrorAction SilentlyContinue | Where-Object {$_.DriveType -eq 'Fixed' -and $_.Size -gt 0 -and ($_.SizeRemaining/$_.Size) -lt .1} | ForEach-Object {
           [pscustomobject]@{code='STORAGE_LOW';title="Low storage on $($_.DriveLetter):";description=("{0:P0} free space remains." -f ($_.SizeRemaining/$_.Size));severity=if(($_.SizeRemaining/$_.Size) -lt .05){'Critical'}else{'Warning'};repairId=$null;evidence=@{drive="$($_.DriveLetter):";freeBytes="$($_.SizeRemaining)";totalBytes="$($_.Size)";category='Storage'}}
-        })) | ConvertTo-Json -Depth 5 -Compress
+        })
+        $latency=(Get-Counter '\PhysicalDisk(_Total)\Avg. Disk sec/Transfer' -SampleInterval 1 -MaxSamples 2 -ErrorAction SilentlyContinue).CounterSamples | Select-Object -Last 1
+        if($latency -and $latency.CookedValue -ge .05){$items+=[pscustomobject]@{code='DISK_LATENCY';title='High disk response time';description=("Average disk transfer latency is {0:N0} ms." -f ($latency.CookedValue*1000));severity=if($latency.CookedValue -ge .1){'Critical'}else{'Warning'};repairId=$null;evidence=@{latencyMilliseconds=("{0:N0}" -f ($latency.CookedValue*1000));category='Storage'}}}
+        @($items) | ConvertTo-Json -Depth 5 -Compress
         """;
 }
 
@@ -81,5 +84,16 @@ public sealed class BsodMinidumpScanner(IPowerShellRunner ps) : PowerShellDiagno
         @((Get-ChildItem -LiteralPath $path -Filter '*.dmp' -File -ErrorAction SilentlyContinue | Where-Object {$_.LastWriteTimeUtc -ge [datetime]::UtcNow.AddDays(-30)} | Select-Object -First 20 | ForEach-Object {
           [pscustomobject]@{code='BSOD_DUMP';title='Recent blue-screen minidump';description="Windows created $($_.Name) after a system crash.";severity='Critical';repairId=$null;evidence=@{fileName=$_.Name;createdUtc=$_.LastWriteTimeUtc.ToString('O');category='Hardware'}}
         })) | ConvertTo-Json -Depth 5 -Compress
+        """;
+}
+
+public sealed class BatteryHealthScanner(IPowerShellRunner ps) : PowerShellDiagnosticScanner(ps)
+{
+    public override string Id => "waid.battery"; public override string DisplayName => "Battery health";
+    protected override string Script => """
+        $static=Get-CimInstance -Namespace root\wmi -ClassName BatteryStaticData -ErrorAction SilentlyContinue | Select-Object -First 1
+        $full=Get-CimInstance -Namespace root\wmi -ClassName BatteryFullChargedCapacity -ErrorAction SilentlyContinue | Select-Object -First 1
+        $ratio=if($static.DesignedCapacity -gt 0 -and $full.FullChargedCapacity -gt 0){$full.FullChargedCapacity/$static.DesignedCapacity}else{$null}
+        @($(if($null -ne $ratio -and $ratio -lt .6){[pscustomobject]@{code='BATTERY_DEGRADED';title='Battery capacity is degraded';description=("The battery holds approximately {0:P0} of its design capacity." -f $ratio);severity=if($ratio -lt .4){'Critical'}else{'Warning'};repairId=$null;evidence=@{capacityPercent=("{0:N0}" -f ($ratio*100));category='Hardware'}}})) | ConvertTo-Json -Depth 5 -Compress
         """;
 }

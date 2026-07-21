@@ -1,0 +1,60 @@
+using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Windows.Input;
+using WAID.Application.Abstractions;
+using WAID.Application.Services;
+using WAID.Diagnosis;
+using WAID.Domain.Diagnostics;
+using WAID.Infrastructure.Diagnostics;
+
+namespace WAID.Desktop.ViewModels;
+
+public sealed class OperationsViewModel : ViewModelBase
+{
+    private readonly BackgroundHealthMonitoringService _monitoring; private readonly IHealthSnapshotRepository _snapshots;
+    private readonly IScanScheduleRepository _schedules; private readonly ScheduledScanService _scheduledScans; private readonly IDiagnosisRepository _diagnoses;
+    private readonly EvidenceCollector _evidenceCollector; private readonly RepairPrioritizationEngine _prioritizer; private readonly IRepairHistoryRepository _repairHistory;
+    private readonly IDiagnosticReportExporter _reports; private readonly MinidumpAnalyzer _crashes; private readonly IStartupLaunchService _startup;
+    private readonly RepairRegistry _repairRegistry; private readonly RepairApprovalWorkflow _approvals; private readonly DashboardViewModel _dashboard;
+    private string _status="Monitoring is stopped"; private int _refreshMinutes=15; private bool _scheduleEnabled; private bool _onlyPluggedIn=true; private bool _onlyIdle;
+    private string _scheduleFrequency="Daily"; private int _customIntervalMinutes=60; private HealthSnapshot? _snapshot;
+    public OperationsViewModel(BackgroundHealthMonitoringService monitoring,IHealthSnapshotRepository snapshots,IScanScheduleRepository schedules,ScheduledScanService scheduledScans,IDiagnosisRepository diagnoses,EvidenceCollector evidenceCollector,RepairPrioritizationEngine prioritizer,IRepairHistoryRepository repairHistory,IDiagnosticReportExporter reports,MinidumpAnalyzer crashes,IStartupLaunchService startup,RepairRegistry repairRegistry,RepairApprovalWorkflow approvals,DashboardViewModel dashboard)
+    {
+        _monitoring=monitoring;_snapshots=snapshots;_schedules=schedules;_scheduledScans=scheduledScans;_diagnoses=diagnoses;_evidenceCollector=evidenceCollector;_prioritizer=prioritizer;_repairHistory=repairHistory;_reports=reports;_crashes=crashes;_startup=startup;_repairRegistry=repairRegistry;_approvals=approvals;_dashboard=dashboard;
+        RefreshCommand=new AsyncCommand(RefreshAsync);StartCommand=new RelayCommand(Start);StopCommand=new AsyncCommand(StopAsync);SaveScheduleCommand=new AsyncCommand(SaveScheduleAsync);RunScheduledCommand=new AsyncCommand(RunScheduledAsync);AnalyzeCrashesCommand=new AsyncCommand(AnalyzeCrashesAsync);ExportJsonCommand=new AsyncCommand(()=>ExportAsync("json"));ExportHtmlCommand=new AsyncCommand(()=>ExportAsync("html"));ExportPackageCommand=new AsyncCommand(()=>ExportAsync("zip"));
+    }
+    public ICommand RefreshCommand{get;} public ICommand StartCommand{get;} public ICommand StopCommand{get;} public ICommand SaveScheduleCommand{get;} public ICommand RunScheduledCommand{get;} public ICommand AnalyzeCrashesCommand{get;} public ICommand ExportJsonCommand{get;} public ICommand ExportHtmlCommand{get;} public ICommand ExportPackageCommand{get;}
+    public ObservableCollection<DiagnosticFinding> ActiveAlerts{get;}=[]; public ObservableCollection<DiagnosticFinding> RecentCriticalEvents{get;}=[]; public ObservableCollection<CollectedEvidence> Evidence{get;}=[]; public ObservableCollection<CrashGroup> CrashGroups{get;}=[]; public ObservableCollection<PrioritizedRepair> RepairPlan{get;}=[];
+    public string Status{get=>_status;private set=>Set(ref _status,value);} public HealthSnapshot? Snapshot{get=>_snapshot;private set=>Set(ref _snapshot,value);} public int RefreshMinutes{get=>_refreshMinutes;set=>Set(ref _refreshMinutes,Math.Clamp(value,1,1440));}
+    public bool ScheduleEnabled{get=>_scheduleEnabled;set=>Set(ref _scheduleEnabled,value);} public bool OnlyWhenPluggedIn{get=>_onlyPluggedIn;set=>Set(ref _onlyPluggedIn,value);} public bool OnlyWhenIdle{get=>_onlyIdle;set=>Set(ref _onlyIdle,value);} public string ScheduleFrequency{get=>_scheduleFrequency;set=>Set(ref _scheduleFrequency,value);} public int CustomIntervalMinutes{get=>_customIntervalMinutes;set=>Set(ref _customIntervalMinutes,Math.Clamp(value,15,43200));}
+    public bool LaunchAtStartup { get=>_startup.IsEnabled(); set { _startup.SetEnabled(value); Notify(); } }
+    public string MonitoringState=>_monitoring.State.ToString(); public DateTimeOffset? LastScanTime=>Snapshot?.CapturedAtUtc;
+    public string CpuStatus=>StatusFor("waid.cpu"); public string RamStatus=>StatusFor("waid.memory"); public string DiskStatus=>StatusFor("waid.storage-health"); public string StorageStatus=>StatusFor("waid.smart"); public string SecurityStatus=>StatusFor("waid.defender"); public string DriverStatus=>StatusFor("waid.drivers"); public string UpdateStatus=>StatusFor("waid.windows-update"); public string NetworkStatus=>StatusFor("waid.network");
+    public async Task LoadAsync(){try{var schedule=await _schedules.GetAsync(CancellationToken.None);ScheduleEnabled=schedule.Enabled;ScheduleFrequency=schedule.Frequency.ToString();CustomIntervalMinutes=(int)Math.Clamp(schedule.CustomInterval.TotalMinutes,15,43200);OnlyWhenPluggedIn=schedule.OnlyWhenPluggedIn;OnlyWhenIdle=schedule.OnlyWhenIdle;Snapshot=(await _snapshots.GetRecentAsync(1,CancellationToken.None)).FirstOrDefault();await PopulateAnalysisAsync();Status=Snapshot is null?"Monitoring is stopped; no saved snapshot is available":"Loaded the latest saved health snapshot";NotifyAll();}catch(Exception ex){Status=$"Monitoring data could not be loaded: {ex.Message}";}}
+    private async Task RefreshAsync(){try{Snapshot=await _monitoring.RefreshAsync(CancellationToken.None)??Snapshot;if(Snapshot is null){Snapshot=(await _snapshots.GetRecentAsync(1,CancellationToken.None)).FirstOrDefault();}await PopulateAnalysisAsync();Status=Snapshot is null?"No health snapshot is available":"Live health refreshed";NotifyAll();}catch(Exception ex){Status=$"Refresh failed: {ex.Message}";}}
+    private void Start(){_monitoring.Start(new MonitoringOptions(TimeSpan.FromMinutes(RefreshMinutes)));Status="Monitoring started";NotifyAll();}
+    private async Task StopAsync(){await _monitoring.StopAsync();Status="Monitoring stopped";NotifyAll();}
+    private async Task SaveScheduleAsync(){var frequency=Enum.TryParse<WAID.Application.Services.ScheduleFrequency>(ScheduleFrequency,true,out var parsed)?parsed:WAID.Application.Services.ScheduleFrequency.Daily;await _schedules.SaveAsync(new(ScheduleEnabled,frequency,TimeSpan.FromMinutes(CustomIntervalMinutes),DayOfWeek.Sunday,new TimeOnly(9,0),OnlyWhenPluggedIn,OnlyWhenIdle),CancellationToken.None);Status="Scan schedule saved";}
+    private async Task RunScheduledAsync(){Status=await _scheduledScans.RunIfDueAsync(CancellationToken.None)?"Scheduled scan completed":"Scheduled scan was not due or conditions were not met";}
+    private Task AnalyzeCrashesAsync(){var path=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),"Minidump");CrashGroups.Clear();foreach(var group in _crashes.Group(_crashes.Discover(path)))CrashGroups.Add(group);Status=$"Analyzed {CrashGroups.Sum(x=>x.Count)} crash dump(s) without modifying them";return Task.CompletedTask;}
+    private async Task PopulateAnalysisAsync(){ActiveAlerts.Clear();RecentCriticalEvents.Clear();Evidence.Clear();RepairPlan.Clear();if(Snapshot is null)return;foreach(var finding in Snapshot.Findings){ActiveAlerts.Add(finding);if(finding.Severity==DiagnosticSeverity.Critical&&finding.ScannerId.Contains("event",StringComparison.OrdinalIgnoreCase))RecentCriticalEvents.Add(finding);}foreach(var item in _evidenceCollector.Collect(Snapshot.Findings))Evidence.Add(item);var diagnosis=await _diagnoses.GetLatestAsync(CancellationToken.None);if(diagnosis is not null)foreach(var repair in _prioritizer.Prioritize(diagnosis))RepairPlan.Add(repair);}
+    private async Task ExportAsync(string format){try{var report=await BuildReportAsync();var path=format switch{"html"=>await _reports.ExportHtmlAsync(report,CancellationToken.None),"zip"=>await _reports.ExportPackageAsync(report,CancellationToken.None),_=>await _reports.ExportJsonAsync(report,CancellationToken.None)};Status=$"Report exported to {path}";}catch(Exception ex){Status=$"Report export failed: {ex.Message}";}}
+    private async Task<DiagnosticReportData> BuildReportAsync(){var diagnosis=await _diagnoses.GetLatestAsync(CancellationToken.None);return new(Assembly.GetEntryAssembly()?.GetName().Version?.ToString()??"unknown",DateTimeOffset.UtcNow,$"{RuntimeInformation.OSDescription}; {RuntimeInformation.OSArchitecture}",diagnosis,Evidence.ToArray(),RepairPlan.ToArray(),await _repairHistory.GetRecentAsync(25,CancellationToken.None),["Unavailable providers are reported rather than inferred as healthy.","This report is diagnostic guidance, not a guarantee of hardware condition."],"Secrets, credentials, browser data, personal file contents, product keys, tokens, and unnecessary serial numbers are excluded by default.");}
+    public async Task ApproveAndRunAsync(PrioritizedRepair repair,bool riskAcknowledged)
+    {
+        if(!_repairRegistry.TryGet(repair.RepairId,out var module)||module is null){Status="The recommended repair is unavailable";return;}
+        var plan=await module.CreatePlanAsync(null,CancellationToken.None);var actions=plan.Resources.Select(resource=>$"Back up and modify {resource.Kind}: {resource.Path}").Prepend(plan.Description).ToArray();
+        await _approvals.RecordAsync(repair,$"Confidence {repair.Confidence}%; evidence strength {repair.EvidenceStrength}%",actions,true,riskAcknowledged,CancellationToken.None);
+        await _dashboard.RunRepairAsync(repair.RepairId,true);Status="Approved repair completed; review repair history for details";
+    }
+    public async Task<string> GetRepairDetailsAsync(PrioritizedRepair repair)
+    {
+        if(!_repairRegistry.TryGet(repair.RepairId,out var module)||module is null)return "This repair module is unavailable.";
+        var plan=await module.CreatePlanAsync(null,CancellationToken.None);var actions=plan.Resources.Count==0?"Run the documented Windows repair command.":string.Join("\n",plan.Resources.Select(resource=>$"Back up, then modify {resource.Kind}: {resource.Path}"));
+        return $"{plan.Description}\n\nActions:\n{actions}\n\nSafety level: {repair.RiskLevel}\nSystem Restore Point: {(module.Policy.RequiresRestorePoint?"required when available":"not required")}\nBackup: {(module.Policy.RequiresBackup?"required before changes":"not required")}\nRestart required: {repair.RestartRequired}\nRollback supported: {repair.SupportsRollback}";
+    }
+    public async Task ApproveAllSafeAsync(){var safe=RepairPlan.Where(item=>item.RiskLevel==WAID.Domain.Repairs.SafetyLevel.Low).ToArray();foreach(var repair in safe)await ApproveAndRunAsync(repair,true);Status=safe.Length==0?"No low-risk repairs are available":"All low-risk repairs were individually audited and processed";}
+    private string StatusFor(string scanner)=>Snapshot is null?"Unavailable":Snapshot.Findings.Any(x=>x.ScannerId==scanner&&x.Code=="SCANNER_UNAVAILABLE")?"Unavailable":Snapshot.Findings.Any(x=>x.ScannerId==scanner&&x.Severity==DiagnosticSeverity.Critical)?"Critical":Snapshot.Findings.Any(x=>x.ScannerId==scanner&&x.Severity==DiagnosticSeverity.Warning)?"Warning":"Healthy";
+    private void NotifyAll(){Notify(nameof(MonitoringState));Notify(nameof(LastScanTime));Notify(nameof(CpuStatus));Notify(nameof(RamStatus));Notify(nameof(DiskStatus));Notify(nameof(StorageStatus));Notify(nameof(SecurityStatus));Notify(nameof(DriverStatus));Notify(nameof(UpdateStatus));Notify(nameof(NetworkStatus));}
+}

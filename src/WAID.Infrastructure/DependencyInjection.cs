@@ -28,6 +28,9 @@ public static class DependencyInjection
             .AddSingleton<ISettingsRepository,SqliteSettingsRepository>()
             .AddSingleton<IDiagnosisRepository,SqliteDiagnosisRepository>()
             .AddSingleton<IRepairHistoryRepository,SqliteRepairHistoryRepository>()
+            .AddSingleton<IHealthSnapshotRepository,SqliteHealthSnapshotRepository>()
+            .AddSingleton<IScanScheduleRepository,SqliteScanScheduleRepository>()
+            .AddSingleton<IRepairApprovalRepository,SqliteRepairApprovalRepository>()
             .AddSingleton<IDiagnosticsExportService>(provider => new DiagnosticsExportService(
                 dataDirectory,
                 provider.GetRequiredService<IScanRepository>(),
@@ -42,6 +45,9 @@ public static class DependencyInjection
                 provider.GetRequiredService<IPowerShellRunner>(),
                 provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>()))
             .AddSingleton<IRollbackManager,RollbackManager>()
+            .AddSingleton<ISystemConditionService,WindowsSystemConditionService>()
+            .AddSingleton<IStartupLaunchService>(_ => new WindowsStartupLaunchService(Environment.ProcessPath ?? throw new InvalidOperationException("The application executable path is unavailable.")))
+            .AddSingleton<IDiagnosticReportExporter>(_ => new DiagnosticReportExporter(Path.Combine(dataDirectory,"Reports")))
             .AddSingleton<ISystemScanner,OperatingSystemScanner>()
             .AddSingleton<ISystemScanner,WindowsEventViewerScanner>()
             .AddSingleton<ISystemScanner,ReliabilityMonitorScanner>()
@@ -59,6 +65,7 @@ public static class DependencyInjection
             .AddSingleton<ISystemScanner,CpuScanner>()
             .AddSingleton<ISystemScanner,GpuScanner>()
             .AddSingleton<ISystemScanner,BsodMinidumpScanner>()
+            .AddSingleton<ISystemScanner,BatteryHealthScanner>()
             .AddSingleton<IRepairModule,DismRepairModule>()
             .AddSingleton<IRepairModule,SfcRepairModule>()
             .AddSingleton<IRepairModule,WindowsUpdateResetModule>()
@@ -78,6 +85,14 @@ public static class DependencyInjection
             .AddSingleton<DiagnosisEngine>()
             .AddSingleton<IAiAnalyzer,OfflineDiagnosisAnalyzer>()
             .AddSingleton<ScanOrchestrator>()
+            .AddSingleton<ScanCoordinator>()
+            .AddSingleton<BackgroundHealthMonitoringService>()
+            .AddSingleton<ScheduledScanService>()
+            .AddSingleton<ScheduledScanLoopService>()
+            .AddSingleton<EvidenceCollector>()
+            .AddSingleton<RepairPrioritizationEngine>()
+            .AddSingleton<RepairApprovalWorkflow>()
+            .AddSingleton<MinidumpAnalyzer>()
             .AddSingleton<RepairRegistry>()
             .AddSingleton<RepairExecutor>()
             .AddSingleton<RepairQueue>()

@@ -29,7 +29,11 @@ public sealed class WaidDatabase(string connectionString)
                 report_json TEXT NOT NULL,
                 FOREIGN KEY(scan_session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
             CREATE INDEX IF NOT EXISTS ix_diagnosis_reports_generated ON diagnosis_reports(generated_utc DESC);
-            PRAGMA user_version=3;
+            CREATE TABLE IF NOT EXISTS health_snapshots(id TEXT PRIMARY KEY, captured_utc TEXT NOT NULL, snapshot_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_health_snapshots_captured ON health_snapshots(captured_utc DESC);
+            CREATE TABLE IF NOT EXISTS scan_schedule(id INTEGER PRIMARY KEY CHECK(id=1), schedule_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS repair_approvals(id TEXT PRIMARY KEY, requested_utc TEXT NOT NULL, approval_json TEXT NOT NULL);
+            PRAGMA user_version=6;
             """;
         await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
     }

@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using WAID.Desktop.ViewModels;
 using WAID.Infrastructure;
 using Serilog;
+using WAID.Application.Services;
 namespace WAID.Desktop;
 public partial class App : Microsoft.UI.Xaml.Application
 {
@@ -19,14 +20,14 @@ public partial class App : Microsoft.UI.Xaml.Application
             InitializeComponent();
             var services=new ServiceCollection();
             services.AddWaidInfrastructure(_dataDirectory).AddWaidPlugins(Path.Combine(AppContext.BaseDirectory,"Plugins"),new Version(1,0,0));
-            services.AddSingleton<DashboardViewModel>().AddSingleton<DiagnosisViewModel>().AddSingleton<SettingsViewModel>().AddSingleton<HistoryViewModel>().AddSingleton<MainWindow>();
+            services.AddSingleton<DashboardViewModel>().AddSingleton<DiagnosisViewModel>().AddSingleton<SettingsViewModel>().AddSingleton<HistoryViewModel>().AddSingleton<OperationsViewModel>().AddSingleton<MainWindow>();
             _services=services.BuildServiceProvider(new ServiceProviderOptions{ValidateOnBuild=true,ValidateScopes=true});
         }
         catch(Exception exception) { RecordFatal("Application initialization failed",exception); throw; }
     }
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        try { _services.GetRequiredService<MainWindow>().Activate(); }
+        try { _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); }
         catch(Exception exception) { RecordFatal("Application launch failed",exception); throw; }
     }
     private void OnUnhandledException(object sender,Microsoft.UI.Xaml.UnhandledExceptionEventArgs args)

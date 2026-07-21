@@ -3,6 +3,7 @@ using WAID.Domain.Settings;
 using WAID.Infrastructure.Persistence;
 using WAID.Diagnosis;
 using WAID.Health;
+using WAID.Application.Services;
 
 namespace WAID.Infrastructure.Tests;
 
@@ -103,5 +104,13 @@ public sealed class SqliteRepositoriesTests : IAsyncLifetime
         Assert.NotNull(loaded);
         Assert.Equal(96, loaded.Health.Overall);
         Assert.Equal("SMART_WARNING", Assert.Single(loaded.Findings).Code);
+    }
+
+    [Fact]
+    public async Task Continuous_health_schedule_snapshot_and_approval_round_trip()
+    {
+        var schedules=new SqliteScanScheduleRepository(_database);var schedule=new ScanSchedule(true,ScheduleFrequency.Weekly,TimeSpan.FromHours(1),DayOfWeek.Monday,new(8,30),true,true,DateTimeOffset.UtcNow);await schedules.SaveAsync(schedule,CancellationToken.None);Assert.Equal(schedule,await schedules.GetAsync(CancellationToken.None));
+        var snapshots=new SqliteHealthSnapshotRepository(_database);var snapshot=new HealthSnapshot(Guid.NewGuid(),DateTimeOffset.UtcNow,new HealthScore(90,90,90,90,90,90,90,90),[],MonitoringState.Running);await snapshots.SaveAsync(snapshot,CancellationToken.None);Assert.Equal(snapshot.Id,Assert.Single(await snapshots.GetRecentAsync(1,CancellationToken.None)).Id);
+        var approvals=new SqliteRepairApprovalRepository(_database);var approval=new RepairApproval(Guid.NewGuid(),"waid.dism",DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,true,"evidence",["action"]);await approvals.SaveAsync(approval,CancellationToken.None);Assert.Equal(approval.Id,Assert.Single(await approvals.GetRecentAsync(1,CancellationToken.None)).Id);
     }
 }
