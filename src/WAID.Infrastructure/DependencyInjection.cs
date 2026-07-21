@@ -16,7 +16,7 @@ public static class DependencyInjection
     {
         Directory.CreateDirectory(dataDirectory); var db=new WaidDatabase($"Data Source={Path.Combine(dataDirectory,"waid.db")};Foreign Keys=True"); db.InitializeAsync(CancellationToken.None).GetAwaiter().GetResult();
         Log.Logger=new LoggerConfiguration().MinimumLevel.Information().Enrich.FromLogContext().WriteTo.File(Path.Combine(dataDirectory,"logs","waid-.log"),rollingInterval:RollingInterval.Day,retainedFileCountLimit:14).CreateLogger();
-        return services.AddSingleton(db).AddSingleton<TimeProvider>(TimeProvider.System).AddSingleton<IScanRepository,SqliteScanRepository>().AddSingleton<ISettingsRepository,SqliteSettingsRepository>().AddSingleton<IPowerShellRunner,PowerShellRunner>().AddSingleton<ISystemScanner,DiskSpaceScanner>().AddSingleton<ISystemScanner,OperatingSystemScanner>().AddSingleton<IRepairAction,WindowsCleanupRepair>().AddSingleton<IAiAnalyzer,RulesBasedAiAnalyzer>().AddSingleton<ScanOrchestrator>();
+        return services.AddLogging(builder => builder.AddSerilog(dispose: false)).AddSingleton(db).AddSingleton<TimeProvider>(TimeProvider.System).AddSingleton<IScanRepository,SqliteScanRepository>().AddSingleton<ISettingsRepository,SqliteSettingsRepository>().AddSingleton<IPowerShellRunner,PowerShellRunner>().AddSingleton<ISystemScanner,DiskSpaceScanner>().AddSingleton<ISystemScanner,OperatingSystemScanner>().AddSingleton<IRepairAction,WindowsCleanupRepair>().AddSingleton<IAiAnalyzer,RulesBasedAiAnalyzer>().AddSingleton<ScanOrchestrator>();
     }
     public static IServiceCollection AddWaidPlugins(this IServiceCollection services,string pluginDirectory,Version hostVersion)
     {

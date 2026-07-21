@@ -23,5 +23,22 @@ public sealed class ScanSessionTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() => session.Complete(started.AddSeconds(-1)));
     }
-}
 
+    [Fact]
+    public void Finding_can_be_rehydrated_with_its_original_identity()
+    {
+        var id = Guid.NewGuid();
+
+        var finding = new DiagnosticFinding(
+            "disk", "DISK001", "Disk", "Low disk space",
+            DiagnosticSeverity.Warning, id: id);
+
+        Assert.Equal(id, finding.Id);
+    }
+
+    [Fact]
+    public void Finding_rejects_an_empty_identity() =>
+        Assert.Throws<ArgumentException>(() => new DiagnosticFinding(
+            "disk", "DISK001", "Disk", "Low disk space",
+            DiagnosticSeverity.Warning, id: Guid.Empty));
+}
