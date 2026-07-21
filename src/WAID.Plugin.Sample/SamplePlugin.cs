@@ -11,6 +11,7 @@ public sealed class SamplePlugin : IWaidPlugin
 public sealed class EnvironmentScanner : ISystemScanner
 {
     public string Id=>"sample.environment"; public string DisplayName=>"Environment variables";
+    public ScannerMetadata Metadata=>new(Id,DisplayName,"Checks whether PATH entries reference available folders.","Environment",new Version(1,0,0),[],[]);
     public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token)
     {
         token.ThrowIfCancellationRequested();

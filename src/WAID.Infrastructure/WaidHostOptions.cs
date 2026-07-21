@@ -79,7 +79,7 @@ public static class WaidServiceRegistrationValidator
     private static readonly Type[] RequiredSingletonContracts =
     [
         typeof(WaidHostOptions), typeof(WaidModuleCatalog), typeof(WaidDatabase), typeof(TimeProvider),
-        typeof(IScanRepository), typeof(ISettingsRepository), typeof(IDiagnosisRepository), typeof(IRepairHistoryRepository),
+        typeof(IScanRepository), typeof(IScanRunRepository), typeof(IScanDataSanitizer), typeof(ISettingsRepository), typeof(IDiagnosisRepository), typeof(IRepairHistoryRepository),
         typeof(IHealthSnapshotRepository), typeof(IScanScheduleRepository), typeof(IRepairApprovalRepository),
         typeof(IDiagnosticsExportService), typeof(IAdministratorService), typeof(IRestorePointManager), typeof(IBackupManager),
         typeof(IRollbackManager), typeof(IDiagnosticReportExporter), typeof(IPdfReportExporter), typeof(ScanCoordinator),
@@ -110,6 +110,11 @@ public static class WaidServiceRegistrationValidator
             var scanners = provider.GetServices<ISystemScanner>().ToArray();
             if (scanners.Length == 0 || scanners.Select(item => item.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count() != scanners.Length)
                 throw new WaidStartupException("WAID-DI-SCANNERS", "Scanner registrations are missing or contain duplicate IDs.", "Disable conflicting plugins and restart WAID.");
+            foreach (var scanner in scanners)
+            {
+                var metadata = scanner.Metadata.Validate();
+                if (!string.Equals(scanner.Id, metadata.Id, StringComparison.OrdinalIgnoreCase)) throw new WaidStartupException("WAID-DI-SCANNER-METADATA", $"Scanner {scanner.Id} metadata does not match its registration ID.", "Disable the invalid plugin and restart WAID.");
+            }
             var repairs = provider.GetServices<IRepairModule>().ToArray();
             if (repairs.Length == 0 || repairs.Select(item => item.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count() != repairs.Length)
                 throw new WaidStartupException("WAID-DI-REPAIRS", "Repair registrations are missing or contain duplicate IDs.", "Disable conflicting plugins and restart WAID.");

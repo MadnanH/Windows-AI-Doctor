@@ -68,7 +68,9 @@ public static class DependencyInjection
     private static IServiceCollection AddWaidPersistence(this IServiceCollection services, WaidHostOptions options, WaidModuleCatalog modules)
     {
         Directory.CreateDirectory(options.DataDirectory); var db = new WaidDatabase($"Data Source={Path.Combine(options.DataDirectory, "waid.db")};Foreign Keys=True"); db.InitializeAsync(CancellationToken.None).GetAwaiter().GetResult();
-        services.AddSingleton(db).AddSingleton<TimeProvider>(TimeProvider.System).AddSingleton<IScanRepository, SqliteScanRepository>()
+        services.AddSingleton(db).AddSingleton<TimeProvider>(TimeProvider.System).AddSingleton<SqliteScanRepository>()
+            .AddSingleton<IScanRepository>(provider => provider.GetRequiredService<SqliteScanRepository>())
+            .AddSingleton<IScanRunRepository>(provider => provider.GetRequiredService<SqliteScanRepository>())
             .AddSingleton<ISettingsRepository, SqliteSettingsRepository>().AddSingleton<IDiagnosisRepository, SqliteDiagnosisRepository>()
             .AddSingleton<IRepairHistoryRepository, SqliteRepairHistoryRepository>().AddSingleton<IHealthSnapshotRepository, SqliteHealthSnapshotRepository>()
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>();
@@ -106,7 +108,8 @@ public static class DependencyInjection
             .AddSingleton<ISystemScanner, RegistryHealthScanner>().AddSingleton<ISystemScanner, WindowsDefenderScanner>()
             .AddSingleton<ISystemScanner, NetworkConfigurationScanner>().AddSingleton<ISystemScanner, StorageHealthScanner>()
             .AddSingleton<ISystemScanner, SmartScanner>().AddSingleton<ISystemScanner, MemoryScanner>().AddSingleton<ISystemScanner, CpuScanner>()
-            .AddSingleton<ISystemScanner, GpuScanner>().AddSingleton<ISystemScanner, BsodMinidumpScanner>().AddSingleton<ISystemScanner, BatteryHealthScanner>();
+            .AddSingleton<ISystemScanner, GpuScanner>().AddSingleton<ISystemScanner, BsodMinidumpScanner>().AddSingleton<ISystemScanner, BatteryHealthScanner>()
+            .AddSingleton<IScanDataSanitizer, ScanDataSanitizer>();
         modules.Add("diagnostics", "Windows diagnostics"); return services;
     }
 

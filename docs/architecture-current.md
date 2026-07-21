@@ -54,6 +54,8 @@ There are no circular project references. The compiled dependency graph is check
 
 Configuration is resolved behind Application-owned contracts. Infrastructure combines validated machine and administrator-policy files with SQLite user/profile state and in-memory session overrides. The resolver produces a frozen operation snapshot; policy is always last, and experimental flags fail closed behind an explicit master gate.
 
+Scanning uses a backward-compatible Application contract with validated metadata, prerequisites, dependencies, detailed observations, findings, progress, and cancellation. The orchestrator executes independent scanners with bounded parallelism, isolates typed failures, and persists the session, execution provenance, sanitized evidence, and resource estimates through one Infrastructure transaction.
+
 The two `GetRequiredService` calls in `App.OnLaunched` are composition-root resolution, not domain-level service locator usage. Factory registrations inside `DependencyInjection` resolve constructor dependencies and remain inside the composition boundary. No other production layer receives `IServiceProvider`.
 
 ## Coupling and mutable-state findings

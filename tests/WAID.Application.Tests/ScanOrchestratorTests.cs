@@ -30,7 +30,9 @@ public sealed class ScanOrchestratorTests
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
             CreateOrchestrator([new FakeScanner()], repository).RunAsync(false, null, cancellation.Token));
-        Assert.Null(repository.Saved);
+        Assert.NotNull(repository.Saved);
+        Assert.True(repository.Saved.IsCompleted);
+        Assert.Empty(repository.Saved.Findings);
     }
 
     [Fact] public async Task Timeout_is_reported_and_does_not_block_remaining_scanners()
@@ -48,6 +50,40 @@ public sealed class ScanOrchestratorTests
     {
         var result = await CreateOrchestrator([new PermissionScanner()], new RecordingRepository()).RunAsync(false, null, CancellationToken.None);
         Assert.Contains(result.Findings, f => f.Code == "SCANNER_PERMISSION_DENIED" && f.Evidence["status"] == "PermissionDenied");
+    }
+
+    [Fact] public async Task Failed_dependency_skips_dependent_without_running_it()
+    {
+        var dependent = new DependentScanner("dependent", ["broken"]);
+        var records = new RecordingRunRepository();
+        var orchestrator = new ScanOrchestrator([new ThrowingScanner(), dependent], new RecordingRepository(), TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, scanRuns: records);
+        await orchestrator.RunAsync(false, null, CancellationToken.None);
+        Assert.False(dependent.WasRun);
+        Assert.Equal(ScannerExecutionStatus.Skipped, records.Executions.Single(item => item.ScannerId == "dependent").Status);
+    }
+
+    [Fact] public async Task Transient_io_failure_retries_once_and_records_attempts()
+    {
+        var records = new RecordingRunRepository(); var scanner = new RetryScanner();
+        var policies = new ScannerPolicyRegistry(new(TimeSpan.FromSeconds(1), 1));
+        var orchestrator = new ScanOrchestrator([scanner], new RecordingRepository(), TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, policies, scanRuns: records);
+        await orchestrator.RunAsync(false, null, CancellationToken.None);
+        Assert.Equal(2, scanner.Attempts); Assert.Equal(2, Assert.Single(records.Executions).Attempts); Assert.Equal(ScannerExecutionStatus.Success, records.Executions[0].Status);
+    }
+
+    [Fact] public async Task Missing_administrator_prerequisite_is_an_honest_skip()
+    {
+        var scanner=new AdministratorScanner();var records=new RecordingRunRepository();
+        await new ScanOrchestrator([scanner],new RecordingRepository(),TimeProvider.System,NullLogger<ScanOrchestrator>.Instance,scanRuns:records).RunAsync(false,null,CancellationToken.None);
+        Assert.False(scanner.WasRun);var execution=Assert.Single(records.Executions);Assert.Equal(ScannerExecutionStatus.Skipped,execution.Status);Assert.Equal("SCANNER_PREREQUISITE",execution.FailureCode);
+    }
+
+    [Fact] public async Task Parallelism_is_bounded_and_independent_scanners_overlap()
+    {
+        var tracker = new ConcurrencyTracker(); var scanners = Enumerable.Range(0, 4).Select(index => new ConcurrentScanner($"parallel-{index}", tracker)).ToArray();
+        var policies = new ScannerPolicyRegistry(new(TimeSpan.FromSeconds(1)), maximumParallelism: 2); var started = DateTime.UtcNow;
+        await new ScanOrchestrator(scanners, new RecordingRepository(), TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, policies).RunAsync(false, null, CancellationToken.None);
+        Assert.Equal(2, tracker.Peak); Assert.True(DateTime.UtcNow - started < TimeSpan.FromMilliseconds(500));
     }
 
     private static ScanOrchestrator CreateOrchestrator(IEnumerable<ISystemScanner> scanners, IScanRepository repository) =>
@@ -75,6 +111,17 @@ public sealed class ScanOrchestratorTests
         public string Id => "permission"; public string DisplayName => "Permission";
         public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) => throw new UnauthorizedAccessException();
     }
+    private sealed class DependentScanner(string id, IReadOnlyList<string> dependencies) : ISystemScanner
+    { public string Id => id; public string DisplayName => id; public bool WasRun { get; private set; } public ScannerMetadata Metadata => new(Id, DisplayName, "dependency test", "Test", new(1,0), [], dependencies); public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) { WasRun=true; return Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>([]); } }
+    private sealed class RetryScanner : ISystemScanner
+    { public int Attempts { get; private set; } public string Id=>"retry"; public string DisplayName=>"Retry"; public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token) { Attempts++; if(Attempts==1)throw new IOException("transient"); return Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>([]); } }
+    private sealed class AdministratorScanner:ISystemScanner
+    { public string Id=>"administrator";public string DisplayName=>"Administrator";public bool WasRun{get;private set;}public ScannerMetadata Metadata=>new(Id,DisplayName,"administrator test","Test",new(1,0),[ScannerPrerequisites.Administrator],[]);public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token){WasRun=true;return Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>([]);} }
+    private sealed class ConcurrencyTracker { private int _active,_peak; public int Peak=>_peak; public void Enter(){var active=Interlocked.Increment(ref _active);int current;while(active>(current=_peak))Interlocked.CompareExchange(ref _peak,active,current);} public void Exit()=>Interlocked.Decrement(ref _active); }
+    private sealed class ConcurrentScanner(string id,ConcurrencyTracker tracker):ISystemScanner
+    { public string Id=>id;public string DisplayName=>id;public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token){tracker.Enter();try{await Task.Delay(60,token);return [];}finally{tracker.Exit();}} }
+    private sealed class RecordingRunRepository : IScanRunRepository
+    { public IReadOnlyList<ScannerExecutionRecord> Executions { get; private set; }=[]; public Task SaveAsync(ScanSession session,IReadOnlyCollection<ScannerExecutionRecord> executions,CancellationToken token){Executions=executions.ToArray();return Task.CompletedTask;} public Task<IReadOnlyList<ScannerExecutionRecord>> GetExecutionsAsync(Guid sessionId,CancellationToken token)=>Task.FromResult(Executions); }
     private sealed class RecordingRepository : IScanRepository
     {
         public ScanSession? Saved { get; private set; }

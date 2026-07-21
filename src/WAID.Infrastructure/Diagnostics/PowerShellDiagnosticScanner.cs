@@ -9,6 +9,8 @@ public abstract class PowerShellDiagnosticScanner(IPowerShellRunner powerShell) 
 {
     public abstract string Id { get; }
     public abstract string DisplayName { get; }
+    public virtual ScannerMetadata Metadata => new(Id, DisplayName, $"Collects and evaluates {DisplayName} evidence from Windows.", Category(Id),
+        new Version(1, 0, 0), [ScannerPrerequisites.Windows, ScannerPrerequisites.PowerShell], [], TimeSpan.FromSeconds(45));
     protected abstract string Script { get; }
 
     public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken cancellationToken)
@@ -41,6 +43,17 @@ public abstract class PowerShellDiagnosticScanner(IPowerShellRunner powerShell) 
         error.Contains("Invalid namespace", StringComparison.OrdinalIgnoreCase) ||
         error.Contains("Invalid class", StringComparison.OrdinalIgnoreCase) ||
         error.Contains("class not found", StringComparison.OrdinalIgnoreCase);
+
+    private static string Category(string id) => id switch
+    {
+        "waid.defender" => "Security",
+        "waid.network" => "Network",
+        "waid.storage-health" or "waid.smart" => "Storage",
+        "waid.drivers" or "waid.gpu" => "Drivers and hardware",
+        "waid.memory" or "waid.cpu" or "waid.startup" => "Performance",
+        "waid.bsod" or "waid.battery" => "Hardware",
+        _ => "Windows"
+    };
 
     private sealed record ScannerRecord(
         string? Code, string? Title, string? Description, string? Severity,

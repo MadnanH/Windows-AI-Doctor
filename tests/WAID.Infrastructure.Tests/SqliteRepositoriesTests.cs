@@ -4,6 +4,7 @@ using WAID.Infrastructure.Persistence;
 using WAID.Diagnosis;
 using WAID.Health;
 using WAID.Application.Services;
+using WAID.Application.Abstractions;
 
 namespace WAID.Infrastructure.Tests;
 
@@ -112,5 +113,25 @@ public sealed class SqliteRepositoriesTests : IAsyncLifetime
         var schedules=new SqliteScanScheduleRepository(_database);var schedule=new ScanSchedule(true,ScheduleFrequency.Weekly,TimeSpan.FromHours(1),DayOfWeek.Monday,new(8,30),true,true,DateTimeOffset.UtcNow);await schedules.SaveAsync(schedule,CancellationToken.None);Assert.Equal(schedule,await schedules.GetAsync(CancellationToken.None));
         var snapshots=new SqliteHealthSnapshotRepository(_database);var snapshot=new HealthSnapshot(Guid.NewGuid(),DateTimeOffset.UtcNow,new HealthScore(90,90,90,90,90,90,90,90),[],MonitoringState.Running);await snapshots.SaveAsync(snapshot,CancellationToken.None);Assert.Equal(snapshot.Id,Assert.Single(await snapshots.GetRecentAsync(1,CancellationToken.None)).Id);
         var approvals=new SqliteRepairApprovalRepository(_database);var approval=new RepairApproval(Guid.NewGuid(),"waid.dism",DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,true,"evidence",["action"]);await approvals.SaveAsync(approval,CancellationToken.None);Assert.Equal(approval.Id,Assert.Single(await approvals.GetRecentAsync(1,CancellationToken.None)).Id);
+    }
+
+    [Fact]
+    public async Task Scanner_execution_round_trip_preserves_provenance_evidence_failure_and_resources()
+    {
+        var started=DateTimeOffset.UtcNow.AddSeconds(-1);var session=new ScanSession(Guid.NewGuid(),started);var finding=new DiagnosticFinding("scanner","CODE","Title","Detail",DiagnosticSeverity.Warning,evidence:new Dictionary<string,string>{{"key","value"}});session.AddFindings([finding]);session.Complete(DateTimeOffset.UtcNow);
+        var observation=new ScannerObservation("temperature","42",started,"provider:counter",new Dictionary<string,string>{{"unit","C"}});
+        var execution=new ScannerExecutionRecord(Guid.NewGuid(),session.Id,"scanner","Scanner","Hardware","2.1.0",ScannerExecutionStatus.Success,started,session.CompletedAtUtc!.Value,1000,1,null,"Completed",new(2048,12.5),[observation],[finding]);
+        var repository=new SqliteScanRepository(_database);await repository.SaveAsync(session,[execution],CancellationToken.None);
+        var loaded=Assert.Single(await repository.GetExecutionsAsync(session.Id,CancellationToken.None));
+        Assert.Equal("2.1.0",loaded.Version);Assert.Equal(1000,loaded.DurationMilliseconds);Assert.Equal(2048,loaded.Resources.ManagedMemoryDeltaBytes);Assert.Equal("provider:counter",Assert.Single(loaded.Observations).SourceReference);Assert.Equal(finding.Id,Assert.Single(loaded.Findings).Id);
+    }
+
+    [Fact]
+    public void Scan_data_sanitizer_redacts_sensitive_evidence_before_persistence()
+    {
+        var finding=new DiagnosticFinding("scanner","CODE","User C:\\Users\\person","token=abc",DiagnosticSeverity.Warning,evidence:new Dictionary<string,string>{{"serialNumber","ABC"},{"path",Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}});
+        var output=new ScannerOutput([new("password","secret=abc",DateTimeOffset.UtcNow,"source")],[finding]);
+        var sanitized=new WAID.Infrastructure.Diagnostics.ScanDataSanitizer().Sanitize(ScannerMetadata.Legacy("scanner","Scanner"),output);
+        Assert.Equal("[REDACTED]",Assert.Single(sanitized.Observations).Value);Assert.Equal("[REDACTED]",Assert.Single(sanitized.Findings).Evidence["serialNumber"]);Assert.DoesNotContain("token=abc",sanitized.Findings.Single().Description,StringComparison.OrdinalIgnoreCase);
     }
 }
