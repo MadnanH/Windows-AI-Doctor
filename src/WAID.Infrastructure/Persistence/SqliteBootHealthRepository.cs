@@ -1,0 +1,8 @@
+using System.Text.Json;using Microsoft.Data.Sqlite;using WAID.Application.Abstractions;
+namespace WAID.Infrastructure.Persistence;
+public sealed class SqliteBootHealthRepository(WaidDatabase database):IBootHealthRepository
+{
+    private static readonly JsonSerializerOptions Options=new(JsonSerializerDefaults.Web);
+    public async Task<BootHealthReport?> GetLatestAsync(CancellationToken token){await using var c=database.OpenConnection();await using var cmd=c.CreateCommand();cmd.CommandText="SELECT report_json FROM boot_analysis_runs ORDER BY generated_utc DESC LIMIT 1;";var json=await cmd.ExecuteScalarAsync(token).ConfigureAwait(false) as string;return json is null?null:JsonSerializer.Deserialize<BootHealthReport>(json,Options);}
+    public async Task SaveAsync(StartupSnapshot snapshot,BootHealthReport report,CancellationToken token){await using var c=database.OpenConnection();await using var tx=(SqliteTransaction)await c.BeginTransactionAsync(token).ConfigureAwait(false);await using var cmd=c.CreateCommand();cmd.Transaction=tx;cmd.CommandText="INSERT INTO boot_analysis_runs(id,generated_utc,snapshot_json,report_json,rollback_metadata_json) VALUES($id,$time,$snapshot,$report,$rollback);";cmd.Parameters.AddWithValue("$id",report.Id.ToString());cmd.Parameters.AddWithValue("$time",report.GeneratedAtUtc.ToString("O"));cmd.Parameters.AddWithValue("$snapshot",JsonSerializer.Serialize(snapshot,Options));cmd.Parameters.AddWithValue("$report",JsonSerializer.Serialize(report,Options));cmd.Parameters.AddWithValue("$rollback","[]");await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);await tx.CommitAsync(token).ConfigureAwait(false);}
+}

@@ -75,6 +75,7 @@ public static class DependencyInjection
             .AddSingleton<IRepairHistoryRepository, SqliteRepairHistoryRepository>().AddSingleton<IHealthSnapshotRepository, SqliteHealthSnapshotRepository>()
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
+        services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
             .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()))
@@ -111,7 +112,8 @@ public static class DependencyInjection
             .AddSingleton<ISystemScanner, SmartScanner>().AddSingleton<ISystemScanner, MemoryScanner>().AddSingleton<ISystemScanner, CpuScanner>()
             .AddSingleton<ISystemScanner, GpuScanner>().AddSingleton<ISystemScanner, BsodMinidumpScanner>().AddSingleton<ISystemScanner, BatteryHealthScanner>()
             .AddSingleton<IScanDataSanitizer, ScanDataSanitizer>().AddSingleton<IDriverInventoryProvider, WindowsDriverInventoryProvider>()
-            .AddSingleton<IDriverConflictAnalyzer, DriverConflictAnalyzer>();
+            .AddSingleton<IDriverConflictAnalyzer, DriverConflictAnalyzer>().AddSingleton<IStartupInventoryProvider, WindowsStartupInventoryProvider>()
+            .AddSingleton<IStartupBootAnalyzer, StartupBootAnalyzer>().AddSingleton<IStartupActionPlanner, StartupActionPlanner>();
         modules.Add("diagnostics", "Windows diagnostics"); return services;
     }
 
