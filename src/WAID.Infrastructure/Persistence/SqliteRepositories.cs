@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using WAID.Application.Abstractions;
 using WAID.Domain.Diagnostics;
 using WAID.Domain.Settings;
+using WAID.Diagnosis;
 namespace WAID.Infrastructure.Persistence;
 public sealed class SqliteScanRepository(WaidDatabase database) : IScanRepository
 {
@@ -35,4 +36,31 @@ public sealed class SqliteSettingsRepository(WaidDatabase database) : ISettingsR
 {
     public async Task<ApplicationSettings> GetAsync(CancellationToken token) { await using var c=database.OpenConnection(); await using var cmd=c.CreateCommand(); cmd.CommandText="SELECT json FROM settings WHERE id=1"; var json=await cmd.ExecuteScalarAsync(token) as string; return json is null ? new ApplicationSettings() : (JsonSerializer.Deserialize<ApplicationSettings>(json) ?? new()).Validate(); }
     public async Task SaveAsync(ApplicationSettings settings, CancellationToken token) { settings.Validate(); await using var c=database.OpenConnection(); await using var cmd=c.CreateCommand(); cmd.CommandText="INSERT INTO settings(id,json,updated_utc) VALUES(1,$json,$now) ON CONFLICT(id) DO UPDATE SET json=$json,updated_utc=$now"; cmd.Parameters.AddWithValue("$json",JsonSerializer.Serialize(settings)); cmd.Parameters.AddWithValue("$now",DateTimeOffset.UtcNow.ToString("O")); await cmd.ExecuteNonQueryAsync(token); }
+}
+public sealed class SqliteDiagnosisRepository(WaidDatabase database) : IDiagnosisRepository
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    public async Task SaveAsync(Guid scanSessionId, AIReport report, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        await using var connection = database.OpenConnection();
+        await using var command = connection.CreateCommand();
+        command.CommandText = "INSERT INTO diagnosis_reports(id,scan_session_id,generated_utc,report_json) VALUES($id,$scan,$generated,$json)";
+        command.Parameters.AddWithValue("$id", Guid.NewGuid());
+        command.Parameters.AddWithValue("$scan", scanSessionId);
+        command.Parameters.AddWithValue("$generated", report.GeneratedAtUtc.ToString("O"));
+        command.Parameters.AddWithValue("$json", JsonSerializer.Serialize(report, JsonOptions));
+        await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+    }
+
+    public async Task<AIReport?> GetLatestAsync(CancellationToken token)
+    {
+        await using var connection = database.OpenConnection();
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT report_json FROM diagnosis_reports ORDER BY generated_utc DESC LIMIT 1";
+        var json = await command.ExecuteScalarAsync(token).ConfigureAwait(false) as string;
+        return json is null ? null : JsonSerializer.Deserialize<AIReport>(json, JsonOptions)
+            ?? throw new InvalidOperationException("The latest diagnosis report could not be read.");
+    }
 }

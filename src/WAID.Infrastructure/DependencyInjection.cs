@@ -26,7 +26,14 @@ public static class DependencyInjection
             .AddSingleton<TimeProvider>(TimeProvider.System)
             .AddSingleton<IScanRepository,SqliteScanRepository>()
             .AddSingleton<ISettingsRepository,SqliteSettingsRepository>()
+            .AddSingleton<IDiagnosisRepository,SqliteDiagnosisRepository>()
             .AddSingleton<IRepairHistoryRepository,SqliteRepairHistoryRepository>()
+            .AddSingleton<IDiagnosticsExportService>(provider => new DiagnosticsExportService(
+                dataDirectory,
+                provider.GetRequiredService<IScanRepository>(),
+                provider.GetRequiredService<IDiagnosisRepository>(),
+                provider.GetRequiredService<IRepairHistoryRepository>(),
+                provider.GetRequiredService<TimeProvider>()))
             .AddSingleton<IPowerShellRunner,PowerShellRunner>()
             .AddSingleton<IAdministratorService,AdministratorService>()
             .AddSingleton<IRestorePointManager,RestorePointManager>()

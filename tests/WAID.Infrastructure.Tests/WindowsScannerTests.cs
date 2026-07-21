@@ -43,6 +43,18 @@ public sealed class WindowsScannerTests
         Assert.Equal("Storage", finding.Evidence["category"]);
     }
 
+    [Fact]
+    public async Task Scanner_reports_unavailable_windows_api_without_simulating_a_result()
+    {
+        var scanner = new SmartScanner(new FailedPowerShellRunner("Invalid class"));
+
+        var finding = Assert.Single(await scanner.ScanAsync(new(Guid.NewGuid(), false, DateTimeOffset.UtcNow), CancellationToken.None));
+
+        Assert.Equal("SCANNER_UNAVAILABLE", finding.Code);
+        Assert.Equal(WAID.Domain.Diagnostics.DiagnosticSeverity.Information, finding.Severity);
+        Assert.Null(finding.RecommendedRepairId);
+    }
+
     private static ISystemScanner Create(string name, IPowerShellRunner runner) => name switch
     {
         "event-viewer" => new WindowsEventViewerScanner(runner), "reliability" => new ReliabilityMonitorScanner(runner),
@@ -59,5 +71,10 @@ public sealed class WindowsScannerTests
     {
         public Task<PowerShellResult> RunAsync(string script, IReadOnlyDictionary<string, object?> parameters, CancellationToken token) =>
             Task.FromResult(new PowerShellResult([json], []));
+    }
+    private sealed class FailedPowerShellRunner(string error) : IPowerShellRunner
+    {
+        public Task<PowerShellResult> RunAsync(string script, IReadOnlyDictionary<string, object?> parameters, CancellationToken token) =>
+            Task.FromResult(new PowerShellResult([], [error]));
     }
 }

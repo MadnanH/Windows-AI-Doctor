@@ -1,6 +1,8 @@
 using WAID.Domain.Diagnostics;
 using WAID.Domain.Settings;
 using WAID.Infrastructure.Persistence;
+using WAID.Diagnosis;
+using WAID.Health;
 
 namespace WAID.Infrastructure.Tests;
 
@@ -82,5 +84,24 @@ public sealed class SqliteRepositoriesTests : IAsyncLifetime
         Assert.Equal(WAID.Domain.Repairs.RepairTransactionStatus.Succeeded, loaded.Status);
         Assert.Equal("C:\\waid-backup", loaded.BackupLocation);
         Assert.Equal("Before SFC", loaded.RestorePointDescription);
+    }
+
+    [Fact]
+    public async Task Diagnosis_round_trip_preserves_health_and_findings()
+    {
+        var scan = new ScanSession(Guid.NewGuid(), DateTimeOffset.UtcNow.AddSeconds(-1));
+        var finding = new DiagnosticFinding("waid.smart", "SMART_WARNING", "Drive warning", "SMART predicts failure.", DiagnosticSeverity.Critical);
+        scan.AddFindings([finding]);
+        scan.Complete(DateTimeOffset.UtcNow);
+        await new SqliteScanRepository(_database).SaveAsync(scan, CancellationToken.None);
+        var report = new AIReport(DateTimeOffset.UtcNow, "Storage requires attention.", new HealthScore(100, 100, 100, 100, 100, 70, 100, 96), [], [], [finding]);
+        var repository = new SqliteDiagnosisRepository(_database);
+
+        await repository.SaveAsync(scan.Id, report, CancellationToken.None);
+        var loaded = await repository.GetLatestAsync(CancellationToken.None);
+
+        Assert.NotNull(loaded);
+        Assert.Equal(96, loaded.Health.Overall);
+        Assert.Equal("SMART_WARNING", Assert.Single(loaded.Findings).Code);
     }
 }

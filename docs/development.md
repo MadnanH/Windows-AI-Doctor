@@ -10,7 +10,7 @@ Implement `ISystemScanner`, use a globally unique ID, never mutate the system, h
 
 ## Adding a repair
 
-Implement `IRepairAction`. Validate the finding, make the smallest reversible change, report whether restart is required, and never embed untrusted values in PowerShell source. Administrative repairs must set `RequiresAdministrator`.
+Implement `IRepairModule`. Validate the finding, make the smallest reversible change, report whether restart is required, and never embed untrusted values in PowerShell source. Administrator-required repairs must retain `RequiresAdministrator` in their policy.
 
 ## Logs and database
 

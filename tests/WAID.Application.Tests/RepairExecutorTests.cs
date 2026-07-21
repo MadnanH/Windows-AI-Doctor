@@ -88,6 +88,20 @@ public sealed class RepairExecutorTests
         Assert.Contains("incomplete", transaction.Result!.Details!, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task Does_not_execute_when_restore_point_creation_fails()
+    {
+        var fixture = new Fixture();
+        fixture.RestorePoint.CreateSucceeds = false;
+
+        var transaction = await fixture.Executor.ExecuteAsync("waid.test", null, true, CancellationToken.None);
+
+        Assert.Equal(RepairTransactionStatus.Failed, transaction.Status);
+        Assert.False(fixture.Module.WasExecuted);
+        Assert.Equal(0, fixture.Backup.CallCount);
+        Assert.Contains("safety preparation", transaction.Result!.Summary, StringComparison.OrdinalIgnoreCase);
+    }
+
     private sealed class Fixture
     {
         public Fixture()
@@ -132,12 +146,13 @@ public sealed class RepairExecutorTests
     private sealed class FakeRestorePoint : IRestorePointManager
     {
         public bool Available { get; set; } = true;
+        public bool CreateSucceeds { get; set; } = true;
         public int CreateCallCount { get; private set; }
         public Task<bool> IsAvailableAsync(CancellationToken token) => Task.FromResult(Available);
         public Task<RestorePointResult> CreateAsync(string description, CancellationToken token)
         {
             CreateCallCount++;
-            return Task.FromResult(new RestorePointResult(true, description));
+            return Task.FromResult(CreateSucceeds ? new RestorePointResult(true, description) : new RestorePointResult(false, description, "Restore point provider failed"));
         }
     }
 

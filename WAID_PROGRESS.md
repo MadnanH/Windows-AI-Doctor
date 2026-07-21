@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-21
 
-Current version: **0.4.0-dev**
+Current version: **0.5.0-dev**
 
 Active branch: `main`
 
@@ -23,6 +23,7 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - Single-reader repair queue
   - Repair executor with confirmation, administrator gate, safeguards, rollback, and audit history
   - Repair-history query service
+  - Diagnostics export contract and complete scan-to-repair workflow integration
 - **Offline diagnostic engine**
   - `WAID.Diagnosis`, `WAID.EventAnalysis`, `WAID.Health`, and `WAID.KnowledgeBase` projects
   - Cross-scanner rule evaluation and event correlation
@@ -30,7 +31,7 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - Weighted Hardware, Windows, Drivers, Security, Performance, Storage, Network, and Overall scores
   - Embedded JSON causal and reference knowledge for Windows events, updates, drivers, services, network, SMART, BSOD bug checks, and repair mapping
 - **Infrastructure**
-  - SQLite scan, settings, and repair-history persistence with schema version 2
+  - SQLite scan, settings, diagnosis-report, and repair-history persistence with schema version 3
   - Serilog rolling-file logging and structured PowerShell action audit records
   - Windows administrator detection
   - System Restore Point capability detection and creation
@@ -46,6 +47,8 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - Version-aware in-process plugin discovery
   - Offline diagnosis adapter as the default AI abstraction
   - Production scanners for Event Viewer, Reliability Monitor, installed drivers/software, Windows Update, services, startup applications, registry health, Defender, network configuration, storage, SMART, memory, CPU, GPU, and BSOD minidumps
+  - Graceful `SCANNER_UNAVAILABLE` findings when hardware providers or Windows diagnostic APIs are absent
+  - ZIP diagnostics export containing logs, scan data, latest diagnosis, repair history, application version, and non-sensitive system information
 - **Desktop**
   - WinUI 3 application shell and navigation
   - MVVM dashboard with scanning, progress, findings, and cancellation
@@ -53,26 +56,68 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - Persistent settings screen with visible failure states
   - AI Diagnosis page with root causes, confidence, explanations, evidence, and recommendations
   - Health Dashboard with category scores and correlated evidence
+  - Recommended Repairs page whose actions retain explicit confirmation and safety gates
+  - Scan and repair History page backed by SQLite
+  - Application-level UI, task, domain, and launch exception logging
 - **Extensibility and delivery**
   - Buildable sample plugin with a production PATH-health scanner
   - Release build and self-contained publish scripts
   - Architecture, safe-repair, development, operations, and plugin documentation
   - Milestone 4 implementation, wiring, UI-reachability, and test verification report
+  - Windows 10, Windows 11, administrator, standard-user, and offline manual-validation scripts with JSON evidence output
 - **Tests**
   - Domain lifecycle and policy tests
   - Scanner and repair-orchestration tests
   - SQLite scan, settings, and repair-history integration tests
   - Backup/rollback and built-in repair policy tests
+  - Complete Scan -> Diagnose -> Recommend -> Confirm -> Repair -> Verify integration test
+  - Dependency-injection registration test for all 17 production scanners and workflow services
+  - Diagnosis round-trip and diagnostics-package integration tests
+
+## Fully working features
+
+- All 17 production scanners are registered as `ISystemScanner` services and are invoked by the Dashboard scan command through `ScanOrchestrator`.
+- Scan progress, current scanner, cancellation, isolated scanner errors, successful completion, and persisted findings are surfaced by the Dashboard.
+- Offline diagnosis is shown in AI Diagnosis, Health Dashboard, Evidence Viewer, and Recommended Repairs; saved diagnosis is restored after restart.
+- SQLite saves and reloads scan sessions, diagnosis reports, settings, and repair history.
+- Repairs cannot execute without explicit confirmation; administrator, restore-point, backup, rollback, logging, and history gates remain enforced.
+- Unsupported hardware providers and unavailable Windows APIs produce an informational unavailable finding without fabricated health results.
+- Diagnostics exports are created locally and exclude the application database and settings.
+- Fatal application, UI, and unobserved-task failures are written through Serilog and a dedicated crash log.
+
+## Partially working features
+
+- Plugin discovery works, but dependency isolation, signature policy, failure quarantine, and management UI remain incomplete.
+- History loads recent scans and repair transactions; detailed per-event drill-down and persisted multi-report diagnosis history are not yet exposed.
+- Settings persist, but startup scheduling and background execution remain incomplete.
+- UI wiring is build-verified and manually scriptable, but automated WinUI interaction tests are not yet present.
+
+## Features requiring real-hardware testing
+
+- Windows 10 launch and complete scanner/UI workflow using `scripts/Test-Windows10.ps1`.
+- Windows 11 full interactive workflow; launch smoke testing passed on Windows build 26200, but hardware-specific scanners still require the manual script.
+- Administrator and standard-user repair behavior using disposable Windows VMs.
+- SMART/NVMe, GPU, memory, Defender, Reliability Monitor, Event Log, and BSOD provider variations across supported hardware and Windows editions.
+- Restore Point creation and destructive-repair rollback on a snapshotted test machine.
+- ARM64 launch and scanner compatibility.
 
 ## Remaining modules
 
-- Scan-history and repair-history pages with session and transaction details
+- Detailed scan-session, repair-event, and multi-report diagnosis history drill-down
 - Plugin validation, dependency isolation, signing policy enforcement, and management UI
 - Startup scan scheduling and background execution
-- Application-wide exception handling, structured operation telemetry, and crash recovery
+- Structured operation telemetry and advanced crash recovery
 - Installer/MSIX packaging, code signing, update delivery, and release automation
 - Accessibility, localization, UI automation, and broader unit/integration coverage
 - Performance, security, and destructive-repair safety testing on supported Windows versions
+
+## Known limitations
+
+- Windows 10 was not available in the current validation environment; its launch status is not claimed until a passing JSON manual-validation report is produced.
+- Windows APIs vary by edition, hardware, permissions, and provider availability; WAID reports unavailable checks but cannot infer a healthy result from missing data.
+- Diagnostics packages contain local application logs and should be reviewed before sharing, although settings and the raw SQLite database are excluded.
+- A recommended repair is shown only when the offline knowledge base maps a root cause to a registered repair module.
+- Application crash logging cannot guarantee recovery when the process is terminated by Windows, native-code failure, power loss, or storage failure.
 
 ## Build status
 
@@ -86,37 +131,37 @@ This file is the project status ledger. It must be reviewed and updated as part 
 
 ## Test status
 
-**Passing - 85/85 tests**
+**Passing - 90/90 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 9 passed
+- `WAID.Application.Tests`: 10 passed
 - `WAID.Diagnosis.Tests`: 41 passed
-- `WAID.Infrastructure.Tests`: 24 passed
+- `WAID.Infrastructure.Tests`: 29 passed
 - Failed: 0
 - Skipped: 0
 
 ## Current version
 
-**0.4.0-dev - AI Diagnostic Engine**
+**0.5.0-dev - Real Windows Validation and UI Integration**
 
 WAID now performs completely offline Windows diagnosis across a normalized scanner set. It correlates evidence between subsystems, calculates weighted health scores, ranks likely root causes, reports confidence and supporting evidence, explains results in plain English, and maps safe repair recommendations. No cloud AI is used.
 
-Milestone 4 was repository-wide verified on 2026-07-21. The registered correlation path is exercised by the diagnosis engine, the sample plugin performs a real health check, superseded dead implementations were removed, and the embedded knowledge base now contains explicit reference data for every documented category. See `docs/milestone-4-verification.md` for the implementation/UI/test classification.
+Milestone 5 connects persisted diagnosis, history, recommendations, diagnostics export, application crash handling, unavailable-provider behavior, and a tested end-to-end workflow. The WinUI executable passed a launch smoke test on Windows build 26200. Windows 10 and hardware-specific certification remain gated on the included real-machine scripts rather than being inferred from mocks.
 
 ## Next milestone
 
-**0.5.0-dev - History, reliability, and operational hardening**
+**0.6.0-dev - Platform certification and release hardening**
 
 Planned acceptance criteria:
 
-1. Add scan-history, repair-history, and diagnosis-report persistence and UI pages.
-2. Add application-wide exception handling and recovery boundaries.
-3. Add per-scanner timeouts and user-visible degraded-scan reporting.
-4. Add knowledge-base schema validation and versioned migrations.
-5. Add plugin dependency isolation and signature policy enforcement.
-6. Add accessibility and UI automation coverage for diagnosis and repairs.
-7. Validate scanners and destructive safeguards on supported Windows versions.
-8. Finish with a warning-free Release build and all tests passing.
+1. Execute and archive all five manual-validation reports on Windows 10 and Windows 11 VMs.
+2. Validate destructive safeguards and rollback on snapshotted supported-Windows machines.
+3. Add automated WinUI accessibility and interaction coverage.
+4. Add per-scanner timeouts and user-visible degraded-scan reporting.
+5. Add knowledge-base schema validation and versioned migrations.
+6. Add plugin dependency isolation and signature policy enforcement.
+7. Validate ARM64 launch and hardware-provider compatibility.
+8. Finish with signed packaging, a warning-free Release build, and all tests passing.
 
 ## Update procedure
 

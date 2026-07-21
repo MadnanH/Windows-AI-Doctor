@@ -22,7 +22,14 @@ public sealed class WaidDatabase(string connectionString)
                 backup_location TEXT NULL,
                 restore_point_description TEXT NULL,
                 events_json TEXT NOT NULL);
-            PRAGMA user_version=2;
+            CREATE TABLE IF NOT EXISTS diagnosis_reports(
+                id TEXT PRIMARY KEY,
+                scan_session_id TEXT NOT NULL,
+                generated_utc TEXT NOT NULL,
+                report_json TEXT NOT NULL,
+                FOREIGN KEY(scan_session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
+            CREATE INDEX IF NOT EXISTS ix_diagnosis_reports_generated ON diagnosis_reports(generated_utc DESC);
+            PRAGMA user_version=3;
             """;
         await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
     }

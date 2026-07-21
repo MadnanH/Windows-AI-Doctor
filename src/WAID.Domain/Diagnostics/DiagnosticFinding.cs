@@ -2,6 +2,11 @@ namespace WAID.Domain.Diagnostics;
 
 public sealed record DiagnosticFinding
 {
+    [System.Text.Json.Serialization.JsonConstructor]
+    public DiagnosticFinding(Guid id, string scannerId, string code, string title, string description,
+        DiagnosticSeverity severity, string? recommendedRepairId, IReadOnlyDictionary<string, string>? evidence)
+        : this(scannerId, code, title, description, severity, recommendedRepairId, evidence, id) { }
+
     public DiagnosticFinding(string scannerId, string code, string title, string description,
         DiagnosticSeverity severity, string? recommendedRepairId = null,
         IReadOnlyDictionary<string, string>? evidence = null, Guid? id = null)
