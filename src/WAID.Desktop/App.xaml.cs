@@ -33,7 +33,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             services.AddWaidInfrastructure(options)
                 .AddWaidPlugins(new PluginSecurityPolicy(options.AllowedPluginPublishers, options.RequireSignedPlugins), options.PluginDirectory, options.HostVersion);
             services.AddSingleton<DashboardViewModel>().AddSingleton<DiagnosisViewModel>().AddSingleton<SettingsViewModel>()
-                .AddSingleton<HistoryViewModel>().AddSingleton<OperationsViewModel>().AddSingleton<AuditViewModel>().AddSingleton<DriverHealthViewModel>().AddSingleton<BootHealthViewModel>().AddSingleton<MainWindow>();
+                .AddSingleton<HistoryViewModel>().AddSingleton<OperationsViewModel>().AddSingleton<AuditViewModel>().AddSingleton<DriverHealthViewModel>().AddSingleton<BootHealthViewModel>().AddSingleton<UpdateHealthViewModel>().AddSingleton<MainWindow>();
             _services = services.BuildValidatedWaidServiceProvider();
             _logger = _services.GetRequiredService<ILogger<App>>();
         }

@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 11;
+    public const int CurrentSchemaVersion = 12;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -239,6 +239,10 @@ public sealed class WaidDatabase
         new(11, "Startup and boot analysis", """
             CREATE TABLE boot_analysis_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,snapshot_json TEXT NOT NULL,report_json TEXT NOT NULL,rollback_metadata_json TEXT NOT NULL);
             CREATE INDEX ix_boot_analysis_generated ON boot_analysis_runs(generated_utc DESC);
+            """),
+        new(12, "Windows Update intelligence", """
+            CREATE TABLE windows_update_analysis_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,snapshot_json TEXT NOT NULL,report_json TEXT NOT NULL,outcomes_json TEXT NOT NULL);
+            CREATE INDEX ix_windows_update_analysis_generated ON windows_update_analysis_runs(generated_utc DESC);
             """)
     ];
 }

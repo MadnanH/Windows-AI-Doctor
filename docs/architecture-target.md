@@ -37,7 +37,7 @@ Domain and offline diagnosis remain deterministic and network-free. Infrastructu
 ## Incremental migration sequence
 
 1. **Composition hardening — completed by Prompt 02:** registrations are grouped by logging, persistence, Windows adapters, diagnostics/reporting, repairs, offline diagnosis, continuous operations, and plugins; versioned options and container validation are enforced; logging is host-owned.
-2. **Migration reliability — completed by Prompt 04 and extended through Prompt 08:** ordered transactional migrations support versions 1–11, reject newer schemas, preserve data, create pre-upgrade backups, validate WAL/integrity behavior, and cover upgrades and interrupted migrations.
+2. **Migration reliability — completed by Prompt 04 and extended through Prompt 09:** ordered transactional migrations support versions 1–12, reject newer schemas, preserve data, create pre-upgrade backups, validate WAL/integrity behavior, and cover upgrades and interrupted migrations.
 3. **Host-neutral environment ports:** move minidump path, app-data path, startup launch, and crash sink selection behind Application contracts before a CLI/service host is added.
 4. **Typed operational failures:** adopt a shared failure code/detail model for repository, plugin-state, report, and UI operations. Preserve exception logging and user-actionable text.
 5. **Contract packaging:** if third-party plugins become a shipped feature, extract stable plugin contracts into a small versioned SDK package without moving existing implementations.
