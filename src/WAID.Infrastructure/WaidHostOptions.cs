@@ -79,7 +79,7 @@ public static class WaidServiceRegistrationValidator
         typeof(IDiagnosticsExportService), typeof(IAdministratorService), typeof(IRestorePointManager), typeof(IBackupManager),
         typeof(IRollbackManager), typeof(IDiagnosticReportExporter), typeof(IPdfReportExporter), typeof(ScanCoordinator),
         typeof(RepairExecutor), typeof(BackgroundHealthMonitoringService), typeof(ScheduledScanService), typeof(PluginCatalog),
-        typeof(IAuditTrailService), typeof(ILocalDiagnosticsService), typeof(IOperationContextAccessor)
+        typeof(IAuditTrailService), typeof(ILocalDiagnosticsService), typeof(IOperationContextAccessor), typeof(IDatabaseMaintenanceService)
     ];
 
     public static ServiceProvider BuildValidatedWaidServiceProvider(this IServiceCollection services)

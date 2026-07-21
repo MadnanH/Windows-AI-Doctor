@@ -73,7 +73,8 @@ public static class DependencyInjection
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>();
         services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
-            .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()));
+            .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()))
+            .AddSingleton<IDatabaseMaintenanceService>(provider => new DatabaseMaintenanceService(db, Path.Combine(options.DataDirectory, "Backups", "Database"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<DatabaseMaintenanceService>>(), provider.GetRequiredService<IAuditTrailService>()));
         modules.Add("persistence", "SQLite persistence"); return services;
     }
 

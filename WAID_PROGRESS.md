@@ -8,7 +8,7 @@ Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v6, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v7, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with configurable per-scanner timeouts, one bounded read-only retry, and explicit `Success`, `Unavailable`, `TimedOut`, `PermissionDenied`, `Cancelled`, and `Failed` states. Degraded findings retain reason, attempts, timeout, and partial-evidence count while remaining scanners continue.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -21,6 +21,7 @@ Active branch: `main`
 - Commercial hardening Prompt 01 architecture baseline: verified current/target architecture, complete dependency and feature audit, persistence ownership/schema inventory, explicit risk register, incremental migration plan, README links, dependency-rule tests, and expanded service-registration smoke coverage.
 - Commercial hardening Prompt 02 composition root: modular feature registration, versioned non-secret host options, replaceable Windows adapters, host-owned Serilog provider, typed actionable startup failures, validated required services/lifetimes/duplicate scanner and repair IDs, module diagnostics, recovery UI, and service-locator regression enforcement.
 - Commercial hardening Prompt 03 diagnostics foundation: local structured JSON logging, typed event taxonomy, asynchronous correlation and operation context, redacted append-only daily audit records, bounded retention, searchable Logs & Audit UI, sanitized support export, and non-fatal diagnostic-storage failures.
+- Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1–7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
 
 ## Fully working features
 
@@ -30,6 +31,7 @@ Active branch: `main`
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
+- Migration-safe SQLite initialization and database maintenance with preserved upgrade data, per-step rollback, concurrency serialization, verified online backup/restore, and visible schema, journal, backup, and migration status.
 
 ## Partially working features
 
@@ -53,6 +55,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
+- Implement repositories for schema-7 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added in Prompt 04.
 
 ## Known limitations
 
@@ -63,6 +66,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Minidump analysis remains read-only and metadata-focused; it is not a symbol debugger.
 - Diagnostic packages should still be reviewed before external sharing despite defense-in-depth redaction.
 - Append-only audit files are not cryptographically signed and can be altered by a local administrator. Audit-storage failure is reported and logged without crashing or silently changing a repair outcome.
+- Automated database tests cover fresh installs, schema 1 and 6 upgrades, interrupted migration, concurrent initialization, corruption, newer schemas, backup, restore, and retention. Live Settings recovery UI still requires manual Windows acceptance.
 
 ## Build status
 
@@ -77,12 +81,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 128/128 tests**
+**Passing - 137/137 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 21 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 51 passed
+- `WAID.Infrastructure.Tests`: 60 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -95,9 +99,9 @@ Milestone 7 hardens scanner execution, knowledge documents, plugins, diagnostic 
 
 ## Next milestone
 
-**Commercial hardening Prompt 04 - SQLite Schema, Migrations, and Repository Reliability**
+**Commercial hardening Prompt 05 - Configuration, Settings, Profiles, and Feature Flags**
 
-Apply only Prompt 04 from the ordered commercial-grade prompt set. Preserve the validated composition, diagnostics, and audit boundaries; restore/build/test independently and commit before starting Prompt 05.
+Apply only Prompt 05 from the ordered commercial-grade prompt set. Preserve schema 7 and the validated composition, diagnostics, audit, backup, and recovery boundaries; restore/build/test independently and commit before starting Prompt 06.
 
 ## Update procedure
 

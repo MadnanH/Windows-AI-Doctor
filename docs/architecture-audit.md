@@ -9,7 +9,7 @@ Audit date: 2026-07-21. Baseline commit: `c1277a6`. Scope: solution projects, de
 | Scanner framework and 18 scanners | Complete | Registered in DI; Dashboard and monitoring invoke the shared coordinator | DI, scanner, orchestration and workflow tests | Provider variations on supported hardware |
 | Offline diagnosis/correlation/health | Complete | Diagnosis, Health, Evidence and Repairs screens consume persisted reports | 46 diagnosis tests and workflow test | None for deterministic engine |
 | Safe repair framework and six repairs | Complete | Repair screens require confirmation; executor owns admin/safeguard/rollback/audit flow | Executor, policy, rollback and workflow tests | Destructive disposable-VM evidence |
-| SQLite persistence | Complete for fresh/current schema; migration path partial | All repositories use `WaidDatabase`; History/settings/diagnosis/monitoring consume them | Repository and round-trip tests | Ordered upgrades from historical schemas |
+| SQLite persistence | Complete for schema 7 | All repositories and maintenance operations use `WaidDatabase`; Settings exposes health and recovery | Repository, migration, corruption, concurrency, backup, and recovery tests | Continue adding repositories as reserved schema areas gain behavior |
 | Monitoring/schedules/crashes/evidence | Complete while app runs | Monitoring & Reports page | Cancellation, schedule, minidump, redaction and persistence tests | Real battery/hardware/provider evidence |
 | Reports | Complete | HTML/JSON/ZIP/PDF controls are reachable | Export/redaction/PDF tests | Visual PDF acceptance with large reports |
 | Plugins | Partial | Manifest validation, isolation/quarantine and diagnostics page exist | Plugin scanner/state/failure tests | UI enable/disable control, signed third-party corpus |
@@ -30,7 +30,7 @@ No production `NotImplementedException`, fake scanner data, registry cleaner, RA
 
 ## Persistence baseline
 
-SQLite is owned exclusively by Infrastructure and stored under the app's local data directory. Foreign keys are enabled in the connection string. Current `PRAGMA user_version` is 6.
+SQLite is owned exclusively by Infrastructure and stored under the app's local data directory. Foreign keys are enabled for every connection. Current `PRAGMA user_version` is 7.
 
 | Object | Owner/data | Retention |
 |---|---|---|
@@ -42,7 +42,7 @@ SQLite is owned exclusively by Infrastructure and stored under the app's local d
 | `scan_schedule` | One JSON schedule | Replaced on save |
 | `repair_approvals` | Approval audit JSON | No automatic deletion; bounded reads |
 
-Initialization uses `CREATE TABLE/INDEX IF NOT EXISTS` and is idempotent for a fresh/current database. Risk: it sets version 6 without ordered transitions, preflight checks, or explicit handling for a database newer than the host. Prompt 04 should introduce forward-safe transactional migrations and tests; this audit intentionally makes no schema change.
+Initialization uses ordered, idempotent transactions from versions 1 through 7, preflight integrity checks, WAL recovery settings, consistent pre-migration backups, and explicit rejection of a database newer than the host. Each migration advances `user_version` in the same transaction as its schema changes.
 
 ## Risks and priorities
 

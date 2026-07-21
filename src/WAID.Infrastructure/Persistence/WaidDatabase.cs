@@ -1,40 +1,223 @@
 using Microsoft.Data.Sqlite;
+
 namespace WAID.Infrastructure.Persistence;
-public sealed class WaidDatabase(string connectionString)
+
+public sealed class WaidPersistenceException(string code, string userMessage, string recoveryAction, Exception? innerException = null)
+    : InvalidOperationException(userMessage, innerException)
 {
-    public SqliteConnection OpenConnection() { var connection = new SqliteConnection(connectionString); connection.Open(); return connection; }
+    public string Code { get; } = code;
+    public string UserMessage { get; } = userMessage;
+    public string RecoveryAction { get; } = recoveryAction;
+}
+
+public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, DateTimeOffset CompletedAtUtc, bool Succeeded, string Detail);
+
+public sealed class WaidDatabase
+{
+    public const int CurrentSchemaVersion = 7;
+    public const int WaidApplicationId = 1463896388;
+    private readonly string _connectionString;
+    private readonly SemaphoreSlim _initializationGate = new(1, 1);
+
+    public WaidDatabase(string connectionString)
+    {
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        if (string.IsNullOrWhiteSpace(builder.DataSource) || builder.DataSource == ":memory:")
+            throw new ArgumentException("A file-backed SQLite data source is required.", nameof(connectionString));
+        DatabasePath = Path.GetFullPath(builder.DataSource);
+        builder.DataSource = DatabasePath;
+        builder.ForeignKeys = true;
+        builder.Pooling = false;
+        _connectionString = builder.ToString();
+    }
+
+    public string DatabasePath { get; }
+    public DatabaseMigrationStatus? LastMigrationStatus { get; private set; }
+
+    public SqliteConnection OpenConnection()
+    {
+        var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
+        command.ExecuteNonQuery();
+        return connection;
+    }
+
     public async Task InitializeAsync(CancellationToken token)
     {
-        await using var connection = OpenConnection();
+        await _initializationGate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
+            await using var connection = OpenConnection();
+            await EnsureHealthyAsync(connection, token).ConfigureAwait(false);
+            var version = await ReadVersionAsync(connection, token).ConfigureAwait(false);
+            if (version > CurrentSchemaVersion)
+                throw new WaidPersistenceException("WAID-DB-NEWER", $"Database schema {version} is newer than supported schema {CurrentSchemaVersion}.", "Install a newer WAID version. The database was not modified.");
+
+            await ConfigureRecoveryAsync(connection, token).ConfigureAwait(false);
+            if (version == CurrentSchemaVersion)
+            {
+                await ValidateSchemaAsync(connection, token).ConfigureAwait(false);
+                LastMigrationStatus = await ReadLastMigrationAsync(connection, token).ConfigureAwait(false)
+                    ?? new(version, version, DateTimeOffset.UtcNow, true, "Schema is current.");
+                return;
+            }
+
+            if (version > 0) await CreateMigrationBackupAsync(connection, version, token).ConfigureAwait(false);
+            var startingVersion = version;
+            try
+            {
+                foreach (var migration in Migrations.Where(item => item.Version > version).OrderBy(item => item.Version))
+                {
+                    token.ThrowIfCancellationRequested();
+                    await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(token).ConfigureAwait(false);
+                    try
+                    {
+                        await ExecuteAsync(connection, transaction, migration.Sql, token).ConfigureAwait(false);
+                        await ExecuteAsync(connection, transaction, $"PRAGMA user_version={migration.Version};", token).ConfigureAwait(false);
+                        if (migration.Version == CurrentSchemaVersion)
+                            await ExecuteAsync(connection, transaction,
+                                "INSERT INTO schema_migrations(version,applied_utc,description) VALUES($version,$time,$description) ON CONFLICT(version) DO NOTHING;", token,
+                                ("$version", migration.Version), ("$time", DateTimeOffset.UtcNow.ToString("O")), ("$description", migration.Description)).ConfigureAwait(false);
+                        await transaction.CommitAsync(token).ConfigureAwait(false);
+                        version = migration.Version;
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None).ConfigureAwait(false);
+                        throw;
+                    }
+                }
+
+                await ValidateSchemaAsync(connection, token).ConfigureAwait(false);
+                LastMigrationStatus = new(startingVersion, version, DateTimeOffset.UtcNow, true, $"Migrated schema from {startingVersion} to {version}.");
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException and not WaidPersistenceException)
+            {
+                LastMigrationStatus = new(startingVersion, version, DateTimeOffset.UtcNow, false, "Migration failed and the active step was rolled back.");
+                throw new WaidPersistenceException("WAID-DB-MIGRATION", "The local database could not be upgraded safely.", "Restart WAID. If the problem continues, use Database Recovery or contact support.", exception);
+            }
+        }
+        catch (SqliteException exception) when (exception.SqliteErrorCode is 11 or 26)
+        {
+            throw new WaidPersistenceException("WAID-DB-CORRUPT", "The local database is damaged or is not a valid WAID database.", "Open Database Recovery and restore a verified backup.", exception);
+        }
+        finally { _initializationGate.Release(); }
+    }
+
+    private static async Task EnsureHealthyAsync(SqliteConnection connection, CancellationToken token)
+    {
         await using var command = connection.CreateCommand();
-        command.CommandText = """
-            CREATE TABLE IF NOT EXISTS scan_sessions(id TEXT PRIMARY KEY, started_utc TEXT NOT NULL, completed_utc TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS findings(id TEXT PRIMARY KEY, session_id TEXT NOT NULL, scanner_id TEXT NOT NULL, code TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, severity INTEGER NOT NULL, repair_id TEXT NULL, evidence_json TEXT NOT NULL, FOREIGN KEY(session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
-            CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1), json TEXT NOT NULL, updated_utc TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS repair_history(
-                transaction_id TEXT PRIMARY KEY,
-                repair_id TEXT NOT NULL,
-                status INTEGER NOT NULL,
-                created_utc TEXT NOT NULL,
-                completed_utc TEXT NULL,
-                summary TEXT NULL,
-                details TEXT NULL,
-                backup_location TEXT NULL,
-                restore_point_description TEXT NULL,
-                events_json TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS diagnosis_reports(
-                id TEXT PRIMARY KEY,
-                scan_session_id TEXT NOT NULL,
-                generated_utc TEXT NOT NULL,
-                report_json TEXT NOT NULL,
-                FOREIGN KEY(scan_session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
-            CREATE INDEX IF NOT EXISTS ix_diagnosis_reports_generated ON diagnosis_reports(generated_utc DESC);
-            CREATE TABLE IF NOT EXISTS health_snapshots(id TEXT PRIMARY KEY, captured_utc TEXT NOT NULL, snapshot_json TEXT NOT NULL);
-            CREATE INDEX IF NOT EXISTS ix_health_snapshots_captured ON health_snapshots(captured_utc DESC);
-            CREATE TABLE IF NOT EXISTS scan_schedule(id INTEGER PRIMARY KEY CHECK(id=1), schedule_json TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS repair_approvals(id TEXT PRIMARY KEY, requested_utc TEXT NOT NULL, approval_json TEXT NOT NULL);
-            PRAGMA user_version=6;
-            """;
+        command.CommandText = "PRAGMA quick_check;";
+        var result = Convert.ToString(await command.ExecuteScalarAsync(token).ConfigureAwait(false));
+        if (!string.Equals(result, "ok", StringComparison.OrdinalIgnoreCase))
+            throw new WaidPersistenceException("WAID-DB-CORRUPT", "The local database failed its integrity check.", "Open Database Recovery and restore a verified backup.");
+    }
+
+    private static async Task ConfigureRecoveryAsync(SqliteConnection connection, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA wal_autocheckpoint=1000; PRAGMA application_id={WaidApplicationId};";
         await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
     }
+
+    private async Task CreateMigrationBackupAsync(SqliteConnection source, int version, CancellationToken token)
+    {
+        var directory = Path.Combine(Path.GetDirectoryName(DatabasePath)!, "Backups", "Database");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, $"waid-pre-migration-v{version}-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.db");
+        await using var destination = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadWriteCreate, Pooling = false }.ToString());
+        await destination.OpenAsync(token).ConfigureAwait(false);
+        source.BackupDatabase(destination);
+        foreach (var expired in new DirectoryInfo(directory).GetFiles("waid-pre-migration-*.db").OrderByDescending(item => item.CreationTimeUtc).Skip(5)) expired.Delete();
+    }
+
+    private static async Task<int> ReadVersionAsync(SqliteConnection connection, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand(); command.CommandText = "PRAGMA user_version;";
+        return Convert.ToInt32(await command.ExecuteScalarAsync(token).ConfigureAwait(false));
+    }
+
+    private static async Task<DatabaseMigrationStatus?> ReadLastMigrationAsync(SqliteConnection connection, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT version,applied_utc,description FROM schema_migrations ORDER BY version DESC LIMIT 1;";
+        await using var reader = await command.ExecuteReaderAsync(token).ConfigureAwait(false);
+        return await reader.ReadAsync(token).ConfigureAwait(false)
+            ? new(reader.GetInt32(0) - 1, reader.GetInt32(0), DateTimeOffset.Parse(reader.GetString(1)), true, reader.GetString(2))
+            : null;
+    }
+
+    private static async Task ValidateSchemaAsync(SqliteConnection connection, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT name FROM sqlite_master WHERE type='table';";
+        await using var reader = await command.ExecuteReaderAsync(token).ConfigureAwait(false);
+        var actual = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        while (await reader.ReadAsync(token).ConfigureAwait(false)) actual.Add(reader.GetString(0));
+        var missing = RequiredTables.Where(table => !actual.Contains(table)).ToArray();
+        if (missing.Length > 0)
+            throw new WaidPersistenceException("WAID-DB-SCHEMA", "The local database schema is incomplete.", "Restore a verified database backup or contact support.");
+    }
+
+    private static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, CancellationToken token, params (string Name, object Value)[] parameters)
+    {
+        await using var command = connection.CreateCommand(); command.Transaction = transaction; command.CommandText = sql;
+        foreach (var parameter in parameters) command.Parameters.AddWithValue(parameter.Name, parameter.Value);
+        await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+    }
+
+    private sealed record Migration(int Version, string Description, string Sql);
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations"];
+    private static readonly Migration[] Migrations =
+    [
+        new(1, "Core scans, evidence, and settings", """
+            CREATE TABLE IF NOT EXISTS scan_sessions(id TEXT PRIMARY KEY, started_utc TEXT NOT NULL, completed_utc TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS findings(id TEXT PRIMARY KEY, session_id TEXT NOT NULL, scanner_id TEXT NOT NULL, code TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, severity INTEGER NOT NULL, repair_id TEXT NULL, evidence_json TEXT NOT NULL, FOREIGN KEY(session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
+            CREATE INDEX IF NOT EXISTS ix_findings_session ON findings(session_id);
+            CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1), json TEXT NOT NULL, updated_utc TEXT NOT NULL);
+            """),
+        new(2, "Repair history", """
+            CREATE TABLE IF NOT EXISTS repair_history(transaction_id TEXT PRIMARY KEY,repair_id TEXT NOT NULL,status INTEGER NOT NULL,created_utc TEXT NOT NULL,completed_utc TEXT NULL,summary TEXT NULL,details TEXT NULL,backup_location TEXT NULL,restore_point_description TEXT NULL,events_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_repair_history_created ON repair_history(created_utc DESC);
+            """),
+        new(3, "Diagnosis reports", """
+            CREATE TABLE IF NOT EXISTS diagnosis_reports(id TEXT PRIMARY KEY,scan_session_id TEXT NOT NULL,generated_utc TEXT NOT NULL,report_json TEXT NOT NULL,FOREIGN KEY(scan_session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
+            CREATE INDEX IF NOT EXISTS ix_diagnosis_reports_generated ON diagnosis_reports(generated_utc DESC);
+            """),
+        new(4, "Health snapshots", """
+            CREATE TABLE IF NOT EXISTS health_snapshots(id TEXT PRIMARY KEY,captured_utc TEXT NOT NULL,snapshot_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_health_snapshots_captured ON health_snapshots(captured_utc DESC);
+            """),
+        new(5, "Scan scheduling", "CREATE TABLE IF NOT EXISTS scan_schedule(id INTEGER PRIMARY KEY CHECK(id=1),schedule_json TEXT NOT NULL);"),
+        new(6, "Repair approvals", """
+            CREATE TABLE IF NOT EXISTS repair_approvals(id TEXT PRIMARY KEY,requested_utc TEXT NOT NULL,approval_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_repair_approvals_requested ON repair_approvals(requested_utc DESC);
+            """),
+        new(7, "Commercial persistence catalog", """
+            CREATE TABLE IF NOT EXISTS evidence(id TEXT PRIMARY KEY,scan_session_id TEXT NULL,source TEXT NOT NULL,captured_utc TEXT NOT NULL,evidence_json TEXT NOT NULL,FOREIGN KEY(scan_session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS rollback_records(id TEXT PRIMARY KEY,repair_transaction_id TEXT NOT NULL,created_utc TEXT NOT NULL,record_json TEXT NOT NULL,FOREIGN KEY(repair_transaction_id) REFERENCES repair_history(transaction_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS timeline_events(id TEXT PRIMARY KEY,occurred_utc TEXT NOT NULL,category TEXT NOT NULL,event_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS metrics(id TEXT PRIMARY KEY,captured_utc TEXT NOT NULL,metric_name TEXT NOT NULL,value REAL NOT NULL,unit TEXT NOT NULL,tags_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS chats(id TEXT PRIMARY KEY,created_utc TEXT NOT NULL,updated_utc TEXT NOT NULL,conversation_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS policies(id TEXT PRIMARY KEY,updated_utc TEXT NOT NULL,policy_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS plugins(id TEXT PRIMARY KEY,updated_utc TEXT NOT NULL,state_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS alerts(id TEXT PRIMARY KEY,created_utc TEXT NOT NULL,resolved_utc TEXT NULL,alert_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,created_utc TEXT NOT NULL,format TEXT NOT NULL,location TEXT NOT NULL,metadata_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS audit_events(id TEXT PRIMARY KEY,occurred_utc TEXT NOT NULL,actor TEXT NOT NULL,action TEXT NOT NULL,target TEXT NOT NULL,result TEXT NOT NULL,event_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY,applied_utc TEXT NOT NULL,description TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_findings_session ON findings(session_id);
+            CREATE INDEX IF NOT EXISTS ix_repair_history_created ON repair_history(created_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_diagnosis_reports_generated ON diagnosis_reports(generated_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_health_snapshots_captured ON health_snapshots(captured_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_repair_approvals_requested ON repair_approvals(requested_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_evidence_session ON evidence(scan_session_id);
+            CREATE INDEX IF NOT EXISTS ix_timeline_occurred ON timeline_events(occurred_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_metrics_name_captured ON metrics(metric_name,captured_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_alerts_created ON alerts(created_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_audit_occurred ON audit_events(occurred_utc DESC);
+            """)
+    ];
 }
