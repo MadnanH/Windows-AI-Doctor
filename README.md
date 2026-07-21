@@ -23,4 +23,4 @@ Prerequisites: Windows 10 version 1809 or newer, Visual Studio 2022 17.8+ with t
 
 Open `WindowsAIDoctor.sln` in Visual Studio, select `WAID.Desktop`, `x64`, and run. The unpackaged application stores data under `%LOCALAPPDATA%\Windows AI Doctor`.
 
-See [Architecture](docs/architecture.md), [Development](docs/development.md), and [Plugin authoring](docs/plugins.md).
+See [Development progress](WAID_PROGRESS.md), [Architecture](docs/architecture.md), [Development](docs/development.md), and [Plugin authoring](docs/plugins.md).
