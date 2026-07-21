@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-21
 
-Current version: **0.13.0-dev**
+Current version: **0.14.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v15, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v16, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -29,7 +29,8 @@ Active branch: `main`
 - Commercial hardening Prompt 09 Windows Update intelligence: normalized update attempts and KB/error codes, offline error mapping, network/servicing/policy/storage/reboot/service cause separation, ordered supported repair prerequisites, explicit-approval simulation, schema-12 history/outcome storage, and a reachable Update Health timeline.
 - Commercial hardening Prompt 10 Storage Health Center: separate privacy-safe disk/volume/filesystem models, cautious SMART/temperature/wear/latency thresholds, space and filesystem evidence, snapshot trends, bounded cleanup dry-runs, cancellable folder analysis, schema-13 storage history/exclusions, and a reachable Storage Health dashboard.
 - Commercial hardening Prompt 11 Windows Security Posture Analyzer: capability-aware Defender/firewall/Secure Boot/TPM/encryption/Core Isolation/UAC/SmartScreen/Credential Guard/update checks, explicit unknown states, policy locks, prerequisite remediation previews, schema-14 acknowledgements, and a reachable Security Center.
-- Commercial hardening Prompt 13 AI Chat Assistant Core: offline retrieval across scans, diagnosis, and repair history; separated prompt/provider/safety services; citation enforcement; hostile-evidence neutralization; timeout fallback; schema-15 conversation lifecycle; and a reachable evidence-aware AI Chat page. Prompt 12 was explicitly skipped by user direction.
+- Commercial hardening Prompt 12 Network Diagnostic Center: adapter/IP/DNS/route/gateway/proxy/VPN/Wi-Fi/firewall/service evidence, user-selected bounded probes, failing-layer classification, privacy-safe schema-16 history and export, cancellation, reset-evidence gating, and a reachable Network Health page.
+- Commercial hardening Prompt 13 AI Chat Assistant Core: offline retrieval across scans, diagnosis, and repair history; separated prompt/provider/safety services; citation enforcement; hostile-evidence neutralization; timeout fallback; schema-15 conversation lifecycle; and a reachable evidence-aware AI Chat page.
 
 ## Fully working features
 
@@ -48,6 +49,7 @@ Active branch: `main`
 - Storage Health unifies capacity, reliability, filesystem, trend, cleanup, and folder-size evidence while never reading file contents or deleting files; every cleanup category requires explicit selection.
 - Security Posture complements Windows Security with transparent evidence and non-alarmist findings; unavailable/unknown states are never labeled disabled and policy-managed controls are never bypassed.
 - AI Chat works offline, cites persisted WAID evidence, exposes provider/model/confidence state, rejects uncited output, falls back safely after provider failure, and cannot execute repairs.
+- Network Health runs read-only local inspection plus optional user-selected bounded probes, separates failure layers, persists latency/loss/evidence, and never performs a reset directly.
 
 ## Partially working features
 
@@ -63,6 +65,7 @@ Active branch: `main`
 - Offline behavior, unsupported-provider behavior, SMART/NVMe, GPU, battery, Defender, Reliability Monitor, and minidump provider variations.
 - Keyboard, focus, screen-reader, high-contrast, and text-scaling manual acceptance.
 - Restore point, backup, rollback, simulated interruption, restart-required repair, and approval-flow destructive validation.
+- Network adapters, Wi-Fi providers, VPN clients, proxy policies, captive portals, ICMP filtering, and firewall/service variations on supported Windows hardware.
 
 No platform certification is claimed until a matching passing JSON report from `scripts/Run-WaidManualValidation.ps1` is archived. No such report is committed for this milestone.
 
@@ -72,8 +75,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Commercial hardening Prompt 12 Network Diagnostic Center remains deferred because the user explicitly proceeded from Prompt 11 to Prompt 13.
-- Implement repositories for remaining schema-15 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-16 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -93,6 +95,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Storage reliability counters and SMART semantics vary by device, controller, bridge, firmware, and vendor. Missing temperature/wear is unavailable rather than healthy; cleanup and folder analysis are read-only estimates.
 - Security provider availability varies by Windows edition, hardware, firmware, virtualization, third-party antivirus, management policy, and permission. Unknown/unavailable remains explicit and requires real-device validation.
 - Chat retrieval is intentionally bounded to recent persisted evidence. The deterministic offline provider summarizes evidence but is not a general-purpose language model; no cloud AI is enabled.
+- Network probes cannot prove general internet reachability: ICMP may be filtered, captive portals and proxies vary, and optional DNS/HTTP checks run only against user-supplied targets. Wi-Fi signal/profile details may be unavailable from Windows providers.
 
 ## Build status
 
@@ -107,27 +110,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 203/203 tests**
+**Passing - 217/217 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 25 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 122 passed
+- `WAID.Infrastructure.Tests`: 136 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.13.0-dev - Grounded AI Chat Assistant**
+**0.14.0-dev - Network Diagnostic Center**
 
-Prompt 13 adds an offline, citation-enforced assistant grounded in persisted WAID evidence without granting chat any repair execution authority.
+Prompt 12 adds privacy-safe, evidence-backed network layer diagnosis with bounded user-selected probes and no direct repair execution.
 
 ## Next milestone
 
 **Commercial hardening Prompt 14 - Explainable Diagnosis Engine**
 
-Apply only Prompt 14 from the ordered commercial-grade prompt set. Prompt 12 remains explicitly deferred. Preserve schema 15, grounded-chat citations and repair isolation, evidence history, scanner provenance, immutable configuration snapshots, policy enforcement, and validated safety boundaries; restore/build/test independently and commit before continuing.
+Apply only Prompt 14 from the ordered commercial-grade prompt set. Preserve schema 16, network probe privacy and reset-evidence gating, grounded-chat citations and repair isolation, evidence history, scanner provenance, immutable configuration snapshots, policy enforcement, and validated safety boundaries; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

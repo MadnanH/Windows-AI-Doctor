@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 15;
+    public const int CurrentSchemaVersion = 16;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -255,6 +255,10 @@ public sealed class WaidDatabase
         new(15, "Grounded AI chat conversations", """
             CREATE TABLE chat_conversations(id TEXT PRIMARY KEY,updated_utc TEXT NOT NULL,is_deleted INTEGER NOT NULL CHECK(is_deleted IN(0,1)),exported INTEGER NOT NULL CHECK(exported IN(0,1)),conversation_json TEXT NOT NULL);
             CREATE INDEX ix_chat_conversations_updated ON chat_conversations(updated_utc DESC);
+            """),
+        new(16, "Network diagnostic history", """
+            CREATE TABLE network_health_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,snapshot_json TEXT NOT NULL,tests_json TEXT NOT NULL,report_json TEXT NOT NULL);
+            CREATE INDEX ix_network_health_generated ON network_health_runs(generated_utc DESC);
             """)
     ];
 }
