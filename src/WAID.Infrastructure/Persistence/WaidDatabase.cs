@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 9;
+    public const int CurrentSchemaVersion = 10;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -231,6 +231,10 @@ public sealed class WaidDatabase
             CREATE TABLE scanner_executions(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,scanner_id TEXT NOT NULL,display_name TEXT NOT NULL,category TEXT NOT NULL,scanner_version TEXT NOT NULL,status INTEGER NOT NULL,started_utc TEXT NOT NULL,completed_utc TEXT NOT NULL,duration_ms INTEGER NOT NULL,attempts INTEGER NOT NULL,failure_code TEXT NULL,detail TEXT NULL,resource_json TEXT NOT NULL,FOREIGN KEY(session_id) REFERENCES scan_sessions(id) ON DELETE CASCADE);
             CREATE INDEX ix_scanner_executions_session ON scanner_executions(session_id,started_utc);
             CREATE INDEX ix_scanner_executions_scanner ON scanner_executions(scanner_id,completed_utc DESC);
+            """),
+        new(10, "Driver inventory and conflict analysis", """
+            CREATE TABLE driver_analysis_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,is_administrator INTEGER NOT NULL CHECK(is_administrator IN (0,1)),inventory_json TEXT NOT NULL,report_json TEXT NOT NULL);
+            CREATE INDEX ix_driver_analysis_generated ON driver_analysis_runs(generated_utc DESC);
             """)
     ];
 }

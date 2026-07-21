@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-21
 
-Current version: **0.7.0-dev**
+Current version: **0.8.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v9, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v10, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -24,6 +24,7 @@ Active branch: `main`
 - Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1–7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
 - Commercial hardening Prompt 05 unified configuration: deterministic default/machine/user/profile/session/policy precedence, immutable operation snapshots, enforced policy locks, fail-closed feature flags, schema-8 legacy migration, privacy-safe profile import/export, reset/audit behavior, and categorized searchable Settings UI.
 - Commercial hardening Prompt 06 scanner framework: stable backward-compatible scanner metadata/output contracts, dependency planning, prerequisite skips, bounded parallel execution, detailed progress/cancellation, evidence redaction, schema-9 transactional provenance, resource estimates, and live Dashboard plan states.
+- Commercial hardening Prompt 07 driver conflict analyzer: normalized privacy-safe driver inventory, signature/problem/disabled/failed/duplicate/orphan/incompatibility/change rules, conservative event correlation, schema-10 report history, typed failures, standard-user uncertainty, and a reachable filtered Driver Health UI with evidence and device history.
 
 ## Fully working features
 
@@ -36,6 +37,7 @@ Active branch: `main`
 - Migration-safe SQLite initialization and database maintenance with preserved upgrade data, per-step rollback, concurrency serialization, verified online backup/restore, and visible schema, journal, backup, and migration status.
 - Versioned local configuration with policy enforcement, source attribution, session isolation, validated machine/policy files, profile acknowledgement for experimental changes, and safe defaults that prevent invalid configuration from enabling experimental flags.
 - Reproducible scan sessions persist scanner/framework versions, execution state, attempts, duration, failure codes, sanitized observations, findings, and approximate resource usage in a single transaction; one scanner failure does not invalidate independent results.
+- Driver Health runs entirely offline and read-only, persists normalized inventories and reports, cites evidence and uncertainty for every finding, and never downloads or changes drivers.
 
 ## Partially working features
 
@@ -74,6 +76,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Automated database tests cover fresh installs, schema 1 and 6 upgrades, interrupted migration, concurrent initialization, corruption, newer schemas, backup, restore, and retention. Live Settings recovery UI still requires manual Windows acceptance.
 - Machine and policy enforcement depends on deployment applying administrator-only ACLs to `%PROGRAMDATA%\Windows AI Doctor`; local administrators can change those files. Search, policy-lock, profile, and experimental-warning UI still require manual accessibility acceptance.
 - Scanner CPU and managed-memory deltas are process-level diagnostic estimates during parallel execution, not per-thread accounting. Provider-specific progress remains coarse until an individual scanner reports detailed stages.
+- Driver signature state comes from Windows signed-driver catalog metadata and is not a malware verdict. Driver-event attribution is intentionally limited to events whose sanitized text matches a known device; physical-device and OS-version acceptance remains outstanding.
 
 ## Build status
 
@@ -88,27 +91,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 154/154 tests**
+**Passing - 162/162 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 25 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 73 passed
+- `WAID.Infrastructure.Tests`: 81 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.7.0-dev - Platform Certification and Release Hardening**
+**0.8.0-dev - Driver Conflict Analyzer**
 
-Milestone 7 hardens scanner execution, knowledge documents, plugins, diagnostic reporting, destructive validation, accessibility verification, continuous integration, security maintenance, and packaging groundwork without weakening explicit repair approval or claiming unexecuted platform validation.
+Prompt 07 adds evidence-backed, offline driver conflict analysis without driver downloads, silent changes, or unsupported certainty claims.
 
 ## Next milestone
 
-**Commercial hardening Prompt 07 - Driver Conflict Analyzer**
+**Commercial hardening Prompt 08 - Startup and Boot Analyzer**
 
-Apply only Prompt 07 from the ordered commercial-grade prompt set. Preserve schema 9, scanner provenance and failure isolation, immutable configuration snapshots, policy enforcement, and the validated safety boundaries; restore/build/test independently and commit before starting Prompt 08.
+Apply only Prompt 08 from the ordered commercial-grade prompt set. Preserve schema 10, driver evidence/history, scanner provenance and failure isolation, immutable configuration snapshots, policy enforcement, and the validated safety boundaries; restore/build/test independently and commit before starting Prompt 09.
 
 ## Update procedure
 
