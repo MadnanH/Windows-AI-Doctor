@@ -1,0 +1,1 @@
+using Microsoft.UI.Xaml.Controls;using WAID.Desktop.ViewModels;namespace WAID.Desktop.Views;public sealed partial class StorageCenterPage:Page{public StorageCenterPage(StorageCenterViewModel vm){InitializeComponent();DataContext=vm;Loaded+=async(_,_)=>await vm.InitializeAsync();}}

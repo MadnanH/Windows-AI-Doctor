@@ -77,6 +77,7 @@ public static class DependencyInjection
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
+        services.AddSingleton<IStorageHealthRepository, SqliteStorageHealthRepository>();
         services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
             .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()))
@@ -117,6 +118,7 @@ public static class DependencyInjection
             .AddSingleton<IStartupBootAnalyzer, StartupBootAnalyzer>().AddSingleton<IStartupActionPlanner, StartupActionPlanner>()
             .AddSingleton<IWindowsUpdateEvidenceProvider, WindowsUpdateEvidenceProvider>().AddSingleton<IWindowsUpdateIntelligence, WindowsUpdateIntelligence>()
             .AddSingleton<IUpdateRepairPlanner, UpdateRepairPlanner>();
+        services.AddSingleton<IStorageEvidenceProvider, WindowsStorageEvidenceProvider>().AddSingleton<ICleanupEstimator, SafeCleanupEstimator>().AddSingleton<ILargeFolderAnalyzer, LargeFolderAnalyzer>().AddSingleton<IStorageHealthCenter, StorageHealthCenter>();
         modules.Add("diagnostics", "Windows diagnostics"); return services;
     }
 

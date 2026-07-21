@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-21
 
-Current version: **0.10.0-dev**
+Current version: **0.11.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v12, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v13, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -27,6 +27,7 @@ Active branch: `main`
 - Commercial hardening Prompt 07 driver conflict analyzer: normalized privacy-safe driver inventory, signature/problem/disabled/failed/duplicate/orphan/incompatibility/change rules, conservative event correlation, schema-10 report history, typed failures, standard-user uncertainty, and a reachable filtered Driver Health UI with evidence and device history.
 - Commercial hardening Prompt 08 startup and boot analyzer: normalized multi-source startup inventory, quoted command parsing, deduplication, boot-duration and service-failure correlation, separate security/performance concerns, critical-entry protection, reversible action simulation, schema-11 history, and a reachable Boot Health UI.
 - Commercial hardening Prompt 09 Windows Update intelligence: normalized update attempts and KB/error codes, offline error mapping, network/servicing/policy/storage/reboot/service cause separation, ordered supported repair prerequisites, explicit-approval simulation, schema-12 history/outcome storage, and a reachable Update Health timeline.
+- Commercial hardening Prompt 10 Storage Health Center: separate privacy-safe disk/volume/filesystem models, cautious SMART/temperature/wear/latency thresholds, space and filesystem evidence, snapshot trends, bounded cleanup dry-runs, cancellable folder analysis, schema-13 storage history/exclusions, and a reachable Storage Health dashboard.
 
 ## Fully working features
 
@@ -42,6 +43,7 @@ Active branch: `main`
 - Driver Health runs entirely offline and read-only, persists normalized inventories and reports, cites evidence and uncertainty for every finding, and never downloads or changes drivers.
 - Boot Health inventories startup sources and boot evidence without changing state, protects critical Windows entries, explains measured versus estimated impact, and previews explicit-approval and rollback requirements.
 - Update Health correlates local history, services, policy, reboot markers, DISM/CBS signals, events, and storage; every proposed remedy declares prerequisites, elevation, restart, and approval while forbidding silent update removal.
+- Storage Health unifies capacity, reliability, filesystem, trend, cleanup, and folder-size evidence while never reading file contents or deleting files; every cleanup category requires explicit selection.
 
 ## Partially working features
 
@@ -66,7 +68,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-12 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-13 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -83,6 +85,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Driver signature state comes from Windows signed-driver catalog metadata and is not a malware verdict. Driver-event attribution is intentionally limited to events whose sanitized text matches a known device; physical-device and OS-version acceptance remains outstanding.
 - Startup impact is often correlated from overall boot events because Windows does not expose uniform per-entry timing. Disable/rollback is deliberately simulation-only in Prompt 08; no startup state is modified.
 - Windows Update history, event retention, DISM availability, and organization-managed policy vary by environment. The offline error catalog is intentionally bounded; unknown codes stay unknown and repair execution remains behind the established approval workflow.
+- Storage reliability counters and SMART semantics vary by device, controller, bridge, firmware, and vendor. Missing temperature/wear is unavailable rather than healthy; cleanup and folder analysis are read-only estimates.
 
 ## Build status
 
@@ -97,27 +100,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 185/185 tests**
+**Passing - 189/189 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 25 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 104 passed
+- `WAID.Infrastructure.Tests`: 108 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.10.0-dev - Windows Update Intelligence**
+**0.11.0-dev - Storage Health Center**
 
-Prompt 09 adds evidence-backed offline Windows Update cause analysis and supported repair simulation without silent update removal or policy bypass.
+Prompt 10 adds privacy-safe, evidence-backed storage health, trends, cleanup previews, and cancellable folder analysis without deleting or reading file contents.
 
 ## Next milestone
 
-**Commercial hardening Prompt 10 - Storage Health Center**
+**Commercial hardening Prompt 11 - Windows Security Posture Analyzer**
 
-Apply only Prompt 10 from the ordered commercial-grade prompt set. Preserve schema 12, update/boot/driver evidence history, scanner provenance and failure isolation, immutable configuration snapshots, policy enforcement, and the validated safety boundaries; restore/build/test independently and commit before starting Prompt 11.
+Apply only Prompt 11 from the ordered commercial-grade prompt set. Preserve schema 13, storage/update/boot/driver evidence history, scanner provenance and failure isolation, immutable configuration snapshots, policy enforcement, and the validated safety boundaries; restore/build/test independently and commit before starting Prompt 12.
 
 ## Update procedure
 
