@@ -1,6 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net8.0-windows10.0.19041.0</TargetFramework></PropertyGroup>
-  <ItemGroup><ProjectReference Include="..\WAID.Application\WAID.Application.csproj" /><ProjectReference Include="..\WAID.Domain\WAID.Domain.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WAID.Application\WAID.Application.csproj" />
+    <ProjectReference Include="..\WAID.Domain\WAID.Domain.csproj" />
+    <ProjectReference Include="..\WAID.Diagnosis\WAID.Diagnosis.csproj" />
+    <ProjectReference Include="..\WAID.EventAnalysis\WAID.EventAnalysis.csproj" />
+    <ProjectReference Include="..\WAID.Health\WAID.Health.csproj" />
+    <ProjectReference Include="..\WAID.KnowledgeBase\WAID.KnowledgeBase.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.18" />
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.4.6" />

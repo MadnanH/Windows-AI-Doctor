@@ -9,6 +9,10 @@ using WAID.Infrastructure.PowerShell;
 using WAID.Infrastructure.Repairs;
 using WAID.Infrastructure.Plugins;
 using WAID.Application.Plugins;
+using WAID.Diagnosis;
+using WAID.EventAnalysis;
+using WAID.Health;
+using WAID.KnowledgeBase;
 namespace WAID.Infrastructure;
 public static class DependencyInjection
 {
@@ -31,15 +35,41 @@ public static class DependencyInjection
                 provider.GetRequiredService<IPowerShellRunner>(),
                 provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>()))
             .AddSingleton<IRollbackManager,RollbackManager>()
-            .AddSingleton<ISystemScanner,DiskSpaceScanner>()
             .AddSingleton<ISystemScanner,OperatingSystemScanner>()
+            .AddSingleton<ISystemScanner,WindowsEventViewerScanner>()
+            .AddSingleton<ISystemScanner,ReliabilityMonitorScanner>()
+            .AddSingleton<ISystemScanner,InstalledDriversScanner>()
+            .AddSingleton<ISystemScanner,InstalledSoftwareScanner>()
+            .AddSingleton<ISystemScanner,WindowsUpdateScanner>()
+            .AddSingleton<ISystemScanner,RunningServicesScanner>()
+            .AddSingleton<ISystemScanner,StartupApplicationsScanner>()
+            .AddSingleton<ISystemScanner,RegistryHealthScanner>()
+            .AddSingleton<ISystemScanner,WindowsDefenderScanner>()
+            .AddSingleton<ISystemScanner,NetworkConfigurationScanner>()
+            .AddSingleton<ISystemScanner,StorageHealthScanner>()
+            .AddSingleton<ISystemScanner,SmartScanner>()
+            .AddSingleton<ISystemScanner,MemoryScanner>()
+            .AddSingleton<ISystemScanner,CpuScanner>()
+            .AddSingleton<ISystemScanner,GpuScanner>()
+            .AddSingleton<ISystemScanner,BsodMinidumpScanner>()
             .AddSingleton<IRepairModule,DismRepairModule>()
             .AddSingleton<IRepairModule,SfcRepairModule>()
             .AddSingleton<IRepairModule,WindowsUpdateResetModule>()
             .AddSingleton<IRepairModule,DnsResetModule>()
             .AddSingleton<IRepairModule,WinsockResetModule>()
             .AddSingleton<IRepairModule,TcpIpResetModule>()
-            .AddSingleton<IAiAnalyzer,RulesBasedAiAnalyzer>()
+            .AddSingleton<DiagnosticKnowledgeBase>()
+            .AddSingleton<RuleEngine>()
+            .AddSingleton<EventCorrelationEngine>()
+            .AddSingleton<CorrelationScanner>()
+            .AddSingleton<ConfidenceEngine>()
+            .AddSingleton<RecommendationEngine>()
+            .AddSingleton<ExplanationEngine>()
+            .AddSingleton<RootCauseAnalyzer>()
+            .AddSingleton<HealthScoreEngine>()
+            .AddSingleton<AIReportBuilder>()
+            .AddSingleton<DiagnosisEngine>()
+            .AddSingleton<IAiAnalyzer,OfflineDiagnosisAnalyzer>()
             .AddSingleton<ScanOrchestrator>()
             .AddSingleton<RepairRegistry>()
             .AddSingleton<RepairExecutor>()

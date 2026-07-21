@@ -15,4 +15,6 @@ if($LASTEXITCODE){exit $LASTEXITCODE}
 & $DotNetExecutable test (Join-Path $root 'tests\WAID.Application.Tests\WAID.Application.Tests.csproj') -c $Configuration --no-build
 if($LASTEXITCODE){exit $LASTEXITCODE}
 & $DotNetExecutable test (Join-Path $root 'tests\WAID.Infrastructure.Tests\WAID.Infrastructure.Tests.csproj') -c $Configuration --no-build
+if($LASTEXITCODE){exit $LASTEXITCODE}
+& $DotNetExecutable test (Join-Path $root 'tests\WAID.Diagnosis.Tests\WAID.Diagnosis.Tests.csproj') -c $Configuration --no-build
 exit $LASTEXITCODE

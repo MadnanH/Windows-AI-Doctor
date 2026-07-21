@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WAID.Domain\WAID.Domain.csproj" />
+    <ProjectReference Include="..\WAID.Health\WAID.Health.csproj" />
+    <ProjectReference Include="..\WAID.EventAnalysis\WAID.EventAnalysis.csproj" />
+    <ProjectReference Include="..\WAID.KnowledgeBase\WAID.KnowledgeBase.csproj" />
+  </ItemGroup>
+</Project>
