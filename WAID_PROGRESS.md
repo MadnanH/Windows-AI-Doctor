@@ -19,6 +19,7 @@ Active branch: `main`
 - GitHub Actions for restore, warning-free Release build, tests, knowledge validation, accessibility smoke, vulnerability audit, secret scanning, x64 publish, and ARM64 compile; Dependabot, security policy, and PR checklist.
 - MSIX manifest template and documented x64/ARM64 identity, upgrade, uninstall/data-retention, and protected signing path. No certificate, secret, or fabricated signing material is committed.
 - Commercial hardening Prompt 01 architecture baseline: verified current/target architecture, complete dependency and feature audit, persistence ownership/schema inventory, explicit risk register, incremental migration plan, README links, dependency-rule tests, and expanded service-registration smoke coverage.
+- Commercial hardening Prompt 02 composition root: modular feature registration, versioned non-secret host options, replaceable Windows adapters, host-owned Serilog provider, typed actionable startup failures, validated required services/lifetimes/duplicate scanner and repair IDs, module diagnostics, recovery UI, and service-locator regression enforcement.
 
 ## Fully working features
 
@@ -73,12 +74,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 114/114 tests**
+**Passing - 121/121 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 20 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 38 passed
+- `WAID.Infrastructure.Tests`: 45 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -91,9 +92,9 @@ Milestone 7 hardens scanner execution, knowledge documents, plugins, diagnostic 
 
 ## Next milestone
 
-**Commercial hardening Prompt 02 - Dependency Injection and Composition Root Hardening**
+**Commercial hardening Prompt 03 - Structured Logging, Diagnostics, and Audit Foundation**
 
-Apply only Prompt 02 from the ordered commercial-grade prompt set. Use the Prompt 01 baseline and migration sequence, keep behavior and database schema compatible, restore/build/test independently, and commit before starting Prompt 03.
+Apply only Prompt 03 from the ordered commercial-grade prompt set. Preserve the validated Prompt 02 composition boundary, keep logs and exports free of secrets, restore/build/test independently, and commit before starting Prompt 04.
 
 ## Update procedure
 

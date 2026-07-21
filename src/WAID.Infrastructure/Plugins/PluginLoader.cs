@@ -9,7 +9,7 @@ public sealed record PluginManifest(string Id,string Name,string Version,string 
 public enum PluginState{Loaded,Disabled,Rejected,Quarantined,Incompatible}
 public sealed record PluginDiagnostic(string Id,string Name,string Version,PluginState State,string Detail,string? Path=null);
 public sealed record PluginSecurityPolicy(IReadOnlyCollection<string> AllowedPublishers,bool RequireAuthenticodeSignature=false);
-public sealed class PluginCatalog{private readonly List<PluginDiagnostic> _items=[];public IReadOnlyList<PluginDiagnostic> Items=>_items.AsReadOnly();internal void Replace(IEnumerable<PluginDiagnostic> items){_items.Clear();_items.AddRange(items);}}
+public sealed class PluginCatalog{private readonly List<PluginDiagnostic> _items=[];public IReadOnlyList<PluginDiagnostic> Items=>_items.AsReadOnly();internal void Replace(IEnumerable<PluginDiagnostic> items){_items.Clear();_items.AddRange(items);}internal void RecordRegistrationFailure(PluginMetadata metadata,Exception exception)=>_items.Add(new(metadata.Id,metadata.Name,metadata.Version.ToString(),PluginState.Quarantined,$"Service registration failed: {exception.GetType().Name}."));}
 public sealed class PluginLoader
 {
     private readonly List<PluginLoadContext> _contexts=[];

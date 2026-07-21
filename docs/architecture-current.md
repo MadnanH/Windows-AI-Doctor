@@ -50,7 +50,7 @@ There are no circular project references. The compiled dependency graph is check
 
 ## Runtime composition
 
-`App` is the single composition root. It creates the local data directory, calls `AddWaidInfrastructure`, loads plugins, registers view models and the main window, validates the service provider, starts the in-process schedule loop, and activates the window. `DependencyInjection` registers all 18 built-in scanners, six repair modules, repositories, safety adapters, diagnosis engines, monitoring services, and exporters. Service registration is covered by a provider validation smoke test.
+`App` is the single composition root. It creates versioned `WaidHostOptions`, calls the modular Infrastructure and plugin registrations, adds view models and the main window, then calls `BuildValidatedWaidServiceProvider`. Validation checks required registrations, singleton lifetimes, constructor graphs, scopes, options, and unique scanner/repair IDs before the schedule loop or UI can start. A typed failure opens a safe recovery window and starts no diagnostic or repair operation. Service registration is covered by provider, configuration, duplicate, lifetime, and architecture regression tests.
 
 The two `GetRequiredService` calls in `App.OnLaunched` are composition-root resolution, not domain-level service locator usage. Factory registrations inside `DependencyInjection` resolve constructor dependencies and remain inside the composition boundary. No other production layer receives `IServiceProvider`.
 
@@ -58,7 +58,7 @@ The two `GetRequiredService` calls in `App.OnLaunched` are composition-root reso
 
 - `WAID.Desktop.App` chooses `%LOCALAPPDATA%`, obtains the process path indirectly through infrastructure registration, and writes a last-resort crash file. This is acceptable bootstrap coupling but should move behind application-owned environment/crash ports if alternate hosts are introduced.
 - `OperationsViewModel` resolves the Windows minidump directory. Move path discovery behind the crash-analysis port before adding a CLI or service host.
-- `Log.Logger` is process-global mutable state configured by Infrastructure. It is currently disposed in tests and suitable for the single desktop host, but host-scoped logger construction is safer for multi-host tests.
+- Serilog is created lazily by a host-owned logging-provider registration and disposed with the validated service provider; WAID no longer configures process-global `Log.Logger` state.
 - Plugin loader contexts and catalog contents are mutable by design and host-owned. Loaded contexts persist until restart because the DI container may retain plugin types.
 - Static dictionaries, regexes, JSON options, and health weights are immutable lookup/configuration objects; they are not mutable application state.
 

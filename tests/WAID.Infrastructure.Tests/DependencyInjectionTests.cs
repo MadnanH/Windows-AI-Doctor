@@ -4,6 +4,7 @@ using WAID.Application.Abstractions;
 using WAID.Diagnosis;
 using WAID.Infrastructure;
 using WAID.Application.Services;
+using WAID.Infrastructure.Plugins;
 
 namespace WAID.Infrastructure.Tests;
 
@@ -15,8 +16,9 @@ public sealed class DependencyInjectionTests
         var root = Path.Combine(Path.GetTempPath(), $"waid-di-{Guid.NewGuid():N}");
         try
         {
-            var services = new ServiceCollection().AddWaidInfrastructure(root);
-            await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+            var options = new WaidHostOptions(WaidHostOptions.CurrentConfigurationVersion, Path.GetFullPath(root), Path.GetFullPath(Path.Combine(root,"Plugins")), Path.GetFullPath(Path.Combine(root,"WAID.Desktop.exe")), new Version(1,0,0), ["WAID Engineering"]);
+            var services = new ServiceCollection().AddWaidInfrastructure(options).AddWaidPlugins(new PluginSecurityPolicy(options.AllowedPluginPublishers),options.PluginDirectory,options.HostVersion);
+            await using var provider = services.BuildValidatedWaidServiceProvider();
             var scanners = provider.GetServices<ISystemScanner>().Select(scanner => scanner.Id).ToHashSet(StringComparer.Ordinal);
             string[] expected = ["waid.os", "waid.event-viewer", "waid.reliability", "waid.drivers", "waid.software", "waid.windows-update", "waid.services", "waid.startup", "waid.registry-health", "waid.defender", "waid.network", "waid.storage-health", "waid.smart", "waid.memory", "waid.cpu", "waid.gpu", "waid.bsod", "waid.battery"];
 

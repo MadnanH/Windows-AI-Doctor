@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using WAID.Application.Services;
 using WAID.Diagnosis;
 using WAID.Domain.Diagnostics;
@@ -43,6 +44,16 @@ public sealed class ArchitectureDependencyTests
         foreach (var project in Allowed.Keys) Visit(project, [], []);
     }
 
+    [Fact]
+    public void ViewModels_and_application_services_do_not_use_a_service_locator()
+    {
+        var root = FindRepositoryRoot();
+        var files = Directory.EnumerateFiles(Path.Combine(root, "src", "WAID.Application"), "*.cs", SearchOption.AllDirectories)
+            .Concat(Directory.EnumerateFiles(Path.Combine(root, "src", "WAID.Desktop", "ViewModels"), "*.cs", SearchOption.AllDirectories));
+        var pattern = new Regex(@"\bIServiceProvider\b|\bGetRequiredService\s*\(|\bGetService\s*\(", RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+        foreach (var file in files) Assert.DoesNotMatch(pattern, File.ReadAllText(file));
+    }
+
     private static void Visit(string project, HashSet<string> visited, HashSet<string> active)
     {
         if (active.Contains(project)) throw new Xunit.Sdk.XunitException($"Circular production dependency detected at {project}.");
@@ -50,5 +61,12 @@ public sealed class ArchitectureDependencyTests
         active.Add(project);
         foreach (var dependency in Allowed[project]) Visit(dependency, visited, active);
         active.Remove(project);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "WindowsAIDoctor.sln"))) directory = directory.Parent;
+        return directory?.FullName ?? throw new DirectoryNotFoundException("Repository root could not be located.");
     }
 }
