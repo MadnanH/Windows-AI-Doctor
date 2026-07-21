@@ -1,5 +1,7 @@
 # Architecture
 
+This overview is complemented by the verified [current architecture](architecture-current.md), enforceable [target rules and migration plan](architecture-target.md), and dated [architecture audit](architecture-audit.md).
+
 WAID follows the dependency rule: Desktop and Infrastructure depend on Application; Application depends on Domain; Domain depends on nothing.
 
 ## Projects

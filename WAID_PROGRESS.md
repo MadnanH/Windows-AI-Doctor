@@ -18,6 +18,7 @@ Active branch: `main`
 - Evidence-producing Windows 10 x64, Windows 11 x64, Windows 11 ARM64, administrator, standard-user, offline, and unsupported-hardware manual validation scripts. Reports record OS edition/version/build, architecture, app version, scanner statuses, permission failures, safeguards, UI launch behavior, UTC time, and pass criteria.
 - GitHub Actions for restore, warning-free Release build, tests, knowledge validation, accessibility smoke, vulnerability audit, secret scanning, x64 publish, and ARM64 compile; Dependabot, security policy, and PR checklist.
 - MSIX manifest template and documented x64/ARM64 identity, upgrade, uninstall/data-retention, and protected signing path. No certificate, secret, or fabricated signing material is committed.
+- Commercial hardening Prompt 01 architecture baseline: verified current/target architecture, complete dependency and feature audit, persistence ownership/schema inventory, explicit risk register, incremental migration plan, README links, dependency-rule tests, and expanded service-registration smoke coverage.
 
 ## Fully working features
 
@@ -72,12 +73,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 112/112 tests**
+**Passing - 114/114 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 20 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 36 passed
+- `WAID.Infrastructure.Tests`: 38 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -90,13 +91,9 @@ Milestone 7 hardens scanner execution, knowledge documents, plugins, diagnostic 
 
 ## Next milestone
 
-**0.8.0-dev - Evidence-backed release candidate validation**
+**Commercial hardening Prompt 02 - Dependency Injection and Composition Root Hardening**
 
-1. Run and archive the required JSON validation reports on disposable Windows 10 x64, Windows 11 x64, and Windows 11 ARM64 environments.
-2. Execute destructive safeguard/rollback scenarios only on snapshotted disposable administrator VMs.
-3. Complete assistive-technology, high-contrast, text-scaling, keyboard, and focus acceptance.
-4. Validate signed MSIX upgrade/uninstall/data retention using protected release credentials.
-5. Fix only evidence-backed compatibility or release defects and produce a release-candidate readiness report.
+Apply only Prompt 02 from the ordered commercial-grade prompt set. Use the Prompt 01 baseline and migration sequence, keep behavior and database schema compatible, restore/build/test independently, and commit before starting Prompt 03.
 
 ## Update procedure
 
