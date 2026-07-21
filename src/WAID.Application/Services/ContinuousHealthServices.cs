@@ -149,7 +149,7 @@ public sealed class RepairPrioritizationEngine(RepairRegistry registry)
     private static int DependencyOrder(string id) => id switch { "waid.dism" => 10, "waid.sfc" => 20, "waid.dns-reset" => 30, "waid.winsock-reset" => 40, "waid.tcpip-reset" => 50, _ => 25 };
 }
 
-public sealed class RepairApprovalWorkflow(IRepairApprovalRepository repository, TimeProvider timeProvider)
+public sealed class RepairApprovalWorkflow(IRepairApprovalRepository repository, TimeProvider timeProvider, IAuditTrailService? auditTrail=null, IOperationContextAccessor? operationContext=null)
 {
     public async Task<RepairApproval> RecordAsync(PrioritizedRepair repair, string evidenceSummary,
         IReadOnlyCollection<string> plannedActions, bool approved, bool riskAcknowledged, CancellationToken token)
@@ -159,6 +159,7 @@ public sealed class RepairApprovalWorkflow(IRepairApprovalRepository repository,
         var now = timeProvider.GetUtcNow();
         var record = new RepairApproval(Guid.NewGuid(), repair.RepairId, now, approved ? now : null, approved, evidenceSummary, plannedActions);
         await repository.SaveAsync(record, token).ConfigureAwait(false);
+        if(auditTrail is not null){var context=operationContext?.Current;await auditTrail.AppendAsync(new(Guid.NewGuid(),now,AuditActor.User,"RepairApproval",repair.RepairId,approved?AuditResult.Approved:AuditResult.Rejected,repair.RiskLevel,repair.RequiresAdministrator,repair.SupportsRollback,context?.CorrelationId??record.Id,context?.OperationId??record.Id,$"Approval recorded; risk acknowledgement: {riskAcknowledged}."),token).ConfigureAwait(false);}
         return record;
     }
 }

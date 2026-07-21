@@ -14,7 +14,9 @@ public sealed record WaidHostOptions(
     string ApplicationExecutablePath,
     Version HostVersion,
     IReadOnlyCollection<string> AllowedPluginPublishers,
-    bool RequireSignedPlugins = false)
+    bool RequireSignedPlugins = false,
+    int TechnicalLogRetentionDays = 14,
+    int AuditRetentionDays = 365)
 {
     public const int CurrentConfigurationVersion = 1;
 
@@ -29,6 +31,8 @@ public sealed record WaidHostOptions(
         if (HostVersion.Major < 1) throw new WaidStartupException("WAID-CONFIG-HOST-VERSION", "The plugin host version is invalid.", "Repair or reinstall the application.");
         if (AllowedPluginPublishers.Count == 0 || AllowedPluginPublishers.Any(string.IsNullOrWhiteSpace))
             throw new WaidStartupException("WAID-CONFIG-PUBLISHERS", "At least one valid plugin publisher must be allowed.", "Restore the default plugin security policy.");
+        if (TechnicalLogRetentionDays is < 1 or > 90 || AuditRetentionDays is < 30 or > 3650)
+            throw new WaidStartupException("WAID-CONFIG-RETENTION", "Log or audit retention is outside the supported range.", "Restore the default retention policy.");
         return this;
     }
 
@@ -62,6 +66,7 @@ public sealed class WaidModuleCatalog
     private readonly List<WaidModuleStatus> _items = [];
     public IReadOnlyList<WaidModuleStatus> Items => _items.AsReadOnly();
     internal void Add(string id, string name) => _items.Add(new(id, name, WaidModuleState.Configured, "Registration validated."));
+    internal void Degrade(string id, string detail) { var index = _items.FindIndex(item => item.Id == id); if (index >= 0) _items[index] = _items[index] with { State = WaidModuleState.Degraded, Detail = detail }; }
 }
 
 public static class WaidServiceRegistrationValidator
@@ -73,7 +78,8 @@ public static class WaidServiceRegistrationValidator
         typeof(IHealthSnapshotRepository), typeof(IScanScheduleRepository), typeof(IRepairApprovalRepository),
         typeof(IDiagnosticsExportService), typeof(IAdministratorService), typeof(IRestorePointManager), typeof(IBackupManager),
         typeof(IRollbackManager), typeof(IDiagnosticReportExporter), typeof(IPdfReportExporter), typeof(ScanCoordinator),
-        typeof(RepairExecutor), typeof(BackgroundHealthMonitoringService), typeof(ScheduledScanService), typeof(PluginCatalog)
+        typeof(RepairExecutor), typeof(BackgroundHealthMonitoringService), typeof(ScheduledScanService), typeof(PluginCatalog),
+        typeof(IAuditTrailService), typeof(ILocalDiagnosticsService), typeof(IOperationContextAccessor)
     ];
 
     public static ServiceProvider BuildValidatedWaidServiceProvider(this IServiceCollection services)

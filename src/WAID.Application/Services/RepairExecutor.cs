@@ -13,7 +13,9 @@ public sealed class RepairExecutor(
     IRollbackManager rollbackManager,
     IRepairHistoryRepository historyRepository,
     TimeProvider timeProvider,
-    ILogger<RepairExecutor> logger)
+    ILogger<RepairExecutor> logger,
+    IAuditTrailService? auditTrail = null,
+    IOperationContextAccessor? operationContext = null)
 {
     public async Task<RepairTransaction> ExecuteAsync(
         string repairId,
@@ -24,8 +26,10 @@ public sealed class RepairExecutor(
         if (!registry.TryGet(repairId, out var module) || module is null)
             throw new KeyNotFoundException($"Repair module '{repairId}' is not registered.");
 
+        using var operation = operationContext is null ? null : logger.BeginWaidOperation(operationContext, "Repair");
         var transaction = new RepairTransaction(Guid.NewGuid(), module.Id, timeProvider.GetUtcNow());
-        logger.LogInformation("Repair {RepairId} transaction {TransactionId} requested", module.Id, transaction.Id);
+        logger.LogInformation(WaidEventIds.RepairRequested, "Repair {RepairId} transaction {TransactionId} requested", module.Id, transaction.Id);
+        await AuditAsync(module, transaction, AuditResult.Requested, "Repair execution was requested.", cancellationToken).ConfigureAwait(false);
 
         if (!userConfirmed)
             return await RejectAsync(transaction, "Repair was not confirmed by the user.", cancellationToken).ConfigureAwait(false);
@@ -71,7 +75,7 @@ public sealed class RepairExecutor(
             }
 
             transaction.BeginExecution();
-            logger.LogInformation("Executing repair {RepairId} transaction {TransactionId}", module.Id, transaction.Id);
+            logger.LogInformation(WaidEventIds.RepairRequested, "Executing repair {RepairId} transaction {TransactionId}", module.Id, transaction.Id);
             var result = await module.ExecuteAsync(
                 new RepairExecutionContext(transaction.Id, finding, plan, snapshot?.Location),
                 cancellationToken).ConfigureAwait(false);
@@ -91,12 +95,17 @@ public sealed class RepairExecutor(
                 transaction.MarkRolledBack(rolledBackResult, timeProvider.GetUtcNow());
                 foreach (var action in rollback.Actions) transaction.AddEvent($"Rollback: {action}");
                 foreach (var error in rollback.Errors) transaction.AddEvent($"Rollback error: {error}");
+                await AuditAsync(module, transaction, rollback.Succeeded ? AuditResult.RolledBack : AuditResult.Failed, "Rollback completed after an unsuccessful repair.", CancellationToken.None).ConfigureAwait(false);
             }
 
             await historyRepository.SaveAsync(transaction, cancellationToken).ConfigureAwait(false);
-            logger.LogInformation(
+            logger.LogInformation(WaidEventIds.RepairCompleted,
                 "Repair {RepairId} transaction {TransactionId} completed with status {Status}",
                 module.Id, transaction.Id, transaction.Status);
+            var terminalAuditResult = transaction.Status == RepairTransactionStatus.RolledBack
+                ? AuditResult.RolledBack
+                : result.Succeeded ? AuditResult.Succeeded : AuditResult.Failed;
+            await AuditAsync(module, transaction, terminalAuditResult, result.Summary, CancellationToken.None).ConfigureAwait(false);
             return transaction;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -104,6 +113,7 @@ public sealed class RepairExecutor(
             transaction.Cancel(timeProvider.GetUtcNow());
             await historyRepository.SaveAsync(transaction, CancellationToken.None).ConfigureAwait(false);
             logger.LogWarning("Repair {RepairId} transaction {TransactionId} was cancelled", module.Id, transaction.Id);
+            await AuditAsync(module, transaction, AuditResult.Cancelled, "Repair execution was cancelled.", CancellationToken.None).ConfigureAwait(false);
             throw;
         }
         catch (Exception exception)
@@ -118,6 +128,7 @@ public sealed class RepairExecutor(
                 transaction.MarkRolledBack(transaction.Result!.WithRollback(rollback.Succeeded), timeProvider.GetUtcNow());
             }
             await historyRepository.SaveAsync(transaction, CancellationToken.None).ConfigureAwait(false);
+            await AuditAsync(module, transaction, transaction.Status == RepairTransactionStatus.RolledBack ? AuditResult.RolledBack : AuditResult.Failed, "Repair failed unexpectedly.", CancellationToken.None).ConfigureAwait(false);
             return transaction;
         }
     }
@@ -128,6 +139,8 @@ public sealed class RepairExecutor(
         transaction.Fail(RepairResult.Failure(message), timeProvider.GetUtcNow());
         await historyRepository.SaveAsync(transaction, token).ConfigureAwait(false);
         logger.LogWarning("Repair transaction {TransactionId} rejected: {Reason}", transaction.Id, message);
+        if (registry.TryGet(transaction.RepairId, out var module) && module is not null)
+            await AuditAsync(module, transaction, AuditResult.Rejected, message, CancellationToken.None).ConfigureAwait(false);
         return transaction;
     }
 
@@ -136,6 +149,19 @@ public sealed class RepairExecutor(
         transaction.Fail(RepairResult.Failure("Repair safety preparation failed.", message), timeProvider.GetUtcNow());
         await historyRepository.SaveAsync(transaction, token).ConfigureAwait(false);
         logger.LogError("Repair transaction {TransactionId} preparation failed: {Reason}", transaction.Id, message);
+        if (registry.TryGet(transaction.RepairId, out var module) && module is not null)
+            await AuditAsync(module, transaction, AuditResult.Failed, message, CancellationToken.None).ConfigureAwait(false);
         return transaction;
+    }
+
+    private async Task AuditAsync(IRepairModule module, RepairTransaction transaction, AuditResult result, string detail, CancellationToken token)
+    {
+        if (auditTrail is null) return;
+        var context = operationContext?.Current;
+        var write = await auditTrail.AppendAsync(new(Guid.NewGuid(), timeProvider.GetUtcNow(), AuditActor.User,
+            result is AuditResult.Rejected ? "RepairPolicyDecision" : "RepairExecution", module.Id, result, module.Policy.SafetyLevel,
+            module.Policy.RequiresAdministrator, module.Policy.SupportsRollback, context?.CorrelationId ?? transaction.Id,
+            context?.OperationId ?? transaction.Id, detail), token).ConfigureAwait(false);
+        if (!write.Succeeded) logger.LogWarning(WaidEventIds.RepairPolicyDecision, "Audit event {AuditRecordId} could not be stored: {FailureCode}", write.RecordId, write.FailureCode);
     }
 }

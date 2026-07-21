@@ -20,6 +20,7 @@ Active branch: `main`
 - MSIX manifest template and documented x64/ARM64 identity, upgrade, uninstall/data-retention, and protected signing path. No certificate, secret, or fabricated signing material is committed.
 - Commercial hardening Prompt 01 architecture baseline: verified current/target architecture, complete dependency and feature audit, persistence ownership/schema inventory, explicit risk register, incremental migration plan, README links, dependency-rule tests, and expanded service-registration smoke coverage.
 - Commercial hardening Prompt 02 composition root: modular feature registration, versioned non-secret host options, replaceable Windows adapters, host-owned Serilog provider, typed actionable startup failures, validated required services/lifetimes/duplicate scanner and repair IDs, module diagnostics, recovery UI, and service-locator regression enforcement.
+- Commercial hardening Prompt 03 diagnostics foundation: local structured JSON logging, typed event taxonomy, asynchronous correlation and operation context, redacted append-only daily audit records, bounded retention, searchable Logs & Audit UI, sanitized support export, and non-fatal diagnostic-storage failures.
 
 ## Fully working features
 
@@ -28,6 +29,7 @@ Active branch: `main`
 - Scanner cancellation/failure isolation and user-visible degraded data states; unavailable data is never inferred as healthy.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
+- Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
 
 ## Partially working features
 
@@ -60,6 +62,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Authenticode verification is optional policy and is not enabled without an organization-approved signing policy.
 - Minidump analysis remains read-only and metadata-focused; it is not a symbol debugger.
 - Diagnostic packages should still be reviewed before external sharing despite defense-in-depth redaction.
+- Append-only audit files are not cryptographically signed and can be altered by a local administrator. Audit-storage failure is reported and logged without crashing or silently changing a repair outcome.
 
 ## Build status
 
@@ -74,12 +77,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 121/121 tests**
+**Passing - 128/128 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 20 passed
+- `WAID.Application.Tests`: 21 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 45 passed
+- `WAID.Infrastructure.Tests`: 51 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -92,9 +95,9 @@ Milestone 7 hardens scanner execution, knowledge documents, plugins, diagnostic 
 
 ## Next milestone
 
-**Commercial hardening Prompt 03 - Structured Logging, Diagnostics, and Audit Foundation**
+**Commercial hardening Prompt 04 - SQLite Schema, Migrations, and Repository Reliability**
 
-Apply only Prompt 03 from the ordered commercial-grade prompt set. Preserve the validated Prompt 02 composition boundary, keep logs and exports free of secrets, restore/build/test independently, and commit before starting Prompt 04.
+Apply only Prompt 04 from the ordered commercial-grade prompt set. Preserve the validated composition, diagnostics, and audit boundaries; restore/build/test independently and commit before starting Prompt 05.
 
 ## Update procedure
 

@@ -1,0 +1,12 @@
+<Page x:Class="WAID.Desktop.Views.AuditPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer><StackPanel Padding="32" Spacing="16" MaxWidth="1000">
+    <TextBlock Text="Logs and Audit" Style="{StaticResource TitleTextBlockStyle}" AutomationProperties.AutomationId="AuditPageTitle"/>
+    <TextBlock Text="Technical logs and append-only security audit events remain local. Values shown or exported here are sanitized." TextWrapping="Wrap"/>
+    <StackPanel Orientation="Horizontal" Spacing="8"><TextBox Header="Search" Text="{Binding SearchText,Mode=TwoWay}" Width="360" AutomationProperties.AutomationId="AuditSearchBox"/><Button Content="Refresh" Command="{Binding RefreshCommand}" AutomationProperties.AutomationId="AuditRefreshButton"/><Button Content="Export sanitized support logs" Command="{Binding ExportCommand}" AutomationProperties.AutomationId="AuditExportButton"/></StackPanel>
+    <TextBlock Text="{Binding Status}" TextWrapping="Wrap"/>
+    <TextBlock Text="Audit trail" Style="{StaticResource HeaderTextBlockStyle}"/>
+    <ItemsControl ItemsSource="{Binding AuditRecords}"><ItemsControl.ItemTemplate><DataTemplate><Expander Margin="0,4"><Expander.Header><TextBlock Text="{Binding Action}" FontWeight="SemiBold"/></Expander.Header><StackPanel Spacing="4"><TextBlock Text="{Binding TimestampUtc}"/><TextBlock Text="{Binding Target}"/><TextBlock Text="{Binding Result}"/><TextBlock Text="{Binding Detail}" TextWrapping="Wrap"/><TextBlock Text="{Binding CorrelationId}"/></StackPanel></Expander></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <TextBlock Text="Technical logs" Style="{StaticResource HeaderTextBlockStyle}"/>
+    <ItemsControl ItemsSource="{Binding Logs}"><ItemsControl.ItemTemplate><DataTemplate><Expander Margin="0,4"><Expander.Header><StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="{Binding Level}"/><TextBlock Text="{Binding Category}"/><TextBlock Text="{Binding Message}"/></StackPanel></Expander.Header><StackPanel Spacing="4"><TextBlock Text="{Binding TimestampUtc}"/><TextBlock Text="{Binding EventId}"/><TextBlock Text="{Binding CorrelationId}"/><TextBlock Text="{Binding OperationId}"/><TextBlock Text="{Binding TechnicalDetail}" TextWrapping="Wrap"/></StackPanel></Expander></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+  </StackPanel></ScrollViewer>
+</Page>

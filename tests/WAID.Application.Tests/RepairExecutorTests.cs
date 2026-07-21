@@ -102,13 +102,22 @@ public sealed class RepairExecutorTests
         Assert.Contains("safety preparation", transaction.Result!.Summary, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task Repair_request_and_policy_rejection_are_append_only_audited()
+    {
+        var fixture=new Fixture();
+        await fixture.Executor.ExecuteAsync("waid.test",null,false,CancellationToken.None);
+        Assert.Collection(fixture.Audit.Records,item=>Assert.Equal(AuditResult.Requested,item.Result),item=>Assert.Equal(AuditResult.Rejected,item.Result));
+        Assert.All(fixture.Audit.Records,item=>{Assert.Equal("waid.test",item.Target);Assert.Equal(SafetyLevel.High,item.Risk);});
+    }
+
     private sealed class Fixture
     {
         public Fixture()
         {
             Executor = new(
                 new RepairRegistry([Module]), Administrator, RestorePoint, Backup, Rollback,
-                History, TimeProvider.System, NullLogger<RepairExecutor>.Instance);
+                History, TimeProvider.System, NullLogger<RepairExecutor>.Instance,Audit,new FakeOperationContext());
         }
 
         public FakeModule Module { get; } = new();
@@ -117,7 +126,21 @@ public sealed class RepairExecutorTests
         public FakeBackup Backup { get; } = new();
         public FakeRollback Rollback { get; } = new();
         public FakeHistory History { get; } = new();
+        public FakeAudit Audit { get; } = new();
         public RepairExecutor Executor { get; }
+    }
+    private sealed class FakeAudit:IAuditTrailService
+    {
+        public List<AuditRecord> Records{get;}=[];
+        public Task<AuditWriteResult> AppendAsync(AuditRecord record,CancellationToken token){Records.Add(record);return Task.FromResult(new AuditWriteResult(true,record.Id));}
+        public Task<IReadOnlyList<AuditRecord>> SearchAsync(AuditQuery query,CancellationToken token)=>Task.FromResult<IReadOnlyList<AuditRecord>>(Records);
+        public Task ApplyRetentionAsync(CancellationToken token)=>Task.CompletedTask;
+    }
+    private sealed class FakeOperationContext:IOperationContextAccessor
+    {
+        public WaidOperationContext? Current{get;private set;}
+        public IDisposable Begin(string category,Guid? correlationId=null,Guid? operationId=null){Current=new(correlationId??Guid.NewGuid(),operationId??Guid.NewGuid(),category);return new Scope(()=>Current=null);}
+        private sealed class Scope(Action dispose):IDisposable{public void Dispose()=>dispose();}
     }
 
     private sealed class FakeModule : IRepairModule

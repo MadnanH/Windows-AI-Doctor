@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Extensions.Logging;
 using Microsoft.Extensions.Logging;
+using Serilog.Formatting.Json;
 using WAID.Application.Abstractions;
 using WAID.Application.Plugins;
 using WAID.Application.Services;
@@ -50,10 +51,15 @@ public static class DependencyInjection
     {
         services.AddLogging().AddSingleton<ILoggerProvider>(_ =>
         {
-            Directory.CreateDirectory(Path.Combine(options.DataDirectory, "logs"));
-            var logger = new LoggerConfiguration().MinimumLevel.Information().Enrich.FromLogContext()
-                .WriteTo.File(Path.Combine(options.DataDirectory, "logs", "waid-.log"), rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14).CreateLogger();
-            return new SerilogLoggerProvider(logger, dispose: true);
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(options.DataDirectory, "logs"));
+                var logger = new LoggerConfiguration().MinimumLevel.Information().Enrich.FromLogContext()
+                    .WriteTo.File(new JsonFormatter(renderMessage: true), Path.Combine(options.DataDirectory, "logs", "waid-.log"), rollingInterval: RollingInterval.Day, retainedFileCountLimit: options.TechnicalLogRetentionDays).CreateLogger();
+                return new SerilogLoggerProvider(logger, dispose: true);
+            }
+            catch (IOException) { modules.Degrade("logging", "Local log storage is unavailable; WAID continues without a file sink."); return new SerilogLoggerProvider(new LoggerConfiguration().CreateLogger(), dispose: true); }
+            catch (UnauthorizedAccessException) { modules.Degrade("logging", "Local log storage permission was denied; WAID continues without a file sink."); return new SerilogLoggerProvider(new LoggerConfiguration().CreateLogger(), dispose: true); }
         });
         modules.Add("logging", "Structured logging"); return services;
     }
@@ -65,6 +71,9 @@ public static class DependencyInjection
             .AddSingleton<ISettingsRepository, SqliteSettingsRepository>().AddSingleton<IDiagnosisRepository, SqliteDiagnosisRepository>()
             .AddSingleton<IRepairHistoryRepository, SqliteRepairHistoryRepository>().AddSingleton<IHealthSnapshotRepository, SqliteHealthSnapshotRepository>()
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>();
+        services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
+            .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
+            .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()));
         modules.Add("persistence", "SQLite persistence"); return services;
     }
 

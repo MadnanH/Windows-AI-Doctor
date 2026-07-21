@@ -33,12 +33,14 @@ public sealed class ScanOrchestrator(
     IScanRepository repository,
     TimeProvider timeProvider,
     ILogger<ScanOrchestrator> logger,
-    ScannerPolicyRegistry? policies = null)
+    ScannerPolicyRegistry? policies = null,
+    IOperationContextAccessor? operationContext = null)
 {
     private readonly ScannerPolicyRegistry _policies = policies ?? new(new(TimeSpan.FromSeconds(45)));
 
     public async Task<ScanSession> RunAsync(bool isAdministrator, IProgress<ScanProgress>? progress, CancellationToken cancellationToken)
     {
+        using var operation = operationContext is null ? null : logger.BeginWaidOperation(operationContext, "Scan");
         var started = timeProvider.GetUtcNow();
         var session = new ScanSession(Guid.NewGuid(), started);
         var available = scanners.OrderBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();
@@ -68,7 +70,7 @@ public sealed class ScanOrchestrator(
                 var findings = await scanner.ScanAsync(new(session.Id, isAdministrator, started), timeout.Token).ConfigureAwait(false);
                 session.AddFindings(findings);
                 var unavailable = findings.Any(f => f.Code == "SCANNER_UNAVAILABLE");
-                logger.LogInformation("Scanner {ScannerId} completed with status {Status} and {FindingCount} findings", scanner.Id, unavailable ? ScannerExecutionStatus.Unavailable : ScannerExecutionStatus.Success, findings.Count);
+                logger.LogInformation(WaidEventIds.ScannerCompleted,"Scanner {ScannerId} completed with status {Status} and {FindingCount} findings", scanner.Id, unavailable ? ScannerExecutionStatus.Unavailable : ScannerExecutionStatus.Success, findings.Count);
                 return unavailable ? ScannerExecutionStatus.Unavailable : ScannerExecutionStatus.Success;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
@@ -79,17 +81,17 @@ public sealed class ScanOrchestrator(
             }
             catch (UnauthorizedAccessException exception)
             {
-                logger.LogWarning(exception, "Scanner {ScannerId} was denied permission", scanner.Id);
+                logger.LogWarning(WaidEventIds.ScannerDegraded,exception, "Scanner {ScannerId} was denied permission", scanner.Id);
                 AddDegraded(session, scanner, "SCANNER_PERMISSION_DENIED", "was denied permission", ScannerExecutionStatus.PermissionDenied, policy.Timeout, attempt);
                 return ScannerExecutionStatus.PermissionDenied;
             }
             catch (IOException exception) when (attempt < policy.SafeRetryCount)
             {
-                logger.LogWarning(exception, "Read-only scanner {ScannerId} transiently failed; performing bounded retry {Attempt}", scanner.Id, attempt + 1);
+                logger.LogWarning(WaidEventIds.ScannerDegraded,exception, "Read-only scanner {ScannerId} transiently failed; performing bounded retry {Attempt}", scanner.Id, attempt + 1);
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Scanner {ScannerId} failed", scanner.Id);
+                logger.LogError(WaidEventIds.ScannerDegraded,exception, "Scanner {ScannerId} failed", scanner.Id);
                 session.AddFindings([Failure(scanner, "SCANNER_FAILED", "encountered an unexpected error", ScannerExecutionStatus.Failed, policy.Timeout, attempt, exception.GetType().Name)]);
                 return ScannerExecutionStatus.Failed;
             }
@@ -98,7 +100,7 @@ public sealed class ScanOrchestrator(
 
     private void AddDegraded(ScanSession session, ISystemScanner scanner, string code, string reason, ScannerExecutionStatus status, TimeSpan timeout, int attempt)
     {
-        logger.LogWarning("Scanner {ScannerId} completed with degraded status {Status}; partial evidence count {PartialEvidenceCount}", scanner.Id, status, 0);
+        logger.LogWarning(WaidEventIds.ScannerDegraded,"Scanner {ScannerId} completed with degraded status {Status}; partial evidence count {PartialEvidenceCount}", scanner.Id, status, 0);
         session.AddFindings([Failure(scanner, code, reason, status, timeout, attempt, null)]);
     }
 
