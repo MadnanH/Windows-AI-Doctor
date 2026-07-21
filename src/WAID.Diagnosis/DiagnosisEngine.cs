@@ -8,7 +8,7 @@ namespace WAID.Diagnosis;
 public sealed class DiagnosisEngine(
     DiagnosticKnowledgeBase knowledgeBase,
     RuleEngine ruleEngine,
-    EventCorrelationEngine correlationEngine,
+    CorrelationScanner correlationScanner,
     RootCauseAnalyzer rootCauseAnalyzer,
     HealthScoreEngine healthScoreEngine,
     AIReportBuilder reportBuilder)
@@ -16,7 +16,7 @@ public sealed class DiagnosisEngine(
     public Task<AIReport> DiagnoseAsync(IReadOnlyCollection<DiagnosticFinding> findings, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var correlations = correlationEngine.Correlate(findings);
+        var correlations = correlationScanner.Scan(findings);
         var matches = ruleEngine.Evaluate(findings, knowledgeBase.Rules);
         var causes = rootCauseAnalyzer.Analyze(matches, correlations);
         var health = healthScoreEngine.Calculate(findings);

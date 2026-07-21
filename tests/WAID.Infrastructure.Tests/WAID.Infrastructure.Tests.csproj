@@ -12,5 +12,6 @@
   <ItemGroup><Using Include="Xunit" /></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\WAID.Infrastructure\WAID.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\WAID.Plugin.Sample\WAID.Plugin.Sample.csproj" />
   </ItemGroup>
 </Project>

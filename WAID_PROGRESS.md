@@ -28,7 +28,7 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - Cross-scanner rule evaluation and event correlation
   - Root-cause, confidence, recommendation, explanation, and AI report engines
   - Weighted Hardware, Windows, Drivers, Security, Performance, Storage, Network, and Overall scores
-  - Embedded JSON knowledge for Windows events, updates, drivers, services, network, SMART, crashes, and repair mapping
+  - Embedded JSON causal and reference knowledge for Windows events, updates, drivers, services, network, SMART, BSOD bug checks, and repair mapping
 - **Infrastructure**
   - SQLite scan, settings, and repair-history persistence with schema version 2
   - Serilog rolling-file logging and structured PowerShell action audit records
@@ -42,8 +42,7 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - DNS reset
   - Winsock reset
   - TCP/IP reset
-  - Disk-space and operating-system scanners
-  - Deterministic local rules-based AI analyzer
+  - Operating-system compatibility scanner
   - Version-aware in-process plugin discovery
   - Offline diagnosis adapter as the default AI abstraction
   - Production scanners for Event Viewer, Reliability Monitor, installed drivers/software, Windows Update, services, startup applications, registry health, Defender, network configuration, storage, SMART, memory, CPU, GPU, and BSOD minidumps
@@ -55,9 +54,10 @@ This file is the project status ledger. It must be reviewed and updated as part 
   - AI Diagnosis page with root causes, confidence, explanations, evidence, and recommendations
   - Health Dashboard with category scores and correlated evidence
 - **Extensibility and delivery**
-  - Buildable sample plugin
+  - Buildable sample plugin with a production PATH-health scanner
   - Release build and self-contained publish scripts
   - Architecture, safe-repair, development, operations, and plugin documentation
+  - Milestone 4 implementation, wiring, UI-reachability, and test verification report
 - **Tests**
   - Domain lifecycle and policy tests
   - Scanner and repair-orchestration tests
@@ -86,12 +86,12 @@ This file is the project status ledger. It must be reviewed and updated as part 
 
 ## Test status
 
-**Passing - 73/73 tests**
+**Passing - 85/85 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 9 passed
-- `WAID.Diagnosis.Tests`: 31 passed
-- `WAID.Infrastructure.Tests`: 23 passed
+- `WAID.Diagnosis.Tests`: 41 passed
+- `WAID.Infrastructure.Tests`: 24 passed
 - Failed: 0
 - Skipped: 0
 
@@ -100,6 +100,8 @@ This file is the project status ledger. It must be reviewed and updated as part 
 **0.4.0-dev - AI Diagnostic Engine**
 
 WAID now performs completely offline Windows diagnosis across a normalized scanner set. It correlates evidence between subsystems, calculates weighted health scores, ranks likely root causes, reports confidence and supporting evidence, explains results in plain English, and maps safe repair recommendations. No cloud AI is used.
+
+Milestone 4 was repository-wide verified on 2026-07-21. The registered correlation path is exercised by the diagnosis engine, the sample plugin performs a real health check, superseded dead implementations were removed, and the embedded knowledge base now contains explicit reference data for every documented category. See `docs/milestone-4-verification.md` for the implementation/UI/test classification.
 
 ## Next milestone
 

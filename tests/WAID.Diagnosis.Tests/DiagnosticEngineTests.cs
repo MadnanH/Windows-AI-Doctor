@@ -25,6 +25,20 @@ public sealed class DiagnosticEngineTests
         Assert.NotNull(new DiagnosticKnowledgeBase().Find(id));
 
     [Theory]
+    [InlineData("WindowsEvent", "41")]
+    [InlineData("WindowsEvent", "7031")]
+    [InlineData("Driver", "43")]
+    [InlineData("WindowsUpdate", "0x800F081F")]
+    [InlineData("Service", "StoppedAutomatic")]
+    [InlineData("Network", "DnsFailure")]
+    [InlineData("Smart", "PredFail")]
+    [InlineData("BugCheck", "0x0000007A")]
+    [InlineData("BugCheck", "0x00000124")]
+    [InlineData("Repair", "CBS_CORRUPTION")]
+    public void Embedded_reference_knowledge_contains_expected_entry(string category, string code) =>
+        Assert.NotNull(new DiagnosticKnowledgeBase().FindReference(category, code));
+
+    [Theory]
     [InlineData("waid.hardware", HealthCategory.Hardware)]
     [InlineData("waid.event-viewer", HealthCategory.Windows)]
     [InlineData("waid.drivers", HealthCategory.Drivers)]
@@ -109,7 +123,8 @@ public sealed class DiagnosticEngineTests
         var confidence = new ConfidenceEngine();
         var recommendations = new RecommendationEngine();
         var explanations = new ExplanationEngine();
-        return new(new DiagnosticKnowledgeBase(), new RuleEngine(), new EventCorrelationEngine(),
+        var correlationEngine = new EventCorrelationEngine();
+        return new(new DiagnosticKnowledgeBase(), new RuleEngine(), new CorrelationScanner(correlationEngine),
             new RootCauseAnalyzer(confidence, recommendations, explanations),
             new HealthScoreEngine(), new AIReportBuilder(TimeProvider.System));
     }

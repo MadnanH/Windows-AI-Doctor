@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup>
   <ItemGroup><ProjectReference Include="..\WAID.Domain\WAID.Domain.csproj" /></ItemGroup>
-  <ItemGroup><EmbeddedResource Include="Data\diagnostic-knowledge.json" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="Data\*.json" /></ItemGroup>
 </Project>
