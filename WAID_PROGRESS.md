@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-21
 
-Current version: **0.12.0-dev**
+Current version: **0.13.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v14, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v15, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -29,6 +29,7 @@ Active branch: `main`
 - Commercial hardening Prompt 09 Windows Update intelligence: normalized update attempts and KB/error codes, offline error mapping, network/servicing/policy/storage/reboot/service cause separation, ordered supported repair prerequisites, explicit-approval simulation, schema-12 history/outcome storage, and a reachable Update Health timeline.
 - Commercial hardening Prompt 10 Storage Health Center: separate privacy-safe disk/volume/filesystem models, cautious SMART/temperature/wear/latency thresholds, space and filesystem evidence, snapshot trends, bounded cleanup dry-runs, cancellable folder analysis, schema-13 storage history/exclusions, and a reachable Storage Health dashboard.
 - Commercial hardening Prompt 11 Windows Security Posture Analyzer: capability-aware Defender/firewall/Secure Boot/TPM/encryption/Core Isolation/UAC/SmartScreen/Credential Guard/update checks, explicit unknown states, policy locks, prerequisite remediation previews, schema-14 acknowledgements, and a reachable Security Center.
+- Commercial hardening Prompt 13 AI Chat Assistant Core: offline retrieval across scans, diagnosis, and repair history; separated prompt/provider/safety services; citation enforcement; hostile-evidence neutralization; timeout fallback; schema-15 conversation lifecycle; and a reachable evidence-aware AI Chat page. Prompt 12 was explicitly skipped by user direction.
 
 ## Fully working features
 
@@ -46,6 +47,7 @@ Active branch: `main`
 - Update Health correlates local history, services, policy, reboot markers, DISM/CBS signals, events, and storage; every proposed remedy declares prerequisites, elevation, restart, and approval while forbidding silent update removal.
 - Storage Health unifies capacity, reliability, filesystem, trend, cleanup, and folder-size evidence while never reading file contents or deleting files; every cleanup category requires explicit selection.
 - Security Posture complements Windows Security with transparent evidence and non-alarmist findings; unavailable/unknown states are never labeled disabled and policy-managed controls are never bypassed.
+- AI Chat works offline, cites persisted WAID evidence, exposes provider/model/confidence state, rejects uncited output, falls back safely after provider failure, and cannot execute repairs.
 
 ## Partially working features
 
@@ -70,7 +72,8 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-14 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Commercial hardening Prompt 12 Network Diagnostic Center remains deferred because the user explicitly proceeded from Prompt 11 to Prompt 13.
+- Implement repositories for remaining schema-15 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -89,6 +92,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Windows Update history, event retention, DISM availability, and organization-managed policy vary by environment. The offline error catalog is intentionally bounded; unknown codes stay unknown and repair execution remains behind the established approval workflow.
 - Storage reliability counters and SMART semantics vary by device, controller, bridge, firmware, and vendor. Missing temperature/wear is unavailable rather than healthy; cleanup and folder analysis are read-only estimates.
 - Security provider availability varies by Windows edition, hardware, firmware, virtualization, third-party antivirus, management policy, and permission. Unknown/unavailable remains explicit and requires real-device validation.
+- Chat retrieval is intentionally bounded to recent persisted evidence. The deterministic offline provider summarizes evidence but is not a general-purpose language model; no cloud AI is enabled.
 
 ## Build status
 
@@ -103,27 +107,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 194/194 tests**
+**Passing - 203/203 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 25 passed
 - `WAID.Diagnosis.Tests`: 46 passed
-- `WAID.Infrastructure.Tests`: 113 passed
+- `WAID.Infrastructure.Tests`: 122 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.12.0-dev - Windows Security Posture Analyzer**
+**0.13.0-dev - Grounded AI Chat Assistant**
 
-Prompt 11 adds capability-aware, policy-respecting Windows security posture evidence without replacing Windows Security or weakening controls.
+Prompt 13 adds an offline, citation-enforced assistant grounded in persisted WAID evidence without granting chat any repair execution authority.
 
 ## Next milestone
 
-**Commercial hardening Prompt 12 - Network Diagnostic Center**
+**Commercial hardening Prompt 14 - Explainable Diagnosis Engine**
 
-Apply only Prompt 12 from the ordered commercial-grade prompt set. Preserve schema 14, security/storage/update/boot/driver evidence history, scanner provenance and failure isolation, immutable configuration snapshots, policy enforcement, and the validated safety boundaries; restore/build/test independently and commit before starting Prompt 13.
+Apply only Prompt 14 from the ordered commercial-grade prompt set. Prompt 12 remains explicitly deferred. Preserve schema 15, grounded-chat citations and repair isolation, evidence history, scanner provenance, immutable configuration snapshots, policy enforcement, and validated safety boundaries; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

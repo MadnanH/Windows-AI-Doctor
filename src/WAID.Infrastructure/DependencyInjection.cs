@@ -79,6 +79,7 @@ public static class DependencyInjection
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
         services.AddSingleton<IStorageHealthRepository, SqliteStorageHealthRepository>();
         services.AddSingleton<ISecurityPostureRepository, SqliteSecurityPostureRepository>();
+        services.AddSingleton<IChatConversationRepository, SqliteChatConversationRepository>();
         services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
             .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()))
@@ -121,6 +122,7 @@ public static class DependencyInjection
             .AddSingleton<IUpdateRepairPlanner, UpdateRepairPlanner>();
         services.AddSingleton<IStorageEvidenceProvider, WindowsStorageEvidenceProvider>().AddSingleton<ICleanupEstimator, SafeCleanupEstimator>().AddSingleton<ILargeFolderAnalyzer, LargeFolderAnalyzer>().AddSingleton<IStorageHealthCenter, StorageHealthCenter>();
         services.AddSingleton<ISecurityPostureProvider, WindowsSecurityPostureProvider>().AddSingleton<ISecurityPostureAnalyzer, SecurityPostureAnalyzer>();
+        services.AddSingleton(ChatProviderPolicy.Default).AddSingleton<IChatEvidenceRetriever, WaidChatEvidenceRetriever>().AddSingleton<IChatPromptBuilder, GroundedChatPromptBuilder>().AddSingleton<IChatSafetyService, ChatSafetyService>().AddSingleton<IChatProvider, OfflineChatProvider>().AddSingleton<IChatAssistant, ChatAssistant>();
         modules.Add("diagnostics", "Windows diagnostics"); return services;
     }
 

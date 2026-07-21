@@ -9,7 +9,7 @@
     <Authors>Windows AI Doctor Engineering</Authors>
     <Company>Windows AI Doctor</Company>
     <Product>Windows AI Doctor</Product>
-    <VersionPrefix>0.12.0</VersionPrefix>
+    <VersionPrefix>0.13.0</VersionPrefix>
     <VersionSuffix>dev</VersionSuffix>
   </PropertyGroup>
 </Project>

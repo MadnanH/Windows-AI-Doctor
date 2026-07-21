@@ -1,0 +1,1 @@
+using Microsoft.UI.Xaml.Controls;using WAID.Desktop.ViewModels;namespace WAID.Desktop.Views;public sealed partial class ChatPage:Page{public ChatPage(ChatViewModel vm){InitializeComponent();DataContext=vm;}}
