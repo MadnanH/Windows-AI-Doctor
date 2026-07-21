@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+TestResults/
+*.user
+*.suo
+work/
+artifacts/
+src/WAID.Desktop/Generated Files/
+

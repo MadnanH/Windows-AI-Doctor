@@ -1,0 +1,22 @@
+# Architecture
+
+WAID follows the dependency rule: Desktop and Infrastructure depend on Application; Application depends on Domain; Domain depends on nothing.
+
+## Projects
+
+- `WAID.Domain`: validated entities, findings, repairs, and settings.
+- `WAID.Application`: scanner, repair, AI, persistence, and plugin ports plus orchestration.
+- `WAID.Infrastructure`: SQLite, PowerShell, Serilog, built-in Windows scanners and repairs, local analysis, and plugin loading.
+- `WAID.Desktop`: WinUI 3 composition root, navigation, dashboard, settings, and MVVM presentation.
+- `WAID.Plugin.Sample`: buildable reference plugin.
+- `tests`: fast domain and use-case tests.
+
+The application layer owns workflow policy. Infrastructure adapters can be replaced without changing the UI or domain. All long-running operations accept cancellation tokens. Repairs return explicit success, detail, and restart state rather than throwing for expected operating-system failures.
+
+## Data
+
+SQLite uses a private application database with foreign keys and an explicit schema version. Scan sessions and findings are append-only. Settings use a single validated JSON document to permit additive settings without a migration per preference.
+
+## Security boundaries
+
+WAID runs without elevation by default. Repairs declare whether elevation is required. PowerShell receives parameters separately from script text. Plugins are trusted in-process extensions and must be distributed through a signed, controlled channel; they are not a sandbox boundary.
