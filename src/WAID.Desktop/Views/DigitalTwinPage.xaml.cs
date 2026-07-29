@@ -1,0 +1,1 @@
+﻿using Microsoft.UI.Xaml.Controls;using WAID.Desktop.ViewModels;namespace WAID.Desktop.Views;public sealed partial class DigitalTwinPage:Page{public DigitalTwinPage(DigitalTwinViewModel vm){InitializeComponent();DataContext=vm;Loaded+=async(_,_)=>await vm.LoadAsync();}}

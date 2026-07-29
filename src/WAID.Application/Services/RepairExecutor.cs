@@ -15,7 +15,8 @@ public sealed class RepairExecutor(
     TimeProvider timeProvider,
     ILogger<RepairExecutor> logger,
     IAuditTrailService? auditTrail = null,
-    IOperationContextAccessor? operationContext = null)
+    IOperationContextAccessor? operationContext = null,
+    DigitalTwinService? digitalTwin = null)
 {
     public async Task<RepairTransaction> ExecuteAsync(
         string repairId,
@@ -38,8 +39,10 @@ public sealed class RepairExecutor(
             return await RejectAsync(transaction, "Administrator privileges are required.", cancellationToken).ConfigureAwait(false);
 
         BackupSnapshot? snapshot = null;
+        DigitalTwinSnapshot? twinBefore = null;
         try
         {
+            twinBefore = await TryCaptureTwinAsync(SystemSnapshotPurpose.PreRepair, transaction.Id, null, cancellationToken).ConfigureAwait(false);
             transaction.BeginPreparation();
             var plan = await module.CreatePlanAsync(finding, cancellationToken).ConfigureAwait(false);
             foreach (var resource in plan.Resources) resource.Validate();
@@ -98,6 +101,7 @@ public sealed class RepairExecutor(
                 await AuditAsync(module, transaction, rollback.Succeeded ? AuditResult.RolledBack : AuditResult.Failed, "Rollback completed after an unsuccessful repair.", CancellationToken.None).ConfigureAwait(false);
             }
 
+            await TryCaptureTwinAsync(SystemSnapshotPurpose.PostRepair, transaction.Id, twinBefore?.Id, CancellationToken.None).ConfigureAwait(false);
             await historyRepository.SaveAsync(transaction, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(WaidEventIds.RepairCompleted,
                 "Repair {RepairId} transaction {TransactionId} completed with status {Status}",
@@ -131,6 +135,13 @@ public sealed class RepairExecutor(
             await AuditAsync(module, transaction, transaction.Status == RepairTransactionStatus.RolledBack ? AuditResult.RolledBack : AuditResult.Failed, "Repair failed unexpectedly.", CancellationToken.None).ConfigureAwait(false);
             return transaction;
         }
+    }
+
+    private async Task<DigitalTwinSnapshot?> TryCaptureTwinAsync(SystemSnapshotPurpose purpose, Guid transactionId, Guid? relatedId, CancellationToken token)
+    {
+        if (digitalTwin is null) return null;
+        try { return await digitalTwin.CaptureAsync(purpose, true, transactionId, relatedId, token).ConfigureAwait(false); }
+        catch (Exception exception) when (exception is not OperationCanceledException) { logger.LogWarning("System snapshot {Purpose} failed with {FailureType}; repair safety flow continues", purpose, exception.GetType().Name); return null; }
     }
 
     private async Task<RepairTransaction> RejectAsync(RepairTransaction transaction, string message, CancellationToken token)

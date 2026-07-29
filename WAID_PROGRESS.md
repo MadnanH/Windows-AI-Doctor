@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-29
 
-Current version: **0.22.0-dev**
+Current version: **0.23.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v22, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v23, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -39,6 +39,7 @@ Active branch: `main`
 - Commercial hardening Prompt 19 live monitoring: separate real Windows signal collection, aggregation, alerts, policy gating, and budget enforcement; adaptive intervals; battery/load/gap/failure awareness; restart recovery; bounded schema-20 history; full disable/pause/resume controls; and a reachable privacy-explained Live Monitoring page.
 - Commercial hardening Prompt 20 reliability timeline: immutable-source projection across crashes, updates, driver changes, repairs, alerts, health shifts, reliability findings, and retention gaps; stable UTC IDs/order; versioned possible-association grouping; schema-21 paging/indexes; provenance/evidence/comparison/export; and accessible timeline/table modes.
 - Commercial hardening Prompt 21 performance history: validated CPU/memory/disk/network/temperature/battery/responsiveness samples with explicit quality; versioned UTC hourly/daily/weekly rollups; deterministic spike-preserving downsampling; sustained-change and period comparison; generation-safe caching; schema-22 retention jobs; and an accessible cards/chart dashboard.
+- Commercial hardening Prompt 22 digital twin snapshots: privacy-safe versioned component capture, partial-failure isolation, canonical SHA-256 integrity, compressed schema-23 persistence, pin-aware retention, deterministic risk-highlighted diffs, repair-linked pre/post snapshots, and a reachable comparison/export page.
 
 ## Fully working features
 
@@ -66,6 +67,7 @@ Active branch: `main`
 - Live Monitoring is opt-in and fully disableable, samples real CPU/memory/storage signals within a two-second/16-sample default cycle budget, adapts its interval when stable, pauses for battery saver/high load/policy/user requests, isolates collector failures, records gaps and restart recovery, bounds retention, and never executes repairs.
 - Reliability Timeline rebuilds a deterministic local projection without changing source records, preserves visible provenance, represents retention gaps, provides stable indexed paging/filtering, labels incident groups as possible associations rather than causation, and exports redacted projected evidence.
 - Performance History stores real or explicitly unavailable local metrics, builds versioned UTC rollups that match chart queries, preserves quality/coverage, invalidates caches on storage changes, bounds long histories, summarizes charts accessibly, and compares periods without causal claims.
+- Digital Twin captures structured local system state without personal-file inventories or secret material, tolerates unavailable providers, preserves serializer and integrity versions, stores compressed snapshots, compares stable field changes, and links pinned pre/post repair evidence without weakening approval gates.
 
 ## Partially working features
 
@@ -91,7 +93,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-22 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-23 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -120,6 +122,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Live Monitoring runs only while WAID is open and cannot wake a closed application. Sleep is inferred from scheduling discontinuities; Windows power-transition behavior, provider accuracy, and long-duration resource budgets still require real-hardware validation.
 - Reliability Timeline coverage depends on retained source records. Grouping is a deterministic 30-minute/subject heuristic and never proves causation; health shifts use a fixed ten-point threshold, projection rebuild is user-triggered, and long-duration UI/provider validation remains outstanding.
 - Performance metric collection is user-triggered. CPU/network need a prior delta; responsiveness is estimated; disk currently represents free space rather than latency; temperature is explicitly unavailable without a supported provider; and long-duration real-hardware accuracy remains outstanding.
+- Digital Twin components may summarize the latest persisted WAID analyses, so completeness depends on prior scanner coverage and Windows provider availability. Diffs show association and change, not causation; real-hardware serializer coverage and long-duration retention remain outstanding.
 
 ## Build status
 
@@ -134,28 +137,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 293/293 tests**
+**Passing - 300/300 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 64 passed
+- `WAID.Application.Tests`: 70 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 144 passed
+- `WAID.Infrastructure.Tests`: 145 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.22.0-dev - Performance History and Trend Dashboard**
+**0.23.0-dev - Digital Twin System Snapshots**
 
-Prompt 21 adds quality-aware local performance metrics, versioned UTC multi-resolution rollups, responsive stored-history charts, sustained changes, period comparisons, generation-safe caches, and bounded retention.
+Prompt 22 adds privacy-safe component snapshots, compressed integrity-protected persistence, deterministic comparisons, pin-aware retention, and repair-linked pre/post evidence with a reachable Digital Twin UI.
 
 ## Next milestone
 
-**Commercial hardening Prompt 22 - Digital Twin System Snapshots**
+**Commercial hardening Prompt 23 - Scheduled Scanning and Maintenance Windows**
 
-Apply only Prompt 22 from the ordered commercial-grade prompt set. Preserve schema 22, metric quality and rollup/cache/retention guarantees, immutable reliability projection and non-causation labels, monitoring budgets, predictive uncertainty, repair approval isolation, privacy protections, and policy enforcement; restore/build/test independently and commit before continuing.
-
+Apply only Prompt 23 from the ordered commercial-grade prompt set. Preserve snapshot privacy, version compatibility, repair approval isolation, monitoring budgets, scheduler overlap and power controls, policy enforcement, and existing evidence semantics; restore/build/test independently and commit before continuing.
 ## Update procedure
 
 Update completed, remaining, build/test status, version, limitations, and next milestone in the same commit as every milestone.

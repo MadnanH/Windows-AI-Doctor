@@ -79,7 +79,8 @@ public static class DependencyInjection
             .AddSingleton<ILiveMonitoringRepository, SqliteLiveMonitoringRepository>()
             .AddSingleton<IReliabilityTimelineRepository, SqliteReliabilityTimelineRepository>()
             .AddSingleton<IReliabilityTimelineSource, SqliteReliabilityTimelineSource>()
-            .AddSingleton<IPerformanceHistoryRepository, SqlitePerformanceHistoryRepository>();
+            .AddSingleton<IPerformanceHistoryRepository, SqlitePerformanceHistoryRepository>()
+            .AddSingleton<IDigitalTwinRepository, SqliteDigitalTwinRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -164,7 +165,17 @@ public static class DependencyInjection
             .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>()
             .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()
             .AddSingleton<ReliabilityTimelineProjector>().AddSingleton<ReliabilityTimelineExporter>()
-            .AddSingleton<PerformanceAggregationEngine>().AddSingleton<PerformanceHistoryService>();
+            .AddSingleton<PerformanceAggregationEngine>().AddSingleton<PerformanceHistoryService>()
+            .AddSingleton<ISystemSnapshotComponentProvider>(_=>new EnvironmentSnapshotComponentProvider("hardware"))
+            .AddSingleton<ISystemSnapshotComponentProvider>(_=>new EnvironmentSnapshotComponentProvider("os"))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"drivers","component-1.0",new Dictionary<string,string>{{"latest","SELECT COALESCE(MAX(generated_utc),'Unavailable') FROM driver_analysis_runs"},{"runs","SELECT COUNT(*) FROM driver_analysis_runs"}}))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"services","component-1.0",new Dictionary<string,string>{{"findings","SELECT COUNT(*) FROM findings WHERE scanner_id LIKE '%service%'"}}))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"startup","component-1.0",new Dictionary<string,string>{{"runs","SELECT COUNT(*) FROM boot_analysis_runs"}}))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"update","component-1.0",new Dictionary<string,string>{{"runs","SELECT COUNT(*) FROM windows_update_analysis_runs"}}))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"security","component-1.0",new Dictionary<string,string>{{"runs","SELECT COUNT(*) FROM security_posture_runs"}}))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"storage","component-1.0",new Dictionary<string,string>{{"runs","SELECT COUNT(*) FROM storage_health_runs"}}))
+            .AddSingleton<ISystemSnapshotComponentProvider>(p=>new SqliteSnapshotComponentProvider(p.GetRequiredService<WaidDatabase>(),"configuration","component-1.0",new Dictionary<string,string>{{"version","SELECT COALESCE(MAX(version),0) FROM configuration_state"}}))
+            .AddSingleton<DigitalTwinService>();
         modules.Add("operations", "Monitoring and scheduling"); return services;
     }
 }
