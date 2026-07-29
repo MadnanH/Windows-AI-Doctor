@@ -97,7 +97,8 @@ public sealed class LiveMonitoringService(
     LiveAlertEvaluator alertEvaluator,
     ILiveMonitoringPolicy policy,
     TimeProvider time,
-    ILogger<LiveMonitoringService> logger) : IAsyncDisposable
+    ILogger<LiveMonitoringService> logger,
+    AlertManager? alertManager = null) : IAsyncDisposable
 {
     private readonly IReadOnlyList<ILiveSignalCollector> _collectors = collectors.ToArray();
     private CancellationTokenSource? _cancellation; private Task? _worker; private LiveMonitoringOptions _options = LiveMonitoringOptions.Default;
@@ -161,6 +162,14 @@ public sealed class LiveMonitoringService(
         var duration = time.GetElapsedTime(started); var current = samples.ToDictionary(item => item.SignalId, item => item.Severity, StringComparer.OrdinalIgnoreCase);
         _stableCycles = Same(current, _lastSeverities) ? Math.Min(_stableCycles + 1, 8) : 0; _lastSeverities = current;
         ActiveAlerts = alertEvaluator.Evaluate(samples);
+        if (alertManager is not null)
+            foreach (var alert in ActiveAlerts)
+            {
+                var sample = samples.First(item => string.Equals(item.SignalId, alert.SignalId, StringComparison.OrdinalIgnoreCase));
+                var severity = alert.Severity == LiveSignalSeverity.Critical ? AlertSeverity.Critical : AlertSeverity.Warning;
+                var category = alert.SignalId.Equals("storage", StringComparison.OrdinalIgnoreCase) ? AlertCategory.Storage : AlertCategory.Performance;
+                await alertManager.RaiseAsync(new($"live:{alert.SignalId}", $"live-{alert.SignalId}", "live-alert-1.0", category, severity, $"{alert.SignalId} needs attention", alert.Message, "Review monitoring evidence", "waid://live-monitoring", new("live-monitoring", sample.Id.ToString(), sample.CapturedAtUtc, new Dictionary<string,string>{{"signal",sample.SignalId},{"severity",sample.Severity.ToString()},{"value",sample.Value?.ToString(System.Globalization.CultureInfo.InvariantCulture)??"Unavailable"},{"unit",sample.Unit},{"source",sample.Source}})), token).ConfigureAwait(false);
+            }
         ResourceUsage = new(duration, _options.EffectiveCollectionBudget, samples.Count, failures.Count, AdaptiveInterval(), _stableCycles);
         await repository.SaveCycleAsync(samples, gaps, failures, token).ConfigureAwait(false);
         await repository.ApplyRetentionAsync(now.AddDays(-_options.RetentionDays), _options.MaximumStoredSamples, token).ConfigureAwait(false);

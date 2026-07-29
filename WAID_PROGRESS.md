@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-29
 
-Current version: **0.24.0-dev**
+Current version: **0.25.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v24, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v25, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -41,6 +41,7 @@ Active branch: `main`
 - Commercial hardening Prompt 21 performance history: validated CPU/memory/disk/network/temperature/battery/responsiveness samples with explicit quality; versioned UTC hourly/daily/weekly rollups; deterministic spike-preserving downsampling; sustained-change and period comparison; generation-safe caching; schema-22 retention jobs; and an accessible cards/chart dashboard.
 - Commercial hardening Prompt 22 digital twin snapshots: privacy-safe versioned component capture, partial-failure isolation, canonical SHA-256 integrity, compressed schema-23 persistence, pin-aware retention, deterministic risk-highlighted diffs, repair-linked pre/post snapshots, and a reachable comparison/export page.
 - Commercial hardening Prompt 23 scheduled scanning: daily/weekly/monthly/custom/startup/idle/maintenance recurrence, DST-safe UTC next runs, sleep/wake catch-up, power/idle/network/load/window deferrals, two-layer overlap prevention, typed/audited outcomes, schema-24 history, and an accessible editor, preview, run-now, pause, and history UI.
+- Commercial hardening Prompt 24 alerts and notifications: categorized versioned evidence alerts, privacy-safe deduplication, cooldown, quiet hours, acknowledgement, bounded snooze, repeat escalation, optional policy-aware delivery channels, typed delivery outcomes, schema-25 restart persistence, audit events, live-monitoring integration, and a reachable filtered Notification Center.
 
 ## Fully working features
 
@@ -70,6 +71,7 @@ Active branch: `main`
 - Performance History stores real or explicitly unavailable local metrics, builds versioned UTC rollups that match chart queries, preserves quality/coverage, invalidates caches on storage changes, bounds long histories, summarizes charts accessibly, and compares periods without causal claims.
 - Digital Twin captures structured local system state without personal-file inventories or secret material, tolerates unavailable providers, preserves serializer and integrity versions, stores compressed snapshots, compares stable field changes, and links pinned pre/post repair evidence without weakening approval gates.
 - Scheduled Scanning reuses the read-only scan coordinator, persists next-run and policy state, handles missed runs once after wake, records every decision and important audit event, defers under unsafe resource conditions, prevents duplicate scans, and never invokes repair execution.
+- Alerts merge repeated observations by stable rule key, preserve bounded redacted evidence and rule versions, suppress spam through cooldown/quiet/snooze/acknowledgement state, isolate channel failures, persist delivery history and policy, navigate to related WAID evidence, and never authorize or execute repairs.
 
 ## Partially working features
 
@@ -95,7 +97,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-24 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-25 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -126,6 +128,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Performance metric collection is user-triggered. CPU/network need a prior delta; responsiveness is estimated; disk currently represents free space rather than latency; temperature is explicitly unavailable without a supported provider; and long-duration real-hardware accuracy remains outstanding.
 - Digital Twin components may summarize the latest persisted WAID analyses, so completeness depends on prior scanner coverage and Windows provider availability. Diffs show association and change, not causation; real-hardware serializer coverage and long-duration retention remain outstanding.
 - Scheduled scans run only while WAID is open and cannot wake or launch a closed application. Startup means application startup; network policy reflects interface availability rather than internet reachability; long-duration sleep, DST, idle, battery, and organization-policy behavior still require real-Windows validation.
+- Alert delivery currently supports only the in-app channel while WAID is open; Windows toast/Action Center, email, SMS, and remote push are not implemented. Long-duration cooldown, local-time change, sleep/wake, and assistive-technology behavior still require real-Windows validation.
 
 ## Build status
 
@@ -140,27 +143,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 310/310 tests**
+**Passing - 318/318 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 79 passed
+- `WAID.Application.Tests`: 86 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 146 passed
+- `WAID.Infrastructure.Tests`: 147 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.24.0-dev - Scheduled Scanning and Maintenance Windows**
+**0.25.0-dev - Alerts and Notifications**
 
-Prompt 23 adds DST-aware recurrence, missed-run handling, bounded policy deferrals, duplicate prevention, durable/audited execution history, and an accessible schedule editor and preview.
+Prompt 24 adds durable evidence-backed alerts, spam prevention, lifecycle controls, quiet-hours and channel policy, delivery auditing, live-monitoring rules, and a reachable Notification Center.
 
 ## Next milestone
 
-**Commercial hardening Prompt 24 - Alerts and Notifications**
+**Commercial hardening Prompt 25 - Repair Orchestration Framework**
 
-Apply only Prompt 24 from the ordered commercial-grade prompt set. Preserve scheduler recurrence and overlap guarantees, typed history, monitoring budgets, snapshot privacy, repair approval isolation, evidence semantics, and policy enforcement; restore/build/test independently and commit before continuing.
+Apply only Prompt 25 from the ordered commercial-grade prompt set. Preserve alert non-execution guarantees, explicit repair approval, scheduler overlap controls, monitoring budgets, snapshot privacy, evidence provenance, rollback safety, and policy enforcement; restore/build/test independently and commit before continuing.
 ## Update procedure
 
 Update completed, remaining, build/test status, version, limitations, and next milestone in the same commit as every milestone.

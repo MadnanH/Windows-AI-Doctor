@@ -17,7 +17,7 @@ public sealed class DatabaseReliabilityTests
         Assert.Equal(WaidDatabase.CurrentSchemaVersion, await ScalarIntAsync(connection, "PRAGMA user_version;"));
         Assert.Equal("wal", await ScalarAsync(connection, "PRAGMA journal_mode;"));
         Assert.Equal("ok", await ScalarAsync(connection, "PRAGMA quick_check;"));
-        Assert.Equal(47, await ScalarIntAsync(connection, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"));
+        Assert.Equal(49, await ScalarIntAsync(connection, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"));
     }
 
     [Theory]
