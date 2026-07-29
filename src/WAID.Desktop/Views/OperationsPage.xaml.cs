@@ -14,7 +14,7 @@ public sealed partial class OperationsPage : Page
         if(sender is not Button{DataContext:PrioritizedRepair repair})return;
         var details=await _viewModel.GetRepairDetailsAsync(repair);
         var acknowledgement=new CheckBox{Content="I understand the stated risk and approve this repair",IsChecked=repair.RiskLevel==SafetyLevel.Low};
-        var dialog=new ContentDialog{Title=repair.Title,Content=new StackPanel{Spacing=8,Children={new TextBlock{Text=$"{details}\n\nExpected benefit: {repair.ExpectedBenefit}%\nAdministrator: {repair.RequiresAdministrator}\nConfidence: {repair.Confidence}%\nEvidence strength: {repair.EvidenceStrength}%",TextWrapping=Microsoft.UI.Xaml.TextWrapping.Wrap},acknowledgement}},PrimaryButtonText="Approve and run",CloseButtonText="Cancel",DefaultButton=ContentDialogButton.Close,XamlRoot=XamlRoot};
+        var dialog=new ContentDialog{Title=repair.Title,Content=new StackPanel{Spacing=8,Children={new TextBlock{Text=$"{details}\n\nExpected benefit: {repair.ExpectedBenefit}%\nRanking: {repair.RankingExplanation}\nPrerequisites: {string.Join(", ",repair.Prerequisites)}\nEstimated downtime: {repair.EstimatedDowntimeMinutes} minutes\nAdministrator: {repair.RequiresAdministrator}\nConfidence: {repair.Confidence}%\nEvidence strength: {repair.EvidenceStrength}%",TextWrapping=Microsoft.UI.Xaml.TextWrapping.Wrap},acknowledgement}},PrimaryButtonText="Approve and run",CloseButtonText="Cancel",DefaultButton=ContentDialogButton.Close,XamlRoot=XamlRoot};
         if(await dialog.ShowAsync()==ContentDialogResult.Primary)await _viewModel.ApproveAndRunAsync(repair,acknowledgement.IsChecked==true);
     }
     private async void OnApproveSafeClick(object sender,Microsoft.UI.Xaml.RoutedEventArgs args)

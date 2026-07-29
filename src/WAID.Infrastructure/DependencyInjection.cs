@@ -73,7 +73,8 @@ public static class DependencyInjection
             .AddSingleton<IScanRunRepository>(provider => provider.GetRequiredService<SqliteScanRepository>())
             .AddSingleton<ISettingsRepository, SqliteSettingsRepository>().AddSingleton<IDiagnosisRepository, SqliteDiagnosisRepository>()
             .AddSingleton<IRepairHistoryRepository, SqliteRepairHistoryRepository>().AddSingleton<IHealthSnapshotRepository, SqliteHealthSnapshotRepository>()
-            .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>();
+            .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>()
+            .AddSingleton<IRepairRecommendationRepository, SqliteRepairRecommendationRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();

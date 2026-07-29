@@ -130,23 +130,29 @@ public sealed class EvidenceCollector(TimeProvider timeProvider)
     }
 }
 
-public sealed class RepairPrioritizationEngine(RepairRegistry registry)
+public sealed class RepairPrioritizationEngine
 {
-    public IReadOnlyCollection<PrioritizedRepair> Prioritize(AIReport report)
+    public const string RankingVersion="deterministic-v2";
+    private readonly RepairRegistry _registry;private readonly IRepairRecommendationRepository? _repository;private readonly TimeProvider _time;
+    public RepairPrioritizationEngine(RepairRegistry registry,IRepairRecommendationRepository? repository=null,TimeProvider? time=null){_registry=registry;_repository=repository;_time=time??TimeProvider.System;}
+    public IReadOnlyCollection<PrioritizedRepair> Prioritize(AIReport report)=>Evaluate(report,RepairRankingContext.Default).Ranked;
+    public RepairRankingRun Evaluate(AIReport report,RepairRankingContext context)
     {
-        var unique = report.RootCauses.Where(cause => cause.Recommendation.RepairId is not null)
-            .GroupBy(cause => cause.Recommendation.RepairId!, StringComparer.OrdinalIgnoreCase).Select(group => group.OrderByDescending(x => x.Confidence).First());
-        return unique.Select(cause =>
+        ArgumentNullException.ThrowIfNull(report);ArgumentNullException.ThrowIfNull(context);var ranked=new List<PrioritizedRepair>();var decisions=new List<RepairRecommendationDecision>();
+        var causes=report.RootCauses.Where(x=>x.Recommendation.RepairId is not null).GroupBy(x=>x.Recommendation.RepairId!,StringComparer.OrdinalIgnoreCase).Select(x=>x.OrderByDescending(y=>y.Confidence).ThenBy(y=>y.Id,StringComparer.Ordinal).First());
+        foreach(var cause in causes.OrderBy(x=>x.Recommendation.RepairId,StringComparer.Ordinal))
         {
-            registry.TryGet(cause.Recommendation.RepairId!, out var module);
-            var risk = module?.Policy.SafetyLevel ?? SafetyLevel.Critical;
-            var evidence = Math.Min(100, cause.SupportingEvidence.Count * 20 + report.Correlations.Where(c => c.Findings.Any(cause.SupportingEvidence.Contains)).Select(c => c.Strength).DefaultIfEmpty(0).Max());
-            var impact = Math.Clamp((cause.Confidence + evidence + (cause.Severity == DiagnosticSeverity.Critical ? 100 : 60) - (int)risk * 10) / 3, 0, 100);
-            var restart = cause.Recommendation.RepairId is "waid.windows-update-reset" or "waid.winsock-reset" or "waid.tcpip-reset";
-            return new PrioritizedRepair(module?.Id ?? cause.Recommendation.RepairId!, cause.Recommendation.Title, DependencyOrder(cause.Recommendation.RepairId!), impact, risk, module?.Policy.RequiresAdministrator ?? true, restart, module?.Policy.SupportsRollback ?? false, cause.Confidence, evidence);
-        }).OrderBy(item => item.Order).ThenByDescending(item => item.ExpectedBenefit).ToArray();
+            var id=cause.Recommendation.RepairId!;if(!_registry.TryGet(id,out var module)||module is null)continue;var policy=module.Policy;var prereq=Prerequisites(policy);var missing=prereq.Where(x=>!context.AvailablePrerequisites.Contains(x)).ToArray();var conflicts=context.Conflicts.TryGetValue(id,out var found)?found:[];var blocked=context.BlockedRepairIds.Contains(id)||policy.SafetyLevel>context.MaximumRisk;var status=blocked?RepairCandidateStatus.BlockedByPolicy:conflicts.Count>0?RepairCandidateStatus.Conflict:missing.Length>0?RepairCandidateStatus.PrerequisiteMissing:RepairCandidateStatus.Eligible;
+            var evidence=Math.Min(100,cause.SupportingEvidence.Count*20+report.Correlations.Where(c=>c.Findings.Any(cause.SupportingEvidence.Contains)).Select(c=>c.Strength).DefaultIfEmpty(0).Max());var baseBenefit=Math.Clamp((cause.Confidence+evidence+(cause.Severity==DiagnosticSeverity.Critical?100:60))/3,0,100);var riskPenalty=(int)policy.SafetyLevel*8;var reversible=policy.SupportsRollback?10:0;var downtime=Downtime(id);var downtimePenalty=downtime>context.MaximumDowntimeMinutes?15:downtime/10;var conflictPenalty=conflicts.Count*20;var prerequisitePenalty=missing.Length*25;var policyPenalty=blocked?100:0;var feedback=context.Feedback.TryGetValue(id,out var aggregate)?aggregate.Adjustment:0;var score=Math.Clamp(baseBenefit-riskPenalty+reversible-downtimePenalty-conflictPenalty-prerequisitePenalty-policyPenalty+feedback,0,100);var factors=new RepairRankingFactors(evidence,baseBenefit,riskPenalty,reversible,downtimePenalty,0,conflictPenalty,prerequisitePenalty,policyPenalty,feedback,score);var reason=status switch{RepairCandidateStatus.BlockedByPolicy=>"Rejected by active repair policy.",RepairCandidateStatus.Conflict=>"Rejected because a conflicting repair or system condition is present.",RepairCandidateStatus.PrerequisiteMissing=>"Rejected until all declared prerequisites are available.",_=>"Eligible registered repair ranked from evidence, benefit, risk, reversibility, downtime, and bounded outcome feedback."};var auto=status==RepairCandidateStatus.Eligible&&policy.SafetyLevel==SafetyLevel.Low;
+            decisions.Add(new(id,status,reason,factors,auto,conflicts,missing));if(status!=RepairCandidateStatus.Eligible)continue;ranked.Add(new(id,cause.Recommendation.Title,DependencyOrder(id),score,policy.SafetyLevel,policy.RequiresAdministrator,Restart(id),policy.SupportsRollback,cause.Confidence,evidence){RankingFactors=factors,CandidateStatus=status,RankingExplanation=reason,Prerequisites=prereq,Conflicts=conflicts,EstimatedDowntimeMinutes=downtime,AutoSelectable=auto,RankingVersion=RankingVersion});
+        }
+        var ordered=ranked.OrderBy(x=>x.Order).ThenByDescending(x=>x.ExpectedBenefit).ThenBy(x=>x.RepairId,StringComparer.Ordinal).ToArray();return new(Guid.NewGuid(),_time.GetUtcNow(),RankingVersion,ordered,decisions.OrderBy(x=>x.RepairId,StringComparer.Ordinal).ToArray(),context.Feedback);
     }
-    private static int DependencyOrder(string id) => id switch { "waid.dism" => 10, "waid.sfc" => 20, "waid.dns-reset" => 30, "waid.winsock-reset" => 40, "waid.tcpip-reset" => 50, _ => 25 };
+    public async Task<RepairRankingRun> EvaluateAsync(AIReport report,RepairRankingContext context,CancellationToken token){var run=Evaluate(report,context);if(_repository is not null)await _repository.SaveAsync(run,token).ConfigureAwait(false);return run;}
+    private static IReadOnlyList<string> Prerequisites(RepairPolicy p){var items=new List<string>();if(p.RequiresAdministrator)items.Add("administrator");if(p.RequiresRestorePoint)items.Add("restore-point");if(p.RequiresBackup)items.Add("backup");return items;}
+    private static int Downtime(string id)=>id switch{"waid.windows-update-reset"=>30,"waid.dism"=>45,"waid.sfc"=>30,"waid.winsock-reset" or "waid.tcpip-reset"=>10,_=>5};
+    private static bool Restart(string id)=>id is "waid.windows-update-reset" or "waid.winsock-reset" or "waid.tcpip-reset";
+    private static int DependencyOrder(string id)=>id switch{"waid.dism"=>10,"waid.sfc"=>20,"waid.dns-reset"=>30,"waid.winsock-reset"=>40,"waid.tcpip-reset"=>50,_=>25};
 }
 
 public sealed class RepairApprovalWorkflow(IRepairApprovalRepository repository, TimeProvider timeProvider, IAuditTrailService? auditTrail=null, IOperationContextAccessor? operationContext=null)

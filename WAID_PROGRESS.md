@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-29
 
-Current version: **0.17.0-dev**
+Current version: **0.18.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v17, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v18, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -34,6 +34,7 @@ Active branch: `main`
 - Commercial hardening Prompt 14 explainable diagnosis: immutable schema-1.0 explanations with weighted evidence, counter-evidence, alternatives, deterministic calibrated confidence, version metadata, change-over-time, explicit unsupported results, and consistent dashboard, diagnosis, history, repair-preview, chat, HTML, and PDF rendering.
 - Commercial hardening Prompt 15 evidence aggregation: immutable schema-1.0 graph nodes, provenance-preserving deduplication, freshness and retention, versioned temporal/conflict/repair/cross-domain candidate strategies, cycle prevention, schema-17 transactional persistence, and an accessible filtered Incident & Evidence Explorer.
 - Commercial hardening Prompt 16 offline knowledge retrieval: curated versioned articles with errors, symptoms, prerequisites, risks, OS compatibility, references, source/license/trust/checksum metadata; relevance/evidence/compatibility/freshness ranking; atomic local index rebuild; hostile-content rejection; repair-trust isolation; grounded-chat citations; and an accessible Knowledge page.
+- Commercial hardening Prompt 17 repair recommendation ranking: registered-repair-only candidates, deterministic v2 factor scoring, policy/conflict/prerequisite rejection, reversibility and downtime metadata, bounded outcome feedback, high-risk auto-selection prohibition, schema-18 run/decision persistence, and expanded comparison/simulation UI.
 
 ## Fully working features
 
@@ -56,6 +57,7 @@ Active branch: `main`
 - Every current diagnosis now carries a supported or explicitly unsupported explanation. Identical evidence and rule versions reproduce confidence; explanations persist with evidence links, alternatives, calibration metadata, and version provenance in existing schema-16 diagnosis JSON.
 - Evidence Explorer aggregates real persisted scanner findings and repair outcomes, deduplicates without changing raw records, preserves provenance, exposes freshness and filters, and labels every derived edge as an association or causal candidate rather than causation.
 - Offline Knowledge works without network access, ranks curated guidance against search terms, saved finding codes, Windows compatibility, trust, and freshness, and prevents community/plugin material from defining repair guidance.
+- Repair Plan recommends only active registered modules, persists every eligible/rejected decision and factor set, uses bounded repair outcomes without learning new mappings, and never marks high-risk work for automatic selection.
 
 ## Partially working features
 
@@ -81,7 +83,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-17 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-18 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -105,6 +107,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Explainable diagnosis is bounded by the offline rule catalog. Confidence is deterministic evidence strength, not certainty or repair-success probability; older reports surface explicit legacy/unsupported explanation metadata.
 - Evidence graph relationships are deterministic candidate associations based on normalized code, attributes, and time. They cannot establish physical or software causation; source timestamp quality and scanner coverage limit correlation quality.
 - The embedded knowledge catalog is intentionally bounded and updated only with application releases. It is not a complete replacement for vendor documentation; compatibility ranking relies on declared article metadata and the local OS version.
+- Repair ranking estimates expected benefit and downtime from deterministic metadata, not measured guarantees. Feedback is capped and cannot override registration, policy, prerequisites, conflicts, approval, or executor safety gates.
 
 ## Build status
 
@@ -119,27 +122,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 247/247 tests**
+**Passing - 254/254 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 25 passed
+- `WAID.Application.Tests`: 31 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 137 passed
+- `WAID.Infrastructure.Tests`: 138 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.17.0-dev - Offline Knowledge Base and Retrieval**
+**0.18.0-dev - Repair Recommendation and Prioritization Engine**
 
-Prompt 16 adds curated, licensed, versioned offline guidance with checksum-protected atomic indexing, compatibility-aware retrieval, trust isolation, and accessible search.
+Prompt 17 adds deterministic, policy-aware, registered-repair-only ranking with explainable factors, persisted decisions, bounded feedback, and no new execution path.
 
 ## Next milestone
 
-**Commercial hardening Prompt 17 - Repair Recommendation and Prioritization Engine**
+**Commercial hardening Prompt 18 - Predictive Health Engine Foundation**
 
-Apply only Prompt 17 from the ordered commercial-grade prompt set. Preserve schema 17, offline knowledge trust and licensing boundaries, evidence graph non-causation semantics, explanation schema 1.0, grounded citations, repair isolation, scanner provenance, privacy boundaries, immutable configuration snapshots, and policy enforcement; restore/build/test independently and commit before continuing.
+Apply only Prompt 18 from the ordered commercial-grade prompt set. Preserve schema 18, deterministic repair ranking and approval isolation, offline knowledge trust boundaries, evidence graph non-causation semantics, explanation schema 1.0, grounded citations, scanner provenance, privacy boundaries, immutable configuration snapshots, and policy enforcement; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

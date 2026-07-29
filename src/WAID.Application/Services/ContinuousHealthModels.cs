@@ -35,7 +35,17 @@ public sealed record CrashGroup(string Key, int Count, DateTimeOffset FirstSeenU
 
 public sealed record PrioritizedRepair(string RepairId, string Title, int Order, int ExpectedBenefit,
     SafetyLevel RiskLevel, bool RequiresAdministrator, bool RestartRequired, bool SupportsRollback,
-    int Confidence, int EvidenceStrength);
+    int Confidence, int EvidenceStrength)
+{
+    public RepairRankingFactors? RankingFactors { get; init; }
+    public RepairCandidateStatus CandidateStatus { get; init; } = RepairCandidateStatus.Eligible;
+    public string RankingExplanation { get; init; } = "Legacy ranking metadata is unavailable.";
+    public IReadOnlyList<string> Prerequisites { get; init; } = [];
+    public IReadOnlyList<string> Conflicts { get; init; } = [];
+    public int EstimatedDowntimeMinutes { get; init; }
+    public bool AutoSelectable { get; init; }
+    public string RankingVersion { get; init; } = RepairPrioritizationEngine.RankingVersion;
+}
 
 public sealed record RepairApproval(Guid Id, string RepairId, DateTimeOffset RequestedAtUtc,
     DateTimeOffset? ApprovedAtUtc, bool Approved, string EvidenceSummary, IReadOnlyCollection<string> PlannedActions);

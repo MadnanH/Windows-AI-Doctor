@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 17;
+    public const int CurrentSchemaVersion = 18;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -268,5 +268,9 @@ public sealed class WaidDatabase
             CREATE INDEX ix_evidence_graph_runs_generated ON evidence_graph_runs(generated_utc DESC);
             CREATE INDEX ix_evidence_graph_nodes_domain_time ON evidence_graph_nodes(domain,observed_utc DESC);
             CREATE INDEX ix_evidence_graph_edges_nodes ON evidence_graph_edges(from_node_id,to_node_id);
+            """),
+        new(18, "Repair recommendation rankings", """
+            CREATE TABLE repair_recommendation_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,ranking_version TEXT NOT NULL,run_json TEXT NOT NULL);
+            CREATE INDEX ix_repair_recommendation_generated ON repair_recommendation_runs(generated_utc DESC);
             """)    ];
 }
