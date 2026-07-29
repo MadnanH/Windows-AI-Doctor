@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-29
 
-Current version: **0.15.0-dev**
+Current version: **0.16.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v16, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v17, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -32,6 +32,7 @@ Active branch: `main`
 - Commercial hardening Prompt 12 Network Diagnostic Center: adapter/IP/DNS/route/gateway/proxy/VPN/Wi-Fi/firewall/service evidence, user-selected bounded probes, failing-layer classification, privacy-safe schema-16 history and export, cancellation, reset-evidence gating, and a reachable Network Health page.
 - Commercial hardening Prompt 13 AI Chat Assistant Core: offline retrieval across scans, diagnosis, and repair history; separated prompt/provider/safety services; citation enforcement; hostile-evidence neutralization; timeout fallback; schema-15 conversation lifecycle; and a reachable evidence-aware AI Chat page.
 - Commercial hardening Prompt 14 explainable diagnosis: immutable schema-1.0 explanations with weighted evidence, counter-evidence, alternatives, deterministic calibrated confidence, version metadata, change-over-time, explicit unsupported results, and consistent dashboard, diagnosis, history, repair-preview, chat, HTML, and PDF rendering.
+- Commercial hardening Prompt 15 evidence aggregation: immutable schema-1.0 graph nodes, provenance-preserving deduplication, freshness and retention, versioned temporal/conflict/repair/cross-domain candidate strategies, cycle prevention, schema-17 transactional persistence, and an accessible filtered Incident & Evidence Explorer.
 
 ## Fully working features
 
@@ -52,6 +53,7 @@ Active branch: `main`
 - AI Chat works offline, cites persisted WAID evidence, exposes provider/model/confidence state, rejects uncited output, falls back safely after provider failure, and cannot execute repairs.
 - Network Health runs read-only local inspection plus optional user-selected bounded probes, separates failure layers, persists latency/loss/evidence, and never performs a reset directly.
 - Every current diagnosis now carries a supported or explicitly unsupported explanation. Identical evidence and rule versions reproduce confidence; explanations persist with evidence links, alternatives, calibration metadata, and version provenance in existing schema-16 diagnosis JSON.
+- Evidence Explorer aggregates real persisted scanner findings and repair outcomes, deduplicates without changing raw records, preserves provenance, exposes freshness and filters, and labels every derived edge as an association or causal candidate rather than causation.
 
 ## Partially working features
 
@@ -99,6 +101,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Chat retrieval is intentionally bounded to recent persisted evidence. The deterministic offline provider summarizes evidence but is not a general-purpose language model; no cloud AI is enabled.
 - Network probes cannot prove general internet reachability: ICMP may be filtered, captive portals and proxies vary, and optional DNS/HTTP checks run only against user-supplied targets. Wi-Fi signal/profile details may be unavailable from Windows providers.
 - Explainable diagnosis is bounded by the offline rule catalog. Confidence is deterministic evidence strength, not certainty or repair-success probability; older reports surface explicit legacy/unsupported explanation metadata.
+- Evidence graph relationships are deterministic candidate associations based on normalized code, attributes, and time. They cannot establish physical or software causation; source timestamp quality and scanner coverage limit correlation quality.
 
 ## Build status
 
@@ -113,27 +116,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 231/231 tests**
+**Passing - 238/238 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 25 passed
-- `WAID.Diagnosis.Tests`: 60 passed
-- `WAID.Infrastructure.Tests`: 136 passed
+- `WAID.Diagnosis.Tests`: 66 passed
+- `WAID.Infrastructure.Tests`: 137 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.15.0-dev - Explainable Diagnosis Engine**
+**0.16.0-dev - Evidence Aggregation and Correlation Engine**
 
-Prompt 14 adds deterministic, evidence-linked, versioned explanations across every diagnosis surface without changing SQLite schema 16 or repair safety gates.
+Prompt 15 adds a versioned, provenance-preserving evidence graph and accessible explorer with explicit non-causation semantics and schema-17 persistence.
 
 ## Next milestone
 
-**Commercial hardening Prompt 15 - Evidence Aggregation and Correlation Engine**
+**Commercial hardening Prompt 16 - Offline Knowledge Base and Retrieval**
 
-Apply only Prompt 15 from the ordered commercial-grade prompt set. Preserve schema 16, explanation schema 1.0 and deterministic calibration, grounded citations, repair isolation, scanner provenance, privacy boundaries, immutable configuration snapshots, and policy enforcement; restore/build/test independently and commit before continuing.
+Apply only Prompt 16 from the ordered commercial-grade prompt set. Preserve schema 17, evidence graph schema 1.0 and non-causation semantics, explanation schema 1.0, grounded citations, repair isolation, scanner provenance, privacy boundaries, immutable configuration snapshots, and policy enforcement; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

@@ -1,0 +1,16 @@
+using System.Diagnostics;
+using WAID.EventAnalysis;
+namespace WAID.Diagnosis.Tests;
+public sealed class EvidenceAggregationTests
+{
+ private static readonly DateTimeOffset Now=new(2026,7,29,10,0,0,TimeSpan.Zero);
+ [Fact]public void Deduplicates_identical_observations_without_mutating_input(){var attributes=new Dictionary<string,string>{{"state","failed"}};var input=new[]{O("a",EvidenceDomain.Storage,"SMART","Warning",Now,attributes),O("b",EvidenceDomain.Storage,"SMART","Warning",Now,attributes)};var graph=Engine().Build(input);var node=Assert.Single(graph.Nodes);Assert.Equal(1,node.DuplicateCount);Assert.Equal(2,node.Provenance.Count);Assert.Single(attributes);}
+ [Fact]public void Temporal_window_excludes_distant_associations(){var graph=Engine().Build([O("a",EvidenceDomain.Event,"POWER","Power",Now),O("b",EvidenceDomain.Storage,"DISK","Disk",Now.AddHours(7))]);Assert.Empty(graph.Relationships);}
+ [Fact]public void Conflicting_sources_are_explicit_associations_not_causal_claims(){var graph=Engine().Build([O("a",EvidenceDomain.Update,"UPDATE","Update enabled",Now,new Dictionary<string,string>{{"state","enabled"}}),O("b",EvidenceDomain.Update,"UPDATE","Update disabled",Now.AddMinutes(1),new Dictionary<string,string>{{"state","disabled"}})]);var edge=Assert.Single(graph.Relationships,x=>x.Kind==EvidenceRelationshipKind.ConflictingObservation);Assert.False(edge.IsCausalClaim);Assert.Contains("conflicting",edge.Rationale,StringComparison.OrdinalIgnoreCase);}
+ [Fact]public void Provenance_and_strategy_are_traceable(){var graph=Engine().Build([O("scanner",EvidenceDomain.Driver,"DRIVER","Driver failure",Now)]);var node=Assert.Single(graph.Nodes);Assert.Equal("scanner",Assert.Single(node.Provenance).SourceId);Assert.Equal(EvidenceAggregationEngine.StrategyVersion,graph.StrategyVersion);Assert.All(graph.Relationships,x=>Assert.False(string.IsNullOrWhiteSpace(x.StrategyId)));}
+ [Fact]public void Cross_domain_relationship_is_only_a_causal_candidate(){var graph=Engine().Build([O("event",EvidenceDomain.Event,"POWER","Power loss",Now),O("disk",EvidenceDomain.Storage,"SMART","Disk warning",Now.AddMinutes(1))]);var edge=Assert.Single(graph.Relationships);Assert.Equal(EvidenceRelationshipKind.CausalCandidate,edge.Kind);Assert.False(edge.IsCausalClaim);}
+ [Fact]public void Large_dataset_is_bounded_and_completes_quickly(){var input=Enumerable.Range(0,10000).Select(i=>O($"s{i}",EvidenceDomain.Event,$"C{i}",$"Event {i}",Now.AddMinutes(i*10)));var timer=Stopwatch.StartNew();var graph=Engine().Build(input,new(TimeSpan.FromMinutes(5),TimeSpan.FromDays(100),TimeSpan.FromDays(100),TimeSpan.FromDays(100),10000));timer.Stop();Assert.Equal(10000,graph.Nodes.Count);Assert.Empty(graph.Relationships);Assert.True(timer.Elapsed<TimeSpan.FromSeconds(5),$"Aggregation took {timer.Elapsed}.");}
+ private static EvidenceAggregationEngine Engine()=>new(new FixedTime(Now.AddDays(1)));
+ private static EvidenceObservation O(string id,EvidenceDomain domain,string code,string summary,DateTimeOffset time,IReadOnlyDictionary<string,string>? values=null)=>new(id,domain,code,summary,time,values??new Dictionary<string,string>(),new(id,"test",$"fixture:{id}","1"));
+ private sealed class FixedTime(DateTimeOffset now):TimeProvider{public override DateTimeOffset GetUtcNow()=>now;}
+}

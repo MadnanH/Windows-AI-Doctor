@@ -80,6 +80,7 @@ public static class DependencyInjection
         services.AddSingleton<IStorageHealthRepository, SqliteStorageHealthRepository>();
         services.AddSingleton<ISecurityPostureRepository, SqliteSecurityPostureRepository>();
         services.AddSingleton<INetworkHealthRepository, SqliteNetworkHealthRepository>();
+        services.AddSingleton<IEvidenceGraphRepository, SqliteEvidenceGraphRepository>();
         services.AddSingleton<IChatConversationRepository, SqliteChatConversationRepository>();
         services.AddSingleton<IOperationContextAccessor,OperationContextAccessor>()
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
@@ -139,7 +140,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddWaidOfflineDiagnosis(this IServiceCollection services, WaidModuleCatalog modules)
     {
-        services.AddSingleton<DiagnosticKnowledgeBase>().AddSingleton<RuleEngine>().AddSingleton<EventCorrelationEngine>().AddSingleton<CorrelationScanner>()
+        services.AddSingleton<DiagnosticKnowledgeBase>().AddSingleton<RuleEngine>().AddSingleton<EventCorrelationEngine>().AddSingleton<EvidenceAggregationEngine>().AddSingleton<CorrelationScanner>()
             .AddSingleton<ConfidenceEngine>().AddSingleton<RecommendationEngine>().AddSingleton<ExplanationEngine>().AddSingleton<RootCauseAnalyzer>()
             .AddSingleton<HealthScoreEngine>().AddSingleton<AIReportBuilder>().AddSingleton<DiagnosisEngine>().AddSingleton<IAiAnalyzer, OfflineDiagnosisAnalyzer>();
         modules.Add("diagnosis", "Offline diagnosis"); return services;

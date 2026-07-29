@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 16;
+    public const int CurrentSchemaVersion = 17;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -260,5 +260,13 @@ public sealed class WaidDatabase
             CREATE TABLE network_health_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,snapshot_json TEXT NOT NULL,tests_json TEXT NOT NULL,report_json TEXT NOT NULL);
             CREATE INDEX ix_network_health_generated ON network_health_runs(generated_utc DESC);
             """)
-    ];
+,
+        new(17, "Evidence aggregation graph", """
+            CREATE TABLE evidence_graph_runs(id TEXT PRIMARY KEY,generated_utc TEXT NOT NULL,schema_version TEXT NOT NULL,strategy_version TEXT NOT NULL,retain_until_utc TEXT NOT NULL);
+            CREATE TABLE evidence_graph_nodes(run_id TEXT NOT NULL,node_id TEXT NOT NULL,observed_utc TEXT NOT NULL,domain TEXT NOT NULL,code TEXT NOT NULL,node_json TEXT NOT NULL,PRIMARY KEY(run_id,node_id),FOREIGN KEY(run_id) REFERENCES evidence_graph_runs(id) ON DELETE CASCADE);
+            CREATE TABLE evidence_graph_edges(run_id TEXT NOT NULL,edge_id TEXT NOT NULL,from_node_id TEXT NOT NULL,to_node_id TEXT NOT NULL,kind TEXT NOT NULL,confidence REAL NOT NULL,edge_json TEXT NOT NULL,PRIMARY KEY(run_id,edge_id),FOREIGN KEY(run_id) REFERENCES evidence_graph_runs(id) ON DELETE CASCADE);
+            CREATE INDEX ix_evidence_graph_runs_generated ON evidence_graph_runs(generated_utc DESC);
+            CREATE INDEX ix_evidence_graph_nodes_domain_time ON evidence_graph_nodes(domain,observed_utc DESC);
+            CREATE INDEX ix_evidence_graph_edges_nodes ON evidence_graph_edges(from_node_id,to_node_id);
+            """)    ];
 }

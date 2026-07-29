@@ -8,6 +8,7 @@
       <NavigationViewItem Content="Storage Health" Tag="storage" AutomationProperties.AutomationId="NavStorage"><NavigationViewItem.Icon><SymbolIcon Symbol="Save"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Security Posture" Tag="security" AutomationProperties.AutomationId="NavSecurity"><NavigationViewItem.Icon><SymbolIcon Symbol="Permissions"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Network Health" Tag="network" AutomationProperties.AutomationId="NavNetwork"><NavigationViewItem.Icon><SymbolIcon Symbol="World"/></NavigationViewItem.Icon></NavigationViewItem>
+      <NavigationViewItem Content="Evidence Explorer" Tag="evidence" AutomationProperties.AutomationId="NavEvidence"><NavigationViewItem.Icon><SymbolIcon Symbol="Library"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="AI Diagnosis" Tag="diagnosis" AutomationProperties.AutomationId="NavDiagnosis"><NavigationViewItem.Icon><SymbolIcon Symbol="Find"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="AI Chat" Tag="chat" AutomationProperties.AutomationId="NavChat"><NavigationViewItem.Icon><SymbolIcon Symbol="Message"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Health Dashboard" Tag="health" AutomationProperties.AutomationId="NavHealth"><NavigationViewItem.Icon><SymbolIcon Symbol="View"/></NavigationViewItem.Icon></NavigationViewItem>
