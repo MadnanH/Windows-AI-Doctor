@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 26;
+    public const int CurrentSchemaVersion = 27;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -318,5 +318,11 @@ public sealed class WaidDatabase
         new(26, "Durable repair orchestration lifecycle", """
             CREATE TABLE IF NOT EXISTS repair_orchestrations(id TEXT PRIMARY KEY,repair_id TEXT NOT NULL,created_utc TEXT NOT NULL,updated_utc TEXT NOT NULL,stage INTEGER NOT NULL,orchestration_json TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS ix_repair_orchestrations_stage_time ON repair_orchestrations(stage,updated_utc DESC,id DESC);
+            """),
+        new(27, "Versioned repair dry-run metadata", """
+            ALTER TABLE repair_orchestrations ADD COLUMN simulation_version TEXT NULL;
+            ALTER TABLE repair_orchestrations ADD COLUMN simulation_fingerprint TEXT NULL;
+            ALTER TABLE repair_orchestrations ADD COLUMN simulated_utc TEXT NULL;
+            CREATE INDEX IF NOT EXISTS ix_repair_orchestrations_simulation ON repair_orchestrations(simulation_version,simulated_utc DESC);
             """)    ];
 }

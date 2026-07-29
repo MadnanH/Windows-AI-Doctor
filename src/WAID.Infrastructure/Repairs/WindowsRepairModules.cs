@@ -1,11 +1,12 @@
 using WAID.Application.Abstractions;
+using WAID.Application.Services;
 using WAID.Domain.Diagnostics;
 using WAID.Domain.Repairs;
 using WAID.Infrastructure.PowerShell;
 
 namespace WAID.Infrastructure.Repairs;
 
-public abstract class PowerShellRepairModule(IPowerShellRunner powerShell) : IRepairModule
+public abstract class PowerShellRepairModule(IPowerShellRunner powerShell) : IRepairModule, IRepairSimulationDefinitionProvider
 {
     protected IPowerShellRunner PowerShell { get; } = powerShell;
     public abstract string Id { get; }
@@ -22,6 +23,24 @@ public abstract class PowerShellRepairModule(IPowerShellRunner powerShell) : IRe
         return Task.FromResult(new RepairPlan(Resources, Description));
     }
 
+    public virtual RepairSimulationDefinition DescribeSimulation(RepairPlan plan)
+    {
+        var effects = plan.Resources
+            .OrderBy(resource => resource.Kind)
+            .ThenBy(resource => resource.Path, StringComparer.OrdinalIgnoreCase)
+            .Select((resource, index) => new RepairPredictedEffect(
+                index + 1,
+                resource.Kind == RepairResourceKind.RegistryKey ? RepairEffectKind.Registry : RepairEffectKind.File,
+                resource.Path,
+                "Current state; backup is required when supported.",
+                "The declared Windows resource may be changed by the repair command.",
+                RepairEffectCertainty.Estimated,
+                "The target is exact; the resulting value depends on Windows state."))
+            .ToList();
+        effects.Add(new(effects.Count + 1, RepairEffectKind.Command, DisplayName, "Not executed.", Description, RepairEffectCertainty.Unknown, "Exit code and exact changes are only available after execution."));
+        effects.Add(new(effects.Count + 1, RepairEffectKind.Restart, "Windows", "Current session continues.", RestartRequired ? "A restart is required after successful execution." : "No restart is expected by this module.", RepairEffectCertainty.Exact, "Declared by the registered repair definition."));
+        return new(effects, ["The preview uses the current registered repair definition and does not query or mutate protected state."], RestartRequired ? ["Save work before execution because a restart is expected."] : [], TimeSpan.FromMinutes(5), null, RestartRequired);
+    }
     public async Task<RepairResult> ExecuteAsync(RepairExecutionContext context, CancellationToken cancellationToken)
     {
         var result = await PowerShell.RunAsync(
