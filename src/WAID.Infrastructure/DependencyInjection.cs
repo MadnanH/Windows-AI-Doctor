@@ -74,7 +74,8 @@ public static class DependencyInjection
             .AddSingleton<ISettingsRepository, SqliteSettingsRepository>().AddSingleton<IDiagnosisRepository, SqliteDiagnosisRepository>()
             .AddSingleton<IRepairHistoryRepository, SqliteRepairHistoryRepository>().AddSingleton<IHealthSnapshotRepository, SqliteHealthSnapshotRepository>()
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>()
-            .AddSingleton<IRepairRecommendationRepository, SqliteRepairRecommendationRepository>();
+            .AddSingleton<IRepairRecommendationRepository, SqliteRepairRecommendationRepository>()
+            .AddSingleton<IPredictiveHealthRepository, SqlitePredictiveHealthRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -153,7 +154,8 @@ public static class DependencyInjection
         services.AddSingleton(new ScannerPolicyRegistry(new ScannerExecutionPolicy(TimeSpan.FromSeconds(45), 1), new Dictionary<string, ScannerExecutionPolicy>(StringComparer.OrdinalIgnoreCase) { ["waid.windows-update"] = new(TimeSpan.FromSeconds(90)), ["waid.reliability"] = new(TimeSpan.FromSeconds(90)), ["waid.bsod"] = new(TimeSpan.FromSeconds(60)) }))
             .AddSingleton<ScanOrchestrator>().AddSingleton<ScanCoordinator>().AddSingleton<BackgroundHealthMonitoringService>()
             .AddSingleton<ScheduledScanService>().AddSingleton<ScheduledScanLoopService>().AddSingleton<EvidenceCollector>()
-            .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>();
+            .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>()
+            .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>();
         modules.Add("operations", "Monitoring and scheduling"); return services;
     }
 }
