@@ -78,7 +78,8 @@ public static class DependencyInjection
             .AddSingleton<IPredictiveHealthRepository, SqlitePredictiveHealthRepository>()
             .AddSingleton<ILiveMonitoringRepository, SqliteLiveMonitoringRepository>()
             .AddSingleton<IReliabilityTimelineRepository, SqliteReliabilityTimelineRepository>()
-            .AddSingleton<IReliabilityTimelineSource, SqliteReliabilityTimelineSource>();
+            .AddSingleton<IReliabilityTimelineSource, SqliteReliabilityTimelineSource>()
+            .AddSingleton<IPerformanceHistoryRepository, SqlitePerformanceHistoryRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -106,6 +107,7 @@ public static class DependencyInjection
             .AddSingleton<IRestorePointManager, RestorePointManager>().AddSingleton<IBackupManager>(provider => new BackupManager(Path.Combine(options.DataDirectory, "Backups"), provider.GetRequiredService<IPowerShellRunner>(), provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>()))
             .AddSingleton<IRollbackManager, RollbackManager>().AddSingleton<ISystemConditionService, WindowsSystemConditionService>()
             .AddSingleton<ILiveSignalCollector, WindowsLiveSignalCollector>()
+            .AddSingleton<IPerformanceMetricCollector, WindowsPerformanceMetricCollector>()
             .AddSingleton<IStartupLaunchService>(_ => new WindowsStartupLaunchService(options.ApplicationExecutablePath));
         modules.Add("windows", "Windows platform adapters"); return services;
     }
@@ -161,7 +163,8 @@ public static class DependencyInjection
             .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>()
             .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>()
             .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()
-            .AddSingleton<ReliabilityTimelineProjector>().AddSingleton<ReliabilityTimelineExporter>();
+            .AddSingleton<ReliabilityTimelineProjector>().AddSingleton<ReliabilityTimelineExporter>()
+            .AddSingleton<PerformanceAggregationEngine>().AddSingleton<PerformanceHistoryService>();
         modules.Add("operations", "Monitoring and scheduling"); return services;
     }
 }

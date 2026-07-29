@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-29
 
-Current version: **0.21.0-dev**
+Current version: **0.22.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v21, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v22, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -21,7 +21,7 @@ Active branch: `main`
 - Commercial hardening Prompt 01 architecture baseline: verified current/target architecture, complete dependency and feature audit, persistence ownership/schema inventory, explicit risk register, incremental migration plan, README links, dependency-rule tests, and expanded service-registration smoke coverage.
 - Commercial hardening Prompt 02 composition root: modular feature registration, versioned non-secret host options, replaceable Windows adapters, host-owned Serilog provider, typed actionable startup failures, validated required services/lifetimes/duplicate scanner and repair IDs, module diagnostics, recovery UI, and service-locator regression enforcement.
 - Commercial hardening Prompt 03 diagnostics foundation: local structured JSON logging, typed event taxonomy, asynchronous correlation and operation context, redacted append-only daily audit records, bounded retention, searchable Logs & Audit UI, sanitized support export, and non-fatal diagnostic-storage failures.
-- Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
+- Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
 - Commercial hardening Prompt 05 unified configuration: deterministic default/machine/user/profile/session/policy precedence, immutable operation snapshots, enforced policy locks, fail-closed feature flags, schema-8 legacy migration, privacy-safe profile import/export, reset/audit behavior, and categorized searchable Settings UI.
 - Commercial hardening Prompt 06 scanner framework: stable backward-compatible scanner metadata/output contracts, dependency planning, prerequisite skips, bounded parallel execution, detailed progress/cancellation, evidence redaction, schema-9 transactional provenance, resource estimates, and live Dashboard plan states.
 - Commercial hardening Prompt 07 driver conflict analyzer: normalized privacy-safe driver inventory, signature/problem/disabled/failed/duplicate/orphan/incompatibility/change rules, conservative event correlation, schema-10 report history, typed failures, standard-user uncertainty, and a reachable filtered Driver Health UI with evidence and device history.
@@ -38,6 +38,7 @@ Active branch: `main`
 - Commercial hardening Prompt 18 predictive health: conservative versioned linear-trend analysis for storage wear, crash rate, temperature, memory instability, update failures, and performance decline; minimum-history, noise, drift, and abrupt-change guards; confidence/risk ranges; holdout validation; schema-19 persistence; and a reachable local Predictive Health dashboard.
 - Commercial hardening Prompt 19 live monitoring: separate real Windows signal collection, aggregation, alerts, policy gating, and budget enforcement; adaptive intervals; battery/load/gap/failure awareness; restart recovery; bounded schema-20 history; full disable/pause/resume controls; and a reachable privacy-explained Live Monitoring page.
 - Commercial hardening Prompt 20 reliability timeline: immutable-source projection across crashes, updates, driver changes, repairs, alerts, health shifts, reliability findings, and retention gaps; stable UTC IDs/order; versioned possible-association grouping; schema-21 paging/indexes; provenance/evidence/comparison/export; and accessible timeline/table modes.
+- Commercial hardening Prompt 21 performance history: validated CPU/memory/disk/network/temperature/battery/responsiveness samples with explicit quality; versioned UTC hourly/daily/weekly rollups; deterministic spike-preserving downsampling; sustained-change and period comparison; generation-safe caching; schema-22 retention jobs; and an accessible cards/chart dashboard.
 
 ## Fully working features
 
@@ -64,6 +65,7 @@ Active branch: `main`
 - Predictive Health analyzes only saved local health snapshots, suppresses weak or unstable signals, versions every model and feature, preserves source references and uncertainty, and never triggers repairs.
 - Live Monitoring is opt-in and fully disableable, samples real CPU/memory/storage signals within a two-second/16-sample default cycle budget, adapts its interval when stable, pauses for battery saver/high load/policy/user requests, isolates collector failures, records gaps and restart recovery, bounds retention, and never executes repairs.
 - Reliability Timeline rebuilds a deterministic local projection without changing source records, preserves visible provenance, represents retention gaps, provides stable indexed paging/filtering, labels incident groups as possible associations rather than causation, and exports redacted projected evidence.
+- Performance History stores real or explicitly unavailable local metrics, builds versioned UTC rollups that match chart queries, preserves quality/coverage, invalidates caches on storage changes, bounds long histories, summarizes charts accessibly, and compares periods without causal claims.
 
 ## Partially working features
 
@@ -89,7 +91,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-21 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-22 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -117,6 +119,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Predictive Health requires at least five observations spanning three days. Its ranges are statistical uncertainty, not failure probability; provider gaps, irregular workloads, hardware changes, and short history can suppress or distort trends, and long-duration real-hardware calibration remains outstanding.
 - Live Monitoring runs only while WAID is open and cannot wake a closed application. Sleep is inferred from scheduling discontinuities; Windows power-transition behavior, provider accuracy, and long-duration resource budgets still require real-hardware validation.
 - Reliability Timeline coverage depends on retained source records. Grouping is a deterministic 30-minute/subject heuristic and never proves causation; health shifts use a fixed ten-point threshold, projection rebuild is user-triggered, and long-duration UI/provider validation remains outstanding.
+- Performance metric collection is user-triggered. CPU/network need a prior delta; responsiveness is estimated; disk currently represents free space rather than latency; temperature is explicitly unavailable without a supported provider; and long-duration real-hardware accuracy remains outstanding.
 
 ## Build status
 
@@ -131,27 +134,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 286/286 tests**
+**Passing - 293/293 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 58 passed
+- `WAID.Application.Tests`: 64 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 143 passed
+- `WAID.Infrastructure.Tests`: 144 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.21.0-dev - Reliability Timeline**
+**0.22.0-dev - Performance History and Trend Dashboard**
 
-Prompt 20 adds a stable, versioned, privacy-safe chronological projection with visible provenance, candidate-only incident grouping, indexed paging/filtering, comparison, and export while preserving source records.
+Prompt 21 adds quality-aware local performance metrics, versioned UTC multi-resolution rollups, responsive stored-history charts, sustained changes, period comparisons, generation-safe caches, and bounded retention.
 
 ## Next milestone
 
-**Commercial hardening Prompt 21 - Performance History and Trend Dashboard**
+**Commercial hardening Prompt 22 - Digital Twin System Snapshots**
 
-Apply only Prompt 21 from the ordered commercial-grade prompt set. Preserve schema 21, immutable-source timeline projection and non-causation labels, live-monitoring budgets and opt-in behavior, predictive uncertainty semantics, repair approval isolation, privacy protections, and policy enforcement; restore/build/test independently and commit before continuing.
+Apply only Prompt 22 from the ordered commercial-grade prompt set. Preserve schema 22, metric quality and rollup/cache/retention guarantees, immutable reliability projection and non-causation labels, monitoring budgets, predictive uncertainty, repair approval isolation, privacy protections, and policy enforcement; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 
