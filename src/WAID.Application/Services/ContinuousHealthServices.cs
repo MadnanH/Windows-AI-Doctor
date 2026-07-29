@@ -81,34 +81,6 @@ public sealed class BackgroundHealthMonitoringService(
     public async ValueTask DisposeAsync() => await StopAsync().ConfigureAwait(false);
 }
 
-public sealed class ScheduledScanService(ScanCoordinator scans, IScanScheduleRepository repository,
-    ISystemConditionService conditions, TimeProvider timeProvider, ILogger<ScheduledScanService> logger)
-{
-    public static bool IsDue(ScanSchedule schedule, DateTimeOffset now) => schedule.Enabled &&
-        (!schedule.LastRunUtc.HasValue || now - schedule.LastRunUtc.Value >= schedule.Validate().Interval);
-
-    public async Task<bool> RunIfDueAsync(CancellationToken token)
-    {
-        var schedule = await repository.GetAsync(token).ConfigureAwait(false);
-        var now = timeProvider.GetUtcNow();
-        if (!IsDue(schedule, now) || schedule.OnlyWhenPluggedIn && !conditions.IsPluggedIn() || schedule.OnlyWhenIdle && !conditions.IsSystemIdle()) return false;
-        var session = await scans.TryRunAsync(false, null, token).ConfigureAwait(false);
-        if (session is null) { logger.LogInformation("Scheduled scan skipped because another scan is active"); return false; }
-        await repository.SaveAsync(schedule with { LastRunUtc = now }, token).ConfigureAwait(false);
-        logger.LogInformation("Scheduled scan {SessionId} completed", session.Id);
-        return true;
-    }
-}
-
-public sealed class ScheduledScanLoopService(ScheduledScanService scheduledScans, TimeProvider timeProvider,
-    ILogger<ScheduledScanLoopService> logger) : IAsyncDisposable
-{
-    private CancellationTokenSource? _cancellation; private Task? _worker;
-    public void Start(){if(_worker is{IsCompleted:false})return;_cancellation=new();_worker=RunAsync(_cancellation.Token);}
-    private async Task RunAsync(CancellationToken token){while(!token.IsCancellationRequested){try{await scheduledScans.RunIfDueAsync(token).ConfigureAwait(false);await Task.Delay(TimeSpan.FromMinutes(1),timeProvider,token).ConfigureAwait(false);}catch(OperationCanceledException)when(token.IsCancellationRequested){break;}catch(Exception exception){logger.LogError(exception,"Scheduled scan check failed");await Task.Delay(TimeSpan.FromMinutes(1),timeProvider,token).ConfigureAwait(false);}}}
-    public async ValueTask DisposeAsync(){if(_cancellation is null)return;await _cancellation.CancelAsync().ConfigureAwait(false);try{if(_worker is not null)await _worker.ConfigureAwait(false);}catch(OperationCanceledException){} _cancellation.Dispose();_cancellation=null;_worker=null;}
-}
-
 public sealed class EvidenceCollector(TimeProvider timeProvider)
 {
     private static readonly HashSet<string> AllowedKeys = new(StringComparer.OrdinalIgnoreCase)

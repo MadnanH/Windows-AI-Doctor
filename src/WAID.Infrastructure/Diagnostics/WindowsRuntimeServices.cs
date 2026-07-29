@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
+using System.Net.NetworkInformation;
 using Microsoft.Win32;
 using WAID.Application.Services;
 using WAID.KnowledgeBase;
@@ -17,6 +18,7 @@ public sealed class WindowsSystemConditionService : ISystemConditionService
         var info = new LastInputInfo { Size = (uint)Marshal.SizeOf<LastInputInfo>() };
         return GetLastInputInfo(ref info) && unchecked((uint)Environment.TickCount - info.Time) >= 5 * 60 * 1000;
     }
+    public bool IsNetworkAvailable() => NetworkInterface.GetIsNetworkAvailable();
     public double GetSystemLoadPercent()
     {
         lock (_sync)

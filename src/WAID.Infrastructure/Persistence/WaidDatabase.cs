@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 23;
+    public const int CurrentSchemaVersion = 24;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state", "performance_samples", "performance_rollups", "performance_retention_jobs", "digital_twin_snapshots", "digital_twin_diffs", "digital_twin_retention_jobs"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state", "performance_samples", "performance_rollups", "performance_retention_jobs", "digital_twin_snapshots", "digital_twin_diffs", "digital_twin_retention_jobs", "scheduled_scan_history"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -305,5 +305,9 @@ public sealed class WaidDatabase
             CREATE TABLE IF NOT EXISTS digital_twin_diffs(id TEXT PRIMARY KEY,before_id TEXT NOT NULL,after_id TEXT NOT NULL,compared_utc TEXT NOT NULL,diff_json TEXT NOT NULL,FOREIGN KEY(before_id) REFERENCES digital_twin_snapshots(id),FOREIGN KEY(after_id) REFERENCES digital_twin_snapshots(id));
             CREATE TABLE IF NOT EXISTS digital_twin_retention_jobs(id TEXT PRIMARY KEY,executed_utc TEXT NOT NULL,result_json TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS ix_digital_twin_captured ON digital_twin_snapshots(captured_utc DESC,is_pinned);
+            """),
+        new(24, "Scheduled scan execution history", """
+            CREATE TABLE IF NOT EXISTS scheduled_scan_history(id TEXT PRIMARY KEY,evaluated_utc TEXT NOT NULL,outcome INTEGER NOT NULL,history_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_scheduled_scan_history_time ON scheduled_scan_history(evaluated_utc DESC,id DESC);
             """)    ];
 }
