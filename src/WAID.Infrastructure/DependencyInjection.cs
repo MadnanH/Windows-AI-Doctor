@@ -76,7 +76,9 @@ public static class DependencyInjection
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>()
             .AddSingleton<IRepairRecommendationRepository, SqliteRepairRecommendationRepository>()
             .AddSingleton<IPredictiveHealthRepository, SqlitePredictiveHealthRepository>()
-            .AddSingleton<ILiveMonitoringRepository, SqliteLiveMonitoringRepository>();
+            .AddSingleton<ILiveMonitoringRepository, SqliteLiveMonitoringRepository>()
+            .AddSingleton<IReliabilityTimelineRepository, SqliteReliabilityTimelineRepository>()
+            .AddSingleton<IReliabilityTimelineSource, SqliteReliabilityTimelineSource>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -158,7 +160,8 @@ public static class DependencyInjection
             .AddSingleton<ScheduledScanService>().AddSingleton<ScheduledScanLoopService>().AddSingleton<EvidenceCollector>()
             .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>()
             .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>()
-            .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>();
+            .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()
+            .AddSingleton<ReliabilityTimelineProjector>().AddSingleton<ReliabilityTimelineExporter>();
         modules.Add("operations", "Monitoring and scheduling"); return services;
     }
 }

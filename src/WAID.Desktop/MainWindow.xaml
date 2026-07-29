@@ -15,6 +15,7 @@
       <NavigationViewItem Content="Health Dashboard" Tag="health" AutomationProperties.AutomationId="NavHealth"><NavigationViewItem.Icon><SymbolIcon Symbol="View"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Predictive Health" Tag="predictive" AutomationProperties.AutomationId="NavPredictive"><NavigationViewItem.Icon><SymbolIcon Symbol="View"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Live Monitoring" Tag="live-monitoring" AutomationProperties.AutomationId="NavLiveMonitoring"><NavigationViewItem.Icon><SymbolIcon Symbol="Clock"/></NavigationViewItem.Icon></NavigationViewItem>
+      <NavigationViewItem Content="Reliability Timeline" Tag="reliability-timeline" AutomationProperties.AutomationId="NavReliabilityTimeline"><NavigationViewItem.Icon><SymbolIcon Symbol="Clock"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Monitoring &amp; Reports" Tag="operations" AutomationProperties.AutomationId="NavOperations"><NavigationViewItem.Icon><SymbolIcon Symbol="View"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Recommended Repairs" Tag="recommended" AutomationProperties.AutomationId="NavRepairs"><NavigationViewItem.Icon><SymbolIcon Symbol="Repair"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="History" Tag="history" AutomationProperties.AutomationId="NavHistory"><NavigationViewItem.Icon><SymbolIcon Symbol="Clock"/></NavigationViewItem.Icon></NavigationViewItem>

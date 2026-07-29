@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 20;
+    public const int CurrentSchemaVersion = 21;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -286,5 +286,11 @@ public sealed class WaidDatabase
             CREATE INDEX IF NOT EXISTS ix_monitoring_samples_signal_time ON monitoring_samples(signal_id,captured_utc DESC);
             CREATE INDEX IF NOT EXISTS ix_monitoring_gaps_session_time ON monitoring_gaps(session_id,captured_utc DESC);
             CREATE INDEX IF NOT EXISTS ix_monitoring_failures_session_time ON monitoring_collector_failures(session_id,captured_utc DESC);
+            """),
+        new(21, "Versioned reliability timeline projection", """
+            CREATE TABLE IF NOT EXISTS timeline_incidents(id TEXT PRIMARY KEY,started_utc TEXT NOT NULL,ended_utc TEXT NOT NULL,incident_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS timeline_projection_state(id INTEGER PRIMARY KEY CHECK(id=1),projection_version TEXT NOT NULL,grouping_version TEXT NOT NULL,generated_utc TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_timeline_incidents_started ON timeline_incidents(started_utc DESC,id);
+            CREATE INDEX IF NOT EXISTS ix_timeline_category_occurred ON timeline_events(category,occurred_utc DESC,id);
             """)    ];
 }
