@@ -75,7 +75,8 @@ public static class DependencyInjection
             .AddSingleton<IRepairHistoryRepository, SqliteRepairHistoryRepository>().AddSingleton<IHealthSnapshotRepository, SqliteHealthSnapshotRepository>()
             .AddSingleton<IScanScheduleRepository, SqliteScanScheduleRepository>().AddSingleton<IRepairApprovalRepository, SqliteRepairApprovalRepository>()
             .AddSingleton<IRepairRecommendationRepository, SqliteRepairRecommendationRepository>()
-            .AddSingleton<IPredictiveHealthRepository, SqlitePredictiveHealthRepository>();
+            .AddSingleton<IPredictiveHealthRepository, SqlitePredictiveHealthRepository>()
+            .AddSingleton<ILiveMonitoringRepository, SqliteLiveMonitoringRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -102,6 +103,7 @@ public static class DependencyInjection
         services.AddSingleton<IPowerShellRunner, PowerShellRunner>().AddSingleton<IAdministratorService, AdministratorService>()
             .AddSingleton<IRestorePointManager, RestorePointManager>().AddSingleton<IBackupManager>(provider => new BackupManager(Path.Combine(options.DataDirectory, "Backups"), provider.GetRequiredService<IPowerShellRunner>(), provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>()))
             .AddSingleton<IRollbackManager, RollbackManager>().AddSingleton<ISystemConditionService, WindowsSystemConditionService>()
+            .AddSingleton<ILiveSignalCollector, WindowsLiveSignalCollector>()
             .AddSingleton<IStartupLaunchService>(_ => new WindowsStartupLaunchService(options.ApplicationExecutablePath));
         modules.Add("windows", "Windows platform adapters"); return services;
     }
@@ -155,7 +157,8 @@ public static class DependencyInjection
             .AddSingleton<ScanOrchestrator>().AddSingleton<ScanCoordinator>().AddSingleton<BackgroundHealthMonitoringService>()
             .AddSingleton<ScheduledScanService>().AddSingleton<ScheduledScanLoopService>().AddSingleton<EvidenceCollector>()
             .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>()
-            .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>();
+            .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>()
+            .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>();
         modules.Add("operations", "Monitoring and scheduling"); return services;
     }
 }
