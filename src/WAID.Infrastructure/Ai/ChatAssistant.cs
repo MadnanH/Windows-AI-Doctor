@@ -1,16 +1,23 @@
 using Microsoft.Extensions.Logging;
 using WAID.Application.Abstractions;
+using WAID.KnowledgeBase;
 
 namespace WAID.Infrastructure.Ai;
 
-public sealed class WaidChatEvidenceRetriever(IScanRepository scans, IDiagnosisRepository diagnosis, IRepairHistoryRepository repairs) : IChatEvidenceRetriever
+public sealed class WaidChatEvidenceRetriever(IScanRepository scans, IDiagnosisRepository diagnosis, IRepairHistoryRepository repairs, IKnowledgeRetrievalService knowledge) : IChatEvidenceRetriever
 {
     public async Task<ChatRetrievalContext> RetrieveAsync(string question, CancellationToken token)
     {
         var evidence = new List<ChatEvidenceReference>();
+        var findingCodes = new List<string>();
         foreach (var session in await scans.GetRecentAsync(5, token))
             foreach (var finding in session.Findings.Take(50))
+            {
+                findingCodes.Add(finding.Code);
                 evidence.Add(new(finding.Id.ToString(), finding.ScannerId, finding.Title, finding.Description, session.CompletedAtUtc ?? session.StartedAtUtc));
+            }
+        foreach (var article in knowledge.Search(new(question, Environment.OSVersion.Version.ToString(), findingCodes, 5)))
+            evidence.Add(new($"knowledge:{article.Article.Id}", article.ContentLabel, article.Article.Title, $"{article.Article.Summary} Applicability: {article.Applicability}", article.Article.ReviewedAtUtc));
         var report = await diagnosis.GetLatestAsync(token);
         if (report is not null)
             foreach (var cause in report.RootCauses.Take(10))

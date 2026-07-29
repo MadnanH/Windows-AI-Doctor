@@ -1,0 +1,1 @@
+using Microsoft.UI.Xaml.Controls;using WAID.Desktop.ViewModels;namespace WAID.Desktop.Views;public sealed partial class KnowledgePage:Page{public KnowledgePage(KnowledgeViewModel viewModel){InitializeComponent();DataContext=viewModel;}}

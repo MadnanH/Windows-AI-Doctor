@@ -106,6 +106,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddWaidDiagnostics(this IServiceCollection services, WaidHostOptions options, WaidModuleCatalog modules)
     {
+        services.AddSingleton<IKnowledgeRetrievalService>(_=>new OfflineKnowledgeRetrievalService(Path.Combine(options.DataDirectory,"Knowledge","index.json"),TimeProvider.System));
         services.AddSingleton<IDiagnosticsExportService>(provider => new DiagnosticsExportService(options.DataDirectory, provider.GetRequiredService<IScanRepository>(), provider.GetRequiredService<IDiagnosisRepository>(), provider.GetRequiredService<IRepairHistoryRepository>(), provider.GetRequiredService<TimeProvider>()))
             .AddSingleton<IDiagnosticReportExporter>(_ => new DiagnosticReportExporter(Path.Combine(options.DataDirectory, "Reports")))
             .AddSingleton<IPdfReportExporter>(_ => new PdfDiagnosticReportExporter(Path.Combine(options.DataDirectory, "Reports")))
