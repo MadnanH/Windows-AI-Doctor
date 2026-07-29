@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-29
 
-Current version: **0.25.0-dev**
+Current version: **0.26.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v25, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v26, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -42,6 +42,7 @@ Active branch: `main`
 - Commercial hardening Prompt 22 digital twin snapshots: privacy-safe versioned component capture, partial-failure isolation, canonical SHA-256 integrity, compressed schema-23 persistence, pin-aware retention, deterministic risk-highlighted diffs, repair-linked pre/post snapshots, and a reachable comparison/export page.
 - Commercial hardening Prompt 23 scheduled scanning: daily/weekly/monthly/custom/startup/idle/maintenance recurrence, DST-safe UTC next runs, sleep/wake catch-up, power/idle/network/load/window deferrals, two-layer overlap prevention, typed/audited outcomes, schema-24 history, and an accessible editor, preview, run-now, pause, and history UI.
 - Commercial hardening Prompt 24 alerts and notifications: categorized versioned evidence alerts, privacy-safe deduplication, cooldown, quiet hours, acknowledgement, bounded snooze, repeat escalation, optional policy-aware delivery channels, typed delivery outcomes, schema-25 restart persistence, audit events, live-monitoring integration, and a reachable filtered Notification Center.
+- Commercial hardening Prompt 25 repair orchestration: durable typed lifecycle and state machine, dependency/conflict assessment, read-only simulation, centralized approval and policy gates, bounded execution and cancellation, validation, rollback outcomes, startup crash recovery, schema-26 persistence, complete decision auditing, and a reachable Repair Lifecycle page.
 
 ## Fully working features
 
@@ -72,6 +73,7 @@ Active branch: `main`
 - Digital Twin captures structured local system state without personal-file inventories or secret material, tolerates unavailable providers, preserves serializer and integrity versions, stores compressed snapshots, compares stable field changes, and links pinned pre/post repair evidence without weakening approval gates.
 - Scheduled Scanning reuses the read-only scan coordinator, persists next-run and policy state, handles missed runs once after wake, records every decision and important audit event, defers under unsafe resource conditions, prevents duplicate scans, and never invokes repair execution.
 - Alerts merge repeated observations by stable rule key, preserve bounded redacted evidence and rule versions, suppress spam through cooldown/quiet/snooze/acknowledgement state, isolate channel failures, persist delivery history and policy, navigate to related WAID evidence, and never authorize or execute repairs.
+- Every queued or interactive repair now passes through the same persisted orchestration lifecycle. Plans are simulated before approval, high-risk acknowledgement is explicit, execution is serialized and bounded, validation is recorded, rollback outcomes are visible, interrupted work never auto-runs, and all significant decisions are audited.
 
 ## Partially working features
 
@@ -97,7 +99,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-25 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-26 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -129,6 +131,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Digital Twin components may summarize the latest persisted WAID analyses, so completeness depends on prior scanner coverage and Windows provider availability. Diffs show association and change, not causation; real-hardware serializer coverage and long-duration retention remain outstanding.
 - Scheduled scans run only while WAID is open and cannot wake or launch a closed application. Startup means application startup; network policy reflects interface availability rather than internet reachability; long-duration sleep, DST, idle, battery, and organization-policy behavior still require real-Windows validation.
 - Alert delivery currently supports only the in-app channel while WAID is open; Windows toast/Action Center, email, SMS, and remote push are not implemented. Long-duration cooldown, local-time change, sleep/wake, and assistive-technology behavior still require real-Windows validation.
+- Default repair validation confirms the typed executor result and treats restart-required results as provisional. Process or machine failure may prevent in-process rollback; WAID marks the durable record RecoveryRequired and never retries automatically. Restore-point, backup, cancellation, restart, and rollback behavior require disposable-VM validation.
 
 ## Build status
 
@@ -143,27 +146,27 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 318/318 tests**
+**Passing - 329/329 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 86 passed
+- `WAID.Application.Tests`: 96 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 147 passed
+- `WAID.Infrastructure.Tests`: 148 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 ## Current version
 
-**0.25.0-dev - Alerts and Notifications**
+**0.26.0-dev - Repair Orchestration Framework**
 
-Prompt 24 adds durable evidence-backed alerts, spam prevention, lifecycle controls, quiet-hours and channel policy, delivery auditing, live-monitoring rules, and a reachable Notification Center.
+Prompt 25 adds a persisted, explicitly approved repair lifecycle with read-only assessment and simulation, centralized safety execution, typed validation, rollback reporting, interruption recovery, complete decision auditing, and a reachable Repair Lifecycle UI.
 
 ## Next milestone
 
-**Commercial hardening Prompt 25 - Repair Orchestration Framework**
+**Commercial hardening Prompt 26 - Repair Simulation and Dry Run**
 
-Apply only Prompt 25 from the ordered commercial-grade prompt set. Preserve alert non-execution guarantees, explicit repair approval, scheduler overlap controls, monitoring budgets, snapshot privacy, evidence provenance, rollback safety, and policy enforcement; restore/build/test independently and commit before continuing.
+Apply only Prompt 26 from the ordered commercial-grade prompt set. Add read-only deterministic change simulation with exact/estimated/unknown effects, stale-result invalidation, prerequisite and rollback-readiness previews, and mutation guards while preserving Prompt 25 lifecycle, approval, policy, audit, timeout, cancellation, and recovery guarantees; restore/build/test independently and commit before continuing.
 ## Update procedure
 
 Update completed, remaining, build/test status, version, limitations, and next milestone in the same commit as every milestone.

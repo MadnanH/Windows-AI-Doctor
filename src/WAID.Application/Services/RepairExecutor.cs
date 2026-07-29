@@ -114,10 +114,21 @@ public sealed class RepairExecutor(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            transaction.Cancel(timeProvider.GetUtcNow());
+            if (transaction.Status is RepairTransactionStatus.Preparing or RepairTransactionStatus.Executing)
+            {
+                transaction.Fail(RepairResult.Failure("Repair was cancelled.", "Cancellation was requested during preparation or execution."), timeProvider.GetUtcNow());
+                if (module.Policy.SupportsRollback && snapshot is not null)
+                {
+                    var rollback = await rollbackManager.RollbackAsync(snapshot, CancellationToken.None).ConfigureAwait(false);
+                    transaction.MarkRolledBack(transaction.Result!.WithRollback(rollback.Succeeded), timeProvider.GetUtcNow());
+                    foreach (var action in rollback.Actions) transaction.AddEvent($"Cancellation rollback: {action}");
+                    foreach (var error in rollback.Errors) transaction.AddEvent($"Cancellation rollback error: {error}");
+                }
+            }
+            else transaction.Cancel(timeProvider.GetUtcNow());
             await historyRepository.SaveAsync(transaction, CancellationToken.None).ConfigureAwait(false);
-            logger.LogWarning("Repair {RepairId} transaction {TransactionId} was cancelled", module.Id, transaction.Id);
-            await AuditAsync(module, transaction, AuditResult.Cancelled, "Repair execution was cancelled.", CancellationToken.None).ConfigureAwait(false);
+            logger.LogWarning("Repair {RepairId} transaction {TransactionId} was cancelled with status {Status}", module.Id, transaction.Id, transaction.Status);
+            await AuditAsync(module, transaction, transaction.Status == RepairTransactionStatus.RolledBack ? AuditResult.RolledBack : AuditResult.Cancelled, "Repair execution was cancelled; rollback policy was applied.", CancellationToken.None).ConfigureAwait(false);
             throw;
         }
         catch (Exception exception)

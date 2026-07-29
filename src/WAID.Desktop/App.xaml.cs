@@ -33,7 +33,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             services.AddWaidInfrastructure(options)
                 .AddWaidPlugins(new PluginSecurityPolicy(options.AllowedPluginPublishers, options.RequireSignedPlugins), options.PluginDirectory, options.HostVersion);
             services.AddSingleton<DashboardViewModel>().AddSingleton<DiagnosisViewModel>().AddSingleton<SettingsViewModel>()
-                .AddSingleton<HistoryViewModel>().AddSingleton<NotificationCenterViewModel>().AddSingleton<DigitalTwinViewModel>().AddSingleton<PerformanceHistoryViewModel>().AddSingleton<ReliabilityTimelineViewModel>().AddSingleton<LiveMonitoringViewModel>().AddSingleton<PredictiveHealthViewModel>().AddSingleton<EvidenceExplorerViewModel>().AddSingleton<KnowledgeViewModel>().AddSingleton<OperationsViewModel>().AddSingleton<AuditViewModel>().AddSingleton<DriverHealthViewModel>().AddSingleton<BootHealthViewModel>().AddSingleton<UpdateHealthViewModel>().AddSingleton<StorageCenterViewModel>().AddSingleton<SecurityCenterViewModel>().AddSingleton<NetworkHealthViewModel>().AddSingleton<ChatViewModel>().AddSingleton<MainWindow>();
+                .AddSingleton<HistoryViewModel>().AddSingleton<RepairOrchestrationViewModel>().AddSingleton<NotificationCenterViewModel>().AddSingleton<DigitalTwinViewModel>().AddSingleton<PerformanceHistoryViewModel>().AddSingleton<ReliabilityTimelineViewModel>().AddSingleton<LiveMonitoringViewModel>().AddSingleton<PredictiveHealthViewModel>().AddSingleton<EvidenceExplorerViewModel>().AddSingleton<KnowledgeViewModel>().AddSingleton<OperationsViewModel>().AddSingleton<AuditViewModel>().AddSingleton<DriverHealthViewModel>().AddSingleton<BootHealthViewModel>().AddSingleton<UpdateHealthViewModel>().AddSingleton<StorageCenterViewModel>().AddSingleton<SecurityCenterViewModel>().AddSingleton<NetworkHealthViewModel>().AddSingleton<ChatViewModel>().AddSingleton<MainWindow>();
             _services = services.BuildValidatedWaidServiceProvider();
             _logger = _services.GetRequiredService<ILogger<App>>();
         }
@@ -45,10 +45,10 @@ public partial class App : Microsoft.UI.Xaml.Application
         }
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         if (_startupFailure is not null || _services is null) { ShowRecovery(_startupFailure ?? new("WAID-STARTUP-MISSING", "Application services are unavailable.", "Repair the application installation.")); return; }
-        try { _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); }
+        try { await _services.GetRequiredService<RepairOrchestrator>().RecoverInterruptedAsync(CancellationToken.None); _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); }
         catch (Exception exception)
         {
             RecordFatal("Application launch failed", exception);

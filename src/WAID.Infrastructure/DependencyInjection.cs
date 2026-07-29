@@ -81,7 +81,8 @@ public static class DependencyInjection
             .AddSingleton<IReliabilityTimelineSource, SqliteReliabilityTimelineSource>()
             .AddSingleton<IPerformanceHistoryRepository, SqlitePerformanceHistoryRepository>()
             .AddSingleton<IDigitalTwinRepository, SqliteDigitalTwinRepository>()
-            .AddSingleton<IAlertRepository, SqliteAlertRepository>();
+            .AddSingleton<IAlertRepository, SqliteAlertRepository>()
+            .AddSingleton<IRepairOrchestrationRepository, SqliteRepairOrchestrationRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -164,6 +165,7 @@ public static class DependencyInjection
             .AddSingleton<ScheduledScanService>().AddSingleton<ScheduledScanLoopService>().AddSingleton<EvidenceCollector>()
             .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>()
             .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>()
+            .AddSingleton(RepairOrchestrationOptions.Default).AddSingleton<IRepairValidator, DefaultRepairValidator>().AddSingleton<IRepairDependencyCatalog, EmptyRepairDependencyCatalog>().AddSingleton<RepairOrchestrator>()
             .AddSingleton<IAlertDeliveryChannel, InAppAlertChannel>().AddSingleton<IAlertPolicy, AllowConfiguredAlertPolicy>().AddSingleton<AlertManager>()
             .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()
             .AddSingleton<ReliabilityTimelineProjector>().AddSingleton<ReliabilityTimelineExporter>()

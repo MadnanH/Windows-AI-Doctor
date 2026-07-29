@@ -83,7 +83,7 @@ public static class WaidServiceRegistrationValidator
         typeof(IHealthSnapshotRepository), typeof(IScanScheduleRepository), typeof(IRepairApprovalRepository),
         typeof(IDiagnosticsExportService), typeof(IAdministratorService), typeof(IRestorePointManager), typeof(IBackupManager),
         typeof(IRollbackManager), typeof(IDiagnosticReportExporter), typeof(IPdfReportExporter), typeof(ScanCoordinator),
-        typeof(RepairExecutor), typeof(BackgroundHealthMonitoringService), typeof(LiveMonitoringService), typeof(ILiveMonitoringRepository), typeof(IReliabilityTimelineRepository), typeof(ReliabilityTimelineProjector), typeof(IPerformanceHistoryRepository), typeof(PerformanceHistoryService), typeof(IDigitalTwinRepository), typeof(DigitalTwinService), typeof(IAlertRepository), typeof(AlertManager), typeof(ScheduledScanService), typeof(PluginCatalog),
+        typeof(RepairExecutor), typeof(BackgroundHealthMonitoringService), typeof(LiveMonitoringService), typeof(ILiveMonitoringRepository), typeof(IReliabilityTimelineRepository), typeof(ReliabilityTimelineProjector), typeof(IPerformanceHistoryRepository), typeof(PerformanceHistoryService), typeof(IDigitalTwinRepository), typeof(DigitalTwinService), typeof(IAlertRepository), typeof(AlertManager), typeof(IRepairOrchestrationRepository), typeof(RepairOrchestrator), typeof(ScheduledScanService), typeof(PluginCatalog),
         typeof(IAuditTrailService), typeof(ILocalDiagnosticsService), typeof(IOperationContextAccessor), typeof(IDatabaseMaintenanceService),
         typeof(IConfigurationStateRepository), typeof(IConfigurationLayerSource), typeof(IConfigurationService)
     ];

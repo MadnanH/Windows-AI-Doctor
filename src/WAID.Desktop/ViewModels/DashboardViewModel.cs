@@ -30,10 +30,10 @@ public sealed class DashboardViewModel : ViewModelBase
         try { Status=$"Diagnostics exported to {await _exportService.ExportAsync(CancellationToken.None)}"; }
         catch(Exception ex) { Status=$"Diagnostics export failed: {ex.Message}"; }
     }
-    public async Task RunRepairAsync(string repairId,bool userConfirmed)
+    public async Task RunRepairAsync(string repairId,bool userConfirmed,bool riskAcknowledged=false)
     {
         if(IsRepairing) return; IsRepairing=true;
-        try { var transaction=await _repairQueue.EnqueueAsync(repairId,null,userConfirmed,CancellationToken.None); Status=transaction.Result?.Summary??$"Repair ended with status {transaction.Status}."; }
+        try { var orchestration=await _repairQueue.EnqueueAsync(repairId,null,userConfirmed,riskAcknowledged,CancellationToken.None); Status=orchestration.Outcome; }
         catch(Exception ex){Status=$"Repair stopped: {ex.Message}";}
         finally{IsRepairing=false;}
     }

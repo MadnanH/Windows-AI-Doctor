@@ -46,7 +46,7 @@ public sealed class OperationsViewModel : ViewModelBase
         if(!_repairRegistry.TryGet(repair.RepairId,out var module)||module is null){Status="The recommended repair is unavailable";return;}
         var plan=await module.CreatePlanAsync(null,CancellationToken.None);var actions=plan.Resources.Select(resource=>$"Back up and modify {resource.Kind}: {resource.Path}").Prepend(plan.Description).ToArray();
         await _approvals.RecordAsync(repair,$"Confidence {repair.Confidence}%; evidence strength {repair.EvidenceStrength}%",actions,true,riskAcknowledged,CancellationToken.None);
-        await _dashboard.RunRepairAsync(repair.RepairId,true);Status="Approved repair completed; review repair history for details";
+        await _dashboard.RunRepairAsync(repair.RepairId,true,riskAcknowledged);Status="Approved repair completed; review repair history for details";
     }
     public async Task<string> GetRepairDetailsAsync(PrioritizedRepair repair)
     {
