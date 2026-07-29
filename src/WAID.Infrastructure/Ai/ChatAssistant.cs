@@ -14,7 +14,7 @@ public sealed class WaidChatEvidenceRetriever(IScanRepository scans, IDiagnosisR
         var report = await diagnosis.GetLatestAsync(token);
         if (report is not null)
             foreach (var cause in report.RootCauses.Take(10))
-                evidence.Add(new($"diagnosis:{cause.Id}", "Offline diagnosis", cause.LikelyCause, cause.Explanation, report.GeneratedAtUtc));
+                evidence.Add(new($"diagnosis:{cause.Id}", "Offline diagnosis", cause.ExplanationDetail.ProblemStatement, WAID.Diagnosis.ExplanationRenderer.RenderPlainText(cause.ExplanationDetail), report.GeneratedAtUtc));
         foreach (var repair in await repairs.GetRecentAsync(10, token))
             evidence.Add(new($"repair:{repair.TransactionId}", "Repair history", repair.RepairId, repair.Summary ?? repair.Status.ToString(), repair.CompletedAtUtc ?? repair.CreatedAtUtc));
         var terms = question.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(term => term.Length > 2).ToArray();

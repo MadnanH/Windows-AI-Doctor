@@ -1,8 +1,8 @@
 # WAID Development Progress
 
-Last updated: 2026-07-21
+Last updated: 2026-07-29
 
-Current version: **0.14.0-dev**
+Current version: **0.15.0-dev**
 
 Active branch: `main`
 
@@ -31,6 +31,7 @@ Active branch: `main`
 - Commercial hardening Prompt 11 Windows Security Posture Analyzer: capability-aware Defender/firewall/Secure Boot/TPM/encryption/Core Isolation/UAC/SmartScreen/Credential Guard/update checks, explicit unknown states, policy locks, prerequisite remediation previews, schema-14 acknowledgements, and a reachable Security Center.
 - Commercial hardening Prompt 12 Network Diagnostic Center: adapter/IP/DNS/route/gateway/proxy/VPN/Wi-Fi/firewall/service evidence, user-selected bounded probes, failing-layer classification, privacy-safe schema-16 history and export, cancellation, reset-evidence gating, and a reachable Network Health page.
 - Commercial hardening Prompt 13 AI Chat Assistant Core: offline retrieval across scans, diagnosis, and repair history; separated prompt/provider/safety services; citation enforcement; hostile-evidence neutralization; timeout fallback; schema-15 conversation lifecycle; and a reachable evidence-aware AI Chat page.
+- Commercial hardening Prompt 14 explainable diagnosis: immutable schema-1.0 explanations with weighted evidence, counter-evidence, alternatives, deterministic calibrated confidence, version metadata, change-over-time, explicit unsupported results, and consistent dashboard, diagnosis, history, repair-preview, chat, HTML, and PDF rendering.
 
 ## Fully working features
 
@@ -50,6 +51,7 @@ Active branch: `main`
 - Security Posture complements Windows Security with transparent evidence and non-alarmist findings; unavailable/unknown states are never labeled disabled and policy-managed controls are never bypassed.
 - AI Chat works offline, cites persisted WAID evidence, exposes provider/model/confidence state, rejects uncited output, falls back safely after provider failure, and cannot execute repairs.
 - Network Health runs read-only local inspection plus optional user-selected bounded probes, separates failure layers, persists latency/loss/evidence, and never performs a reset directly.
+- Every current diagnosis now carries a supported or explicitly unsupported explanation. Identical evidence and rule versions reproduce confidence; explanations persist with evidence links, alternatives, calibration metadata, and version provenance in existing schema-16 diagnosis JSON.
 
 ## Partially working features
 
@@ -96,6 +98,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Security provider availability varies by Windows edition, hardware, firmware, virtualization, third-party antivirus, management policy, and permission. Unknown/unavailable remains explicit and requires real-device validation.
 - Chat retrieval is intentionally bounded to recent persisted evidence. The deterministic offline provider summarizes evidence but is not a general-purpose language model; no cloud AI is enabled.
 - Network probes cannot prove general internet reachability: ICMP may be filtered, captive portals and proxies vary, and optional DNS/HTTP checks run only against user-supplied targets. Wi-Fi signal/profile details may be unavailable from Windows providers.
+- Explainable diagnosis is bounded by the offline rule catalog. Confidence is deterministic evidence strength, not certainty or repair-success probability; older reports surface explicit legacy/unsupported explanation metadata.
 
 ## Build status
 
@@ -105,16 +108,16 @@ No platform certification is claimed until a matching passing JSON report from `
 - Compiler errors: 0
 - x64 self-contained publish: passing
 - ARM64 compile: passing
-- Last verified: 2026-07-21
+- Last verified: 2026-07-29
 - Runtime/platform certification: not claimed; archived manual evidence is required
 
 ## Test status
 
-**Passing - 217/217 tests**
+**Passing - 231/231 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 25 passed
-- `WAID.Diagnosis.Tests`: 46 passed
+- `WAID.Diagnosis.Tests`: 60 passed
 - `WAID.Infrastructure.Tests`: 136 passed
 - Failed: 0
 - Skipped: 0
@@ -122,15 +125,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.14.0-dev - Network Diagnostic Center**
+**0.15.0-dev - Explainable Diagnosis Engine**
 
-Prompt 12 adds privacy-safe, evidence-backed network layer diagnosis with bounded user-selected probes and no direct repair execution.
+Prompt 14 adds deterministic, evidence-linked, versioned explanations across every diagnosis surface without changing SQLite schema 16 or repair safety gates.
 
 ## Next milestone
 
-**Commercial hardening Prompt 14 - Explainable Diagnosis Engine**
+**Commercial hardening Prompt 15 - Evidence Aggregation and Correlation Engine**
 
-Apply only Prompt 14 from the ordered commercial-grade prompt set. Preserve schema 16, network probe privacy and reset-evidence gating, grounded-chat citations and repair isolation, evidence history, scanner provenance, immutable configuration snapshots, policy enforcement, and validated safety boundaries; restore/build/test independently and commit before continuing.
+Apply only Prompt 15 from the ordered commercial-grade prompt set. Preserve schema 16, explanation schema 1.0 and deterministic calibration, grounded citations, repair isolation, scanner provenance, privacy boundaries, immutable configuration snapshots, and policy enforcement; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

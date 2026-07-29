@@ -37,7 +37,8 @@ public sealed class DiagnosisViewModel : ViewModelBase
                 Status = "No completed scan is available. Run a system scan first.";
                 return;
             }
-            Report = await _engine.DiagnoseAsync(sessions[0].Findings, CancellationToken.None);
+            var previous = await _diagnosisRepository.GetLatestAsync(CancellationToken.None);
+            Report = await _engine.DiagnoseAsync(sessions[0].Findings, previous, CancellationToken.None);
             await _diagnosisRepository.SaveAsync(sessions[0].Id, Report, CancellationToken.None);
             Status = Report.Summary;
         }

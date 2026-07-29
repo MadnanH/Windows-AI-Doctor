@@ -4,7 +4,8 @@ namespace WAID.Desktop.Views;
 public sealed partial class DashboardPage : Page
 {
     private readonly DashboardViewModel _viewModel;
-    public DashboardPage(DashboardViewModel viewModel){InitializeComponent();_viewModel=viewModel;DataContext=viewModel;}
+    public DashboardPage(DashboardViewModel viewModel){InitializeComponent();_viewModel=viewModel;DataContext=viewModel;Loaded+=OnLoaded;}
+    private async void OnLoaded(object sender,Microsoft.UI.Xaml.RoutedEventArgs e){Loaded-=OnLoaded;await _viewModel.LoadExplanationsAsync();}
     private async void OnRepairClick(object sender,Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         if(sender is not Button { DataContext: RepairOption repair }) return;

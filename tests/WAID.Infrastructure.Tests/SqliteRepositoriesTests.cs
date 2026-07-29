@@ -96,7 +96,8 @@ public sealed class SqliteRepositoriesTests : IAsyncLifetime
         scan.AddFindings([finding]);
         scan.Complete(DateTimeOffset.UtcNow);
         await new SqliteScanRepository(_database).SaveAsync(scan, CancellationToken.None);
-        var report = new AIReport(DateTimeOffset.UtcNow, "Storage requires attention.", new HealthScore(100, 100, 100, 100, 100, 70, 100, 96), [], [], [finding]);
+        var explanation = ExplanationEngine.Unsupported("No matching versioned rule.", finding);
+        var report = new AIReport(DateTimeOffset.UtcNow, "Storage requires attention.", new HealthScore(100, 100, 100, 100, 100, 70, 100, 96), [], [], [finding]) { Explanations = [explanation] };
         var repository = new SqliteDiagnosisRepository(_database);
 
         await repository.SaveAsync(scan.Id, report, CancellationToken.None);
@@ -105,6 +106,10 @@ public sealed class SqliteRepositoriesTests : IAsyncLifetime
         Assert.NotNull(loaded);
         Assert.Equal(96, loaded.Health.Overall);
         Assert.Equal("SMART_WARNING", Assert.Single(loaded.Findings).Code);
+        var loadedExplanation = Assert.Single(loaded.Explanations);
+        Assert.Equal(ExplanationEngine.SchemaVersion, loadedExplanation.ExplanationVersion);
+        Assert.Equal(finding.Id, Assert.Single(loadedExplanation.Evidence).FindingId);
+        Assert.Equal(ExplanationEngine.CalibrationVersion, loadedExplanation.Calibration.CalibrationVersion);
     }
 
     [Fact]

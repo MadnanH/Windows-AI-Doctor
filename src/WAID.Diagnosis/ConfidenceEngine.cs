@@ -14,4 +14,11 @@ public sealed class ConfidenceEngine
             correlation.Findings.Any(correlated => match.Evidence.Any(evidence => evidence.Id == correlated.Id))) ? 8 : 0;
         return Math.Clamp(match.Rule.BaseConfidence + requiredBonus + optionalMatches * 2 + correlationBonus, 1, 99);
     }
+
+    public int Calculate(RuleMatch match, IReadOnlyCollection<CorrelatedEvidence> correlations, IReadOnlyCollection<WAID.Domain.Diagnostics.DiagnosticFinding> allFindings)
+    {
+        var score = Calculate(match, correlations);
+        var contradictionCount = allFindings.Count(item => match.Rule.RequiredCodes.Concat(match.Rule.AnyCodes).Any(code => item.Code.Equals($"{code}_HEALTHY", StringComparison.OrdinalIgnoreCase) || item.Code.Equals($"NO_{code}", StringComparison.OrdinalIgnoreCase)));
+        return Math.Clamp(score - contradictionCount * 12, 1, 99);
+    }
 }
