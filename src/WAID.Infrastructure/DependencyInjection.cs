@@ -83,6 +83,8 @@ public static class DependencyInjection
             .AddSingleton<IDigitalTwinRepository, SqliteDigitalTwinRepository>()
             .AddSingleton<IAlertRepository, SqliteAlertRepository>()
             .AddSingleton<IRepairOrchestrationRepository, SqliteRepairOrchestrationRepository>()
+            .AddSingleton<IRepairOutcomeRepository, SqliteRepairOutcomeRepository>()
+            .AddSingleton<IRepairOutcomeExportService>(provider=>new RepairOutcomeExportService(provider.GetRequiredService<IRepairOutcomeRepository>(),Path.Combine(options.DataDirectory,"Reports"),provider.GetRequiredService<TimeProvider>()))
             .AddSingleton<IRecoveryArtifactRepository, SqliteRecoveryArtifactRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
@@ -166,6 +168,7 @@ public static class DependencyInjection
             .AddSingleton<ScheduledScanService>().AddSingleton<ScheduledScanLoopService>().AddSingleton<EvidenceCollector>()
             .AddSingleton<RepairPrioritizationEngine>().AddSingleton<RepairApprovalWorkflow>().AddSingleton<MinidumpAnalyzer>()
             .AddSingleton<IPredictiveHealthModel, TransparentTrendPredictor>().AddSingleton<PredictiveHealthEngine>()
+            .AddSingleton<IRepairOutcomeRecorder, RepairOutcomeRecorder>()
             .AddSingleton(RepairOrchestrationOptions.Default).AddSingleton(RepairSafetyPolicy.Default).AddSingleton<IRepairSafetyScorer, DeterministicRepairSafetyScorer>().AddSingleton<IRepairSimulationEngine, DeterministicRepairSimulationEngine>().AddSingleton<IRepairValidator, DefaultRepairValidator>().AddSingleton<IRepairDependencyCatalog, EmptyRepairDependencyCatalog>().AddSingleton<RepairOrchestrator>()
             .AddSingleton<IAlertDeliveryChannel, InAppAlertChannel>().AddSingleton<IAlertPolicy, AllowConfiguredAlertPolicy>().AddSingleton<AlertManager>()
             .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()

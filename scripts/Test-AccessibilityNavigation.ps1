@@ -19,6 +19,8 @@ Get-ChildItem (Join-Path $root 'Views') -Filter '*.xaml'|ForEach-Object{[xml](Ge
 $repair=Get-Content -Raw (Join-Path $root 'Views\RepairOrchestrationPage.xaml')
 @('RepairWorkflowScreen','RepairCurrentAction','RepairTechnicalView','RepairDefinition','SimulateRepairButton','RepairApprovalCheck','RepairRiskAcknowledgement','ExecuteRepairLifecycleButton','CancelRepairLifecycle','RecoverRepairLifecycle','RepairWorkflowStatus','RollbackApprovalCheck','RollbackRecoveryArtifactButton','RefreshRepairLifecycle')|ForEach-Object{if($repair-notmatch$_){throw "Missing repair workflow accessibility id $_"}}
 if($repair-match'#[0-9A-Fa-f]{6,8}'){throw 'Repair workflow uses a hard-coded color instead of theme resources'}
+$history=Get-Content -Raw (Join-Path $root 'Views\HistoryPage.xaml')
+@('HistoryTitle','RepairHistoryFilter','RepairOutcomeFilter','RefreshHistory','ExportRepairAudit','RepairOutcomeAggregates','RepairAuditChain')|ForEach-Object{if($history-notmatch$_){throw "Missing repair history accessibility id $_"}}
 Write-Host 'Accessibility navigation and recovery smoke checks passed.'
 $evidence=Get-Content -Raw (Join-Path $root 'Views\EvidenceExplorerPage.xaml')
 @('EvidenceExplorerTitle','RefreshEvidenceGraph','EvidenceDomainFilter','EvidenceViewMode','EvidenceNodeList','EvidenceRelationshipList')|ForEach-Object{if($evidence-notmatch$_){throw "Missing evidence accessibility id $_"}}
