@@ -1,7 +1,7 @@
 $ErrorActionPreference='Stop'
 $root=Join-Path $PSScriptRoot '..\src\WAID.Desktop'
 $main=Get-Content -Raw (Join-Path $root 'MainWindow.xaml')
-@('NavDashboard','NavTechnician','NavDrivers','NavBoot','NavUpdates','NavStorage','NavSecurity','NavNetwork','NavEvidence','NavKnowledge','NavDiagnosis','NavChat','NavHealth','NavPredictive','NavLiveMonitoring','NavReliabilityTimeline','NavPerformanceHistory','NavDigitalTwin','NavNotifications','NavOperations','NavRepairs','NavRepairLifecycle','NavHistory','NavAudit','NavEnterprisePolicy','NavPlugins')|ForEach-Object{if($main-notmatch$_){throw "Missing automation id $_"}}
+@('NavDashboard','NavTechnician','NavDrivers','NavBoot','NavUpdates','NavStorage','NavSecurity','NavNetwork','NavEvidence','NavKnowledge','NavDiagnosis','NavChat','NavHealth','NavPredictive','NavLiveMonitoring','NavReliabilityTimeline','NavPerformanceHistory','NavDigitalTwin','NavNotifications','NavOperations','NavCaseExchange','NavRepairs','NavRepairLifecycle','NavHistory','NavAudit','NavEnterprisePolicy','NavPlugins')|ForEach-Object{if($main-notmatch$_){throw "Missing automation id $_"}}
 if($main-notmatch'WorkspaceIndicator'){throw 'Missing portable workspace indicator automation id'}
 $app=Get-Content -Raw (Join-Path $root 'App.xaml.cs')
 if($app-notmatch'StartupRecoveryTitle'){throw 'Missing startup recovery automation id'}
@@ -33,3 +33,6 @@ $plugins=Get-Content -Raw (Join-Path $root 'Views\PluginsPage.cs')
 
 $enterprisePolicy=Get-Content -Raw (Join-Path $root 'Views\EnterprisePolicyPage.xaml')
 @('EnterprisePolicyTitle','EnterprisePolicyStatus','RefreshEnterprisePolicy','EnterprisePolicyRules','EnterprisePolicyHistory')|ForEach-Object{if($enterprisePolicy-notmatch$_){throw "Missing enterprise policy accessibility id $_"}}
+
+$caseExchange=Get-Content -Raw (Join-Path $root 'Views\CaseExchangePage.xaml')
+@('CaseExchangeTitle','CaseNotes','PreviewCasePackage','CasePassword','ExportCasePackage','ImportCasePath','ImportCasePackage','CaseExchangeStatus')|ForEach-Object{if($caseExchange-notmatch$_){throw "Missing case exchange accessibility id $_"}}

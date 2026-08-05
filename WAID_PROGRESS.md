@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-05
 
-Current version: **0.36.0-dev**
+Current version: **0.37.0-dev**
 
 Active branch: `main`
 
@@ -21,7 +21,7 @@ Active branch: `main`
 - Commercial hardening Prompt 01 architecture baseline: verified current/target architecture, complete dependency and feature audit, persistence ownership/schema inventory, explicit risk register, incremental migration plan, README links, dependency-rule tests, and expanded service-registration smoke coverage.
 - Commercial hardening Prompt 02 composition root: modular feature registration, versioned non-secret host options, replaceable Windows adapters, host-owned Serilog provider, typed actionable startup failures, validated required services/lifetimes/duplicate scanner and repair IDs, module diagnostics, recovery UI, and service-locator regression enforcement.
 - Commercial hardening Prompt 03 diagnostics foundation: local structured JSON logging, typed event taxonomy, asynchronous correlation and operation context, redacted append-only daily audit records, bounded retention, searchable Logs & Audit UI, sanitized support export, and non-fatal diagnostic-storage failures.
-- Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
+- Commercial hardening Prompt 04 persistence reliability: ordered transactional schema migrations 1ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“7, upgrade backups, WAL recovery, integrity/foreign-key checks, newer-schema rejection, bounded verified backups, explicitly approved recovery, typed maintenance failures, audit events, and Settings database-health UI.
 - Commercial hardening Prompt 05 unified configuration: deterministic default/machine/user/profile/session/policy precedence, immutable operation snapshots, enforced policy locks, fail-closed feature flags, schema-8 legacy migration, privacy-safe profile import/export, reset/audit behavior, and categorized searchable Settings UI.
 - Commercial hardening Prompt 06 scanner framework: stable backward-compatible scanner metadata/output contracts, dependency planning, prerequisite skips, bounded parallel execution, detailed progress/cancellation, evidence redaction, schema-9 transactional provenance, resource estimates, and live Dashboard plan states.
 - Commercial hardening Prompt 07 driver conflict analyzer: normalized privacy-safe driver inventory, signature/problem/disabled/failed/duplicate/orphan/incompatibility/change rules, conservative event correlation, schema-10 report history, typed failures, standard-user uncertainty, and a reachable filtered Driver Health UI with evidence and device history.
@@ -53,6 +53,7 @@ Active branch: `main`
 - Commercial hardening Prompt 33 Secure Plugin SDK and Certification: versioned API v2 contracts for scanners, report contributors, knowledge providers, and optional repair declarations; strict schema/certification, explicit permissions, dependency/integrity/signature checks, controlled registration, collectible isolation, failure quarantine, schema-32 inventory, audited Plugin Manager lifecycle, sample conformance, malicious fixtures, and certification documentation.
 - Commercial hardening Prompt 34 Enterprise Policy Mode: deterministic built-in/organization provider precedence, typed locked capability decisions for cloud, AI, repairs, exports, plugins, monitoring, portable mode, and diagnostics; fail-closed validation; retention ceilings; schema-33 snapshots/evaluations; audited refresh/administrative rollback; boundary enforcement; and a reachable explainable Policy Status page.
 - Commercial hardening Prompt 35 Command-Line Interface and Automation: a thin waid executable over shared production services for status, scans, findings, reports, timelines, policy, plugins, and repair plans; human and schema-versioned JSON output; stable exit codes; cancellation/progress separation; CLI audit attribution; explicit plan-bound repair approval; x64/ARM64 publishing; and operator/schema documentation.
+- Commercial hardening Prompt 36 Remote Diagnostic Package and Case Exchange: selected scans, findings, crash metadata, diagnosis, timeline, repair history, sanitized logs, system summary, and notes in AES-256-GCM encrypted offline packages; versioned manifests and per-entry hashes; standard/maximum redaction; bounded no-extraction validation; strict temporary review mode; policy/audit integration; and an accessible export/import wizard.
 
 ## Fully working features
 
@@ -62,6 +63,7 @@ Active branch: `main`
 - Plugin SDK v2 certifies identity, compatibility, publisher, permissions, capabilities, dependencies, package containment, SHA-256, and optional Authenticode before code loading; Plugin Manager requires permission review and provides install, enable, disable, quarantine, status, and failure logs with SQLite inventory and audit history.
 - Enterprise policy is evaluated before portable startup and plugin loading and at AI, diagnostic, repair, export, plugin, and monitoring boundaries. Invalid policy blocks governed capabilities, effective source/locks are explainable, user controls cannot override blocked decisions, and snapshots contain no secrets.
 - The local CLI runs the same registered scanners, repositories, policy engine, plugin inventory, exporters, and repair orchestrator as the desktop app. Machine-readable stdout remains separate from progress, every command is audited as the CLI actor without arguments, and no repair executes without the exact current plan ID plus all explicit approval gates.
+- Case Exchange creates authenticated encrypted .waidcase packages with explicit content selection and redaction preview. Imports authenticate and validate every bounded entry and hash without extraction, persist nothing, run nothing, expose a permanent untrusted review banner, and cannot approve repairs or mutate local diagnostic state.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
@@ -89,7 +91,7 @@ Active branch: `main`
 - Every queued or interactive repair now passes through the same persisted orchestration lifecycle. Plans are simulated before approval, high-risk acknowledgement is explicit, execution is serialized and bounded, validation is recorded, rollback outcomes are visible, interrupted work never auto-runs, and all significant decisions are audited.
 - Repair dry runs never call executors or request elevation, canonicalize and fingerprint the current definition, label every effect exact, estimated, or unknown, persist their validity window and assumptions, and are revalidated immediately before execution so stale previews fail closed.
 - Backup-required repairs execute only with a protected, complete, hash-validated artifact. Recovery capability is explicit, standalone rollback requires confirmation, file/directory restoration is hash-verified, registry provider success is recorded, outcomes are audited, and expiry cleanup cannot escape the managed root.
-- Every simulated repair receives a reproducible 0Ã¢â‚¬â€œ100 safety score with seven explained weighted factors. Baseline confirmation derives from both score and declared safety; policy can only block or strengthen it. Score/policy changes invalidate approval, and High/Critical repairs cannot bypass acknowledgement.
+- Every simulated repair receives a reproducible 0ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“100 safety score with seven explained weighted factors. Baseline confirmation derives from both score and declared safety; policy can only block or strengthen it. Score/policy changes invalidate approval, and High/Critical repairs cannot bypass acknowledgement.
 
 - Repair History now presents filtered immutable lifecycle evidence, approval actor, execution and validation outcomes, rollback details, redacted export, and rebuildable descriptive outcome statistics that cannot authorize or generate repair behavior.
 
@@ -122,6 +124,7 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Known limitations
 
+- Case packages use password-based encryption and do not establish the human identity of the sender. WAID does not deliver passwords, provide remote access, synchronize cases, or retain imported cases; users must exchange strong passwords separately and re-export for incompatible schema versions.
 - The CLI is local/current-user automation rather than a remote-management endpoint. Repair execution still requires supported Windows capabilities and disposable-VM validation; it cannot bypass elevation, enterprise policy, backup, restore-point, validation, or rollback gates.
 - Scheduled monitoring remains in-process and cannot wake a closed application.
 - Portable workspace selection is command-line/marker driven in this milestone; the recovery UI provides actionable permission failures, while a graphical folder picker before DI startup remains future UX work. Removable-media disconnect, filesystem ACL variants, and cross-session mutex behavior require real-Windows validation.
@@ -173,12 +176,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 385/385 tests**
+**Passing - 395/395 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 124 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 176 passed
+- `WAID.Infrastructure.Tests`: 186 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -187,15 +190,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.36.0-dev - Command-Line Interface and Automation**
+**0.37.0-dev - Remote Diagnostic Package and Case Exchange**
 
-Prompt 35 adds a production CLI that reuses desktop services and persistence, stable human/JSON contracts and exit codes, safe progress and cancellation, policy-aware reporting, audited CLI attribution, and a non-bypassable plan-bound repair confirmation workflow.
+Prompt 36 adds encrypted redacted offline case packages, versioned manifests and hashes, bounded no-extraction validation, strict review-only import, audit and policy enforcement, and an accessible content/redaction/encryption/review wizard.
 
 ## Next milestone
 
-**Commercial hardening Prompt 36 - Remote Diagnostic Package and Case Exchange**
+**Commercial hardening Prompt 37 - Automated Test Strategy and Quality Gates**
 
-Apply only Prompt 36 from the ordered commercial-grade prompt set. Preserve privacy, redaction, explicit consent, package integrity, offline operation, workspace isolation, and enterprise policy; restore/build/test independently and commit before continuing.
+Apply only Prompt 37 from the ordered commercial-grade prompt set. Preserve deterministic offline tests, warning-free builds, platform boundaries, security regression coverage, and honest real-hardware limitations; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

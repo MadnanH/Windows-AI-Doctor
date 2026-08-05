@@ -129,6 +129,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IKnowledgeRetrievalService>(_=>new OfflineKnowledgeRetrievalService(Path.Combine(options.DataDirectory,"Knowledge","index.json"),TimeProvider.System));
         services.AddSingleton<IDiagnosticsExportService>(provider => new DiagnosticsExportService(options.DataDirectory, provider.GetRequiredService<IScanRepository>(), provider.GetRequiredService<IDiagnosisRepository>(), provider.GetRequiredService<IRepairHistoryRepository>(), provider.GetRequiredService<TimeProvider>(),provider.GetRequiredService<IEnterprisePolicyService>()))
+            .AddSingleton<IRemoteCaseExchangeService>(provider => new RemoteCaseExchangeService(options.DataDirectory, provider.GetRequiredService<IScanRepository>(), provider.GetRequiredService<IDiagnosisRepository>(), provider.GetRequiredService<IRepairHistoryRepository>(), provider.GetRequiredService<IReliabilityTimelineRepository>(), provider.GetRequiredService<ILocalDiagnosticsService>(), provider.GetRequiredService<IAuditTrailService>(), provider.GetRequiredService<IEnterprisePolicyService>(), provider.GetRequiredService<TimeProvider>()))
             .AddSingleton<IDiagnosticReportExporter>(_ => new DiagnosticReportExporter(Path.Combine(options.DataDirectory, "Reports")))
             .AddSingleton<IPdfReportExporter>(_ => new PdfDiagnosticReportExporter(Path.Combine(options.DataDirectory, "Reports")))
             .AddSingleton<ISystemScanner, OperatingSystemScanner>().AddSingleton<ISystemScanner, WindowsEventViewerScanner>()

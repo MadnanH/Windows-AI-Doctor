@@ -85,7 +85,7 @@ public static class WaidServiceRegistrationValidator
         typeof(WaidHostOptions), typeof(WaidModuleCatalog), typeof(WaidDatabase), typeof(TimeProvider),
         typeof(IScanRepository), typeof(IScanRunRepository), typeof(IScanDataSanitizer), typeof(ISettingsRepository), typeof(IDiagnosisRepository), typeof(IRepairHistoryRepository),
         typeof(IHealthSnapshotRepository), typeof(IScanScheduleRepository), typeof(IRepairApprovalRepository),
-        typeof(IDiagnosticsExportService), typeof(IAdministratorService), typeof(IRestorePointManager), typeof(IBackupManager),
+        typeof(IDiagnosticsExportService), typeof(IRemoteCaseExchangeService), typeof(IAdministratorService), typeof(IRestorePointManager), typeof(IBackupManager),
         typeof(IRollbackManager), typeof(IRecoveryStorageProbe), typeof(IRecoveryArtifactRepository), typeof(IRecoveryRetentionService), typeof(IRecoveryWorkflow), typeof(IDiagnosticReportExporter), typeof(IPdfReportExporter), typeof(ScanCoordinator),
         typeof(RepairExecutor), typeof(BackgroundHealthMonitoringService), typeof(LiveMonitoringService), typeof(ILiveMonitoringRepository), typeof(IReliabilityTimelineRepository), typeof(ReliabilityTimelineProjector), typeof(IPerformanceHistoryRepository), typeof(PerformanceHistoryService), typeof(IDigitalTwinRepository), typeof(DigitalTwinService), typeof(IAlertRepository), typeof(AlertManager), typeof(IRepairOrchestrationRepository), typeof(IRepairSafetyScorer), typeof(IRepairSimulationEngine), typeof(RepairOrchestrator), typeof(ScheduledScanService), typeof(PluginCatalog),
         typeof(IAuditTrailService), typeof(ILocalDiagnosticsService), typeof(IOperationContextAccessor), typeof(IDatabaseMaintenanceService),
