@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 28;
+    public const int CurrentSchemaVersion = 29;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -329,5 +329,12 @@ public sealed class WaidDatabase
             CREATE TABLE IF NOT EXISTS recovery_artifacts(id TEXT PRIMARY KEY,transaction_id TEXT NOT NULL,created_utc TEXT NOT NULL,expires_utc TEXT NOT NULL,state INTEGER NOT NULL,artifact_json TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS ix_recovery_artifacts_transaction ON recovery_artifacts(transaction_id,created_utc DESC);
             CREATE INDEX IF NOT EXISTS ix_recovery_artifacts_expiry ON recovery_artifacts(state,expires_utc);
+            """),
+        new(29, "Repair safety scoring and policy decisions", """
+            ALTER TABLE repair_orchestrations ADD COLUMN safety_score INTEGER NULL;
+            ALTER TABLE repair_orchestrations ADD COLUMN safety_version TEXT NULL;
+            ALTER TABLE repair_orchestrations ADD COLUMN approval_type INTEGER NULL;
+            ALTER TABLE repair_orchestrations ADD COLUMN policy_result INTEGER NULL;
+            CREATE INDEX IF NOT EXISTS ix_repair_orchestrations_safety ON repair_orchestrations(policy_result,safety_score DESC,updated_utc DESC);
             """)    ];
 }

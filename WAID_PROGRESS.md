@@ -1,14 +1,14 @@
 # WAID Development Progress
 
-Last updated: 2026-07-29
+Last updated: 2026-08-05
 
-Current version: **0.28.0-dev**
+Current version: **0.29.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v28, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v29, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -45,6 +45,7 @@ Active branch: `main`
 - Commercial hardening Prompt 25 repair orchestration: durable typed lifecycle and state machine, dependency/conflict assessment, read-only simulation, centralized approval and policy gates, bounded execution and cancellation, validation, rollback outcomes, startup crash recovery, schema-26 persistence, complete decision auditing, and a reachable Repair Lifecycle page.
 - Commercial hardening Prompt 26 repair simulation: read-only versioned dry runs, deterministic canonical fingerprints, exact/estimated/unknown typed effects, assumptions and warnings, expiry and changed-definition invalidation, schema-27 metadata, production module declarations, and an expanded before/after Repair Lifecycle preview.
 - Commercial hardening Prompt 27 recovery system: capability-tiered restore points and resource artifacts, preflight space and ACL enforcement, SHA-256 item and manifest integrity, idempotent creation, verified rollback outcomes, schema-28 persistence, root-confined expiry cleanup, audited explicit rollback, and recovery-readiness UI.
+- Commercial hardening Prompt 28 repair safety scoring: deterministic versioned impact/reversibility/privilege/downtime/data/uncertainty/validation factors, fixed weighted rubric, non-weakenable confirmation thresholds, restrictive policy precedence, schema-29 decisions and exceptions, audited revalidation, and consistent factor UI.
 
 ## Fully working features
 
@@ -78,6 +79,7 @@ Active branch: `main`
 - Every queued or interactive repair now passes through the same persisted orchestration lifecycle. Plans are simulated before approval, high-risk acknowledgement is explicit, execution is serialized and bounded, validation is recorded, rollback outcomes are visible, interrupted work never auto-runs, and all significant decisions are audited.
 - Repair dry runs never call executors or request elevation, canonicalize and fingerprint the current definition, label every effect exact, estimated, or unknown, persist their validity window and assumptions, and are revalidated immediately before execution so stale previews fail closed.
 - Backup-required repairs execute only with a protected, complete, hash-validated artifact. Recovery capability is explicit, standalone rollback requires confirmation, file/directory restoration is hash-verified, registry provider success is recorded, outcomes are audited, and expiry cleanup cannot escape the managed root.
+- Every simulated repair receives a reproducible 0–100 safety score with seven explained weighted factors. Baseline confirmation derives from both score and declared safety; policy can only block or strengthen it. Score/policy changes invalidate approval, and High/Critical repairs cannot bypass acknowledgement.
 
 ## Partially working features
 
@@ -103,7 +105,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-28 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-29 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -138,6 +140,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Default repair validation confirms the typed executor result and treats restart-required results as provisional. Process or machine failure may prevent in-process rollback; WAID marks the durable record RecoveryRequired and never retries automatically. Restore-point, backup, cancellation, restart, and rollback behavior require disposable-VM validation.
 - Dry-run effects describe declared repair behavior and cannot predict exact command output or every Windows side effect. Built-in duration is estimated, storage use may be unknown, previews expire after 15 minutes, and real behavior still requires disposable-VM validation.
 - Registry rollback verification relies on successful Windows provider import rather than a complete post-import value comparison. Restore Point availability, ACL behavior, locked resources, junctions, disk-space races, interruptions, large directory trees, and rollback require disposable-VM and real-hardware validation.
+- Safety weights are transparent conservative rules, not repair failure probabilities. The default policy preserves baseline gates but does not add enterprise policy-file deployment; organization-specific policy rollout and manual High/Critical UX validation remain outstanding.
 
 ## Build status
 
@@ -152,10 +155,10 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 341/341 tests**
+**Passing - 346/346 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 101 passed
+- `WAID.Application.Tests`: 106 passed
 - `WAID.Diagnosis.Tests`: 75 passed
 - `WAID.Infrastructure.Tests`: 155 passed
 - Failed: 0
@@ -164,15 +167,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.28.0-dev - Backup, Restore Point, and Rollback System**
+**0.29.0-dev - Repair Safety Scoring and Policy Gates**
 
-Prompt 27 adds validated recovery tiers, protected and hashed repair artifacts, restore-point metadata, verified rollback outcomes, durable expiry state, bounded retention, explicit audited rollback, and recovery-readiness UI.
+Prompt 28 adds deterministic explainable safety factors, fixed weighted scores, baseline confirmation thresholds, restrictive non-weakenable policy precedence, durable policy decisions/exceptions, pre-execution revalidation, auditing, and consistent UI presentation.
 
 ## Next milestone
 
-**Commercial hardening Prompt 28 - Repair Safety Scoring and Policy Gates**
+**Commercial hardening Prompt 29 - Repair Workflow UI and Accessibility**
 
-Apply only Prompt 28 from the ordered commercial-grade prompt set. Preserve validated recovery capabilities, artifact integrity, stale dry-run rejection, explicit approval, least privilege, audit history, and fail-closed lifecycle recovery; restore/build/test independently and commit before continuing.
+Apply only Prompt 29 from the ordered commercial-grade prompt set. Preserve deterministic scoring, non-weakenable policy gates, validated recovery capabilities, stale dry-run rejection, explicit approval, least privilege, audit history, and fail-closed lifecycle recovery; restore/build/test independently and commit before continuing.
 ## Update procedure
 
 Update completed, remaining, build/test status, version, limitations, and next milestone in the same commit as every milestone.
