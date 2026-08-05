@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet test tests/WAID.Domain.Tests/WAID.Domain.Tests.csproj -c Release --filter "Category!=DestructiveVm" --logger "trx;LogFileName=domain.trx" --results-directory artifacts/test-results/unit
@@ -34,7 +34,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
@@ -49,7 +49,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
@@ -64,7 +64,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet test tests/WAID.Infrastructure.Tests/WAID.Infrastructure.Tests.csproj -c Release --filter "Category=WindowsIntegration" --logger "trx;LogFileName=windows-integration.trx" --results-directory artifacts/test-results/windows
@@ -75,7 +75,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
@@ -92,7 +92,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
@@ -108,7 +108,7 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: 8.0.x }
       - run: pwsh scripts/Test-Packaging.ps1
       - run: pwsh ./publish.ps1 -Platform x64
