@@ -26,7 +26,7 @@ public sealed class RestorePointManager(
             "param($Description) Checkpoint-Computer -Description $Description -RestorePointType MODIFY_SETTINGS -ErrorAction Stop",
             new Dictionary<string, object?> { ["Description"] = description }, cancellationToken).ConfigureAwait(false);
         return result.Succeeded
-            ? new(true, description)
+            ? new(true, description, ProviderId: "Windows.Checkpoint-Computer", CreatedAtUtc: DateTimeOffset.UtcNow)
             : new(false, description, string.Join(Environment.NewLine, result.Errors));
     }
 }

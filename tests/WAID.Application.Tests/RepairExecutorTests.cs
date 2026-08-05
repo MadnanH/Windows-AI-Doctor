@@ -187,7 +187,7 @@ public sealed class RepairExecutorTests
         {
             CallCount++;
             return Task.FromResult(Complete
-                ? new BackupSnapshot("C:\\backup", [new(resources.Single(), "C:\\backup\\item.reg")], [])
+                ? new BackupSnapshot("C:\\backup", [new(resources.Single(), "C:\\backup\\item.reg")], [], Capability: RecoveryCapabilityLevel.ResourceBackup, IsValidated: true)
                 : new BackupSnapshot("C:\\backup", [], ["Registry export failed"]));
         }
     }
@@ -198,7 +198,7 @@ public sealed class RepairExecutorTests
         public Task<RollbackResult> RollbackAsync(BackupSnapshot snapshot, CancellationToken token)
         {
             CallCount++;
-            return Task.FromResult(new RollbackResult(true, ["restored"], []));
+            return Task.FromResult(new RollbackResult(true, ["restored"], [], true, "verified"));
         }
     }
 

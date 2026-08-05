@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 27;
+    public const int CurrentSchemaVersion = 28;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state", "performance_samples", "performance_rollups", "performance_retention_jobs", "digital_twin_snapshots", "digital_twin_diffs", "digital_twin_retention_jobs", "scheduled_scan_history", "alert_deliveries", "alert_settings", "repair_orchestrations"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state", "performance_samples", "performance_rollups", "performance_retention_jobs", "digital_twin_snapshots", "digital_twin_diffs", "digital_twin_retention_jobs", "scheduled_scan_history", "alert_deliveries", "alert_settings", "repair_orchestrations", "recovery_artifacts"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -324,5 +324,10 @@ public sealed class WaidDatabase
             ALTER TABLE repair_orchestrations ADD COLUMN simulation_fingerprint TEXT NULL;
             ALTER TABLE repair_orchestrations ADD COLUMN simulated_utc TEXT NULL;
             CREATE INDEX IF NOT EXISTS ix_repair_orchestrations_simulation ON repair_orchestrations(simulation_version,simulated_utc DESC);
+            """),
+        new(28, "Validated recovery artifacts and rollback outcomes", """
+            CREATE TABLE IF NOT EXISTS recovery_artifacts(id TEXT PRIMARY KEY,transaction_id TEXT NOT NULL,created_utc TEXT NOT NULL,expires_utc TEXT NOT NULL,state INTEGER NOT NULL,artifact_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_recovery_artifacts_transaction ON recovery_artifacts(transaction_id,created_utc DESC);
+            CREATE INDEX IF NOT EXISTS ix_recovery_artifacts_expiry ON recovery_artifacts(state,expires_utc);
             """)    ];
 }

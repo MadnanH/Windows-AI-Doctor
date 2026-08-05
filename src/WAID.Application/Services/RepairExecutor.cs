@@ -69,7 +69,7 @@ public sealed class RepairExecutor(
             {
                 snapshot = await backupManager.CreateAsync(transaction.Id, plan.Resources, cancellationToken).ConfigureAwait(false);
                 transaction.RecordBackup(snapshot.Location);
-                if (snapshot.Items.Count != plan.Resources.Count)
+                if (snapshot.Items.Count != plan.Resources.Count || !snapshot.IsValidated || snapshot.Capability < RecoveryCapabilityLevel.ResourceBackup)
                     return await FailPreparationAsync(
                         transaction,
                         $"Required backup was incomplete: {string.Join("; ", snapshot.Warnings)}",
@@ -94,11 +94,12 @@ public sealed class RepairExecutor(
             if (!result.Succeeded && module.Policy.SupportsRollback && snapshot is not null)
             {
                 var rollback = await rollbackManager.RollbackAsync(snapshot, cancellationToken).ConfigureAwait(false);
-                var rolledBackResult = result.WithRollback(rollback.Succeeded);
+                var rollbackVerified = rollback.Succeeded && rollback.Verified;
+                var rolledBackResult = result.WithRollback(rollbackVerified);
                 transaction.MarkRolledBack(rolledBackResult, timeProvider.GetUtcNow());
                 foreach (var action in rollback.Actions) transaction.AddEvent($"Rollback: {action}");
                 foreach (var error in rollback.Errors) transaction.AddEvent($"Rollback error: {error}");
-                await AuditAsync(module, transaction, rollback.Succeeded ? AuditResult.RolledBack : AuditResult.Failed, "Rollback completed after an unsuccessful repair.", CancellationToken.None).ConfigureAwait(false);
+                await AuditAsync(module, transaction, rollbackVerified ? AuditResult.RolledBack : AuditResult.Failed, "Rollback completed after an unsuccessful repair.", CancellationToken.None).ConfigureAwait(false);
             }
 
             await TryCaptureTwinAsync(SystemSnapshotPurpose.PostRepair, transaction.Id, twinBefore?.Id, CancellationToken.None).ConfigureAwait(false);
@@ -120,7 +121,7 @@ public sealed class RepairExecutor(
                 if (module.Policy.SupportsRollback && snapshot is not null)
                 {
                     var rollback = await rollbackManager.RollbackAsync(snapshot, CancellationToken.None).ConfigureAwait(false);
-                    transaction.MarkRolledBack(transaction.Result!.WithRollback(rollback.Succeeded), timeProvider.GetUtcNow());
+                    transaction.MarkRolledBack(transaction.Result!.WithRollback(rollback.Succeeded && rollback.Verified), timeProvider.GetUtcNow());
                     foreach (var action in rollback.Actions) transaction.AddEvent($"Cancellation rollback: {action}");
                     foreach (var error in rollback.Errors) transaction.AddEvent($"Cancellation rollback error: {error}");
                 }
@@ -140,7 +141,7 @@ public sealed class RepairExecutor(
             if (module.Policy.SupportsRollback && snapshot is not null)
             {
                 var rollback = await rollbackManager.RollbackAsync(snapshot, CancellationToken.None).ConfigureAwait(false);
-                transaction.MarkRolledBack(transaction.Result!.WithRollback(rollback.Succeeded), timeProvider.GetUtcNow());
+                transaction.MarkRolledBack(transaction.Result!.WithRollback(rollback.Succeeded && rollback.Verified), timeProvider.GetUtcNow());
             }
             await historyRepository.SaveAsync(transaction, CancellationToken.None).ConfigureAwait(false);
             await AuditAsync(module, transaction, transaction.Status == RepairTransactionStatus.RolledBack ? AuditResult.RolledBack : AuditResult.Failed, "Repair failed unexpectedly.", CancellationToken.None).ConfigureAwait(false);

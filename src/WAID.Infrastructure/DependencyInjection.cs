@@ -82,7 +82,8 @@ public static class DependencyInjection
             .AddSingleton<IPerformanceHistoryRepository, SqlitePerformanceHistoryRepository>()
             .AddSingleton<IDigitalTwinRepository, SqliteDigitalTwinRepository>()
             .AddSingleton<IAlertRepository, SqliteAlertRepository>()
-            .AddSingleton<IRepairOrchestrationRepository, SqliteRepairOrchestrationRepository>();
+            .AddSingleton<IRepairOrchestrationRepository, SqliteRepairOrchestrationRepository>()
+            .AddSingleton<IRecoveryArtifactRepository, SqliteRecoveryArtifactRepository>();
         services.AddSingleton<IDriverHealthRepository, SqliteDriverHealthRepository>();
         services.AddSingleton<IBootHealthRepository, SqliteBootHealthRepository>();
         services.AddSingleton<IWindowsUpdateHealthRepository, SqliteWindowsUpdateHealthRepository>();
@@ -107,8 +108,8 @@ public static class DependencyInjection
     private static IServiceCollection AddWaidWindowsPlatform(this IServiceCollection services, WaidHostOptions options, WaidModuleCatalog modules)
     {
         services.AddSingleton<IPowerShellRunner, PowerShellRunner>().AddSingleton<IAdministratorService, AdministratorService>()
-            .AddSingleton<IRestorePointManager, RestorePointManager>().AddSingleton<IBackupManager>(provider => new BackupManager(Path.Combine(options.DataDirectory, "Backups"), provider.GetRequiredService<IPowerShellRunner>(), provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>()))
-            .AddSingleton<IRollbackManager, RollbackManager>().AddSingleton<ISystemConditionService, WindowsSystemConditionService>()
+            .AddSingleton<IRecoveryStorageProbe, WindowsRecoveryStorageProbe>().AddSingleton<IRestorePointManager, RestorePointManager>().AddSingleton<IBackupManager>(provider => new BackupManager(Path.Combine(options.DataDirectory, "Backups"), provider.GetRequiredService<IPowerShellRunner>(), provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BackupManager>>(), provider.GetRequiredService<IRecoveryArtifactRepository>(), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<IRecoveryStorageProbe>()))
+            .AddSingleton<IRollbackManager, RollbackManager>().AddSingleton<IRecoveryWorkflow, RecoveryWorkflow>().AddSingleton<IRecoveryRetentionService>(provider => new RecoveryRetentionService(Path.Combine(options.DataDirectory, "Backups"), provider.GetRequiredService<IRecoveryArtifactRepository>(), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RecoveryRetentionService>>())).AddSingleton<ISystemConditionService, WindowsSystemConditionService>()
             .AddSingleton<ILiveSignalCollector, WindowsLiveSignalCollector>()
             .AddSingleton<IPerformanceMetricCollector, WindowsPerformanceMetricCollector>()
             .AddSingleton<IStartupLaunchService>(_ => new WindowsStartupLaunchService(options.ApplicationExecutablePath));
