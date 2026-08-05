@@ -1,3 +1,5 @@
+using WAID.Application.Services;
+using WAID.Infrastructure.Configuration;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,6 +19,8 @@ public sealed class WaidWorkspaceContext: IWaidWorkspaceContext
  public static WaidWorkspaceContext Resolve(string[] args,string executableDirectory)
  {
   ArgumentNullException.ThrowIfNull(args);var portable=args.Any(x=>x.Equals("--portable",StringComparison.OrdinalIgnoreCase))||File.Exists(Path.Combine(executableDirectory,"waid.portable"));
+  var enterprisePath=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),"Windows AI Doctor","enterprise-policy.json");
+  if(portable&&!EnterprisePolicyBootstrap.IsAllowed(enterprisePath,EnterpriseCapability.PortableMode))throw new WaidWorkspaceException("WAID-POLICY-PORTABLE-BLOCKED","Portable mode is blocked by organization policy.","Use the installed application or contact the organization policy administrator.");
   if(!portable){var root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Windows AI Doctor");return new(new(WaidStorageMode.Installed,Path.GetFullPath(root),true,false,"Installed workspace",null),null,false);}
   var index=Array.FindIndex(args,x=>x.Equals("--workspace",StringComparison.OrdinalIgnoreCase));var requested=index>=0&&index+1<args.Length?args[index+1]:Path.Combine(executableDirectory,"WAID-Workspace");
   if(string.IsNullOrWhiteSpace(requested))throw new WaidWorkspaceException("WAID-PORTABLE-WORKSPACE","A portable workspace was not selected.","Launch with --portable --workspace <folder>.");

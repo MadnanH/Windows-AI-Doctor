@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using WAID.Application.Abstractions;
+using WAID.Application.Services;
 
 namespace WAID.Infrastructure.Diagnostics;
 
@@ -11,12 +12,14 @@ public sealed class DiagnosticsExportService(
     IScanRepository scans,
     IDiagnosisRepository diagnoses,
     IRepairHistoryRepository repairs,
-    TimeProvider timeProvider) : IDiagnosticsExportService
+    TimeProvider timeProvider, IEnterprisePolicyService? enterprisePolicy = null) : IDiagnosticsExportService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     public async Task<string> ExportAsync(CancellationToken token)
     {
+        var decision = enterprisePolicy?.Evaluate(EnterpriseCapability.Exports);
+        if (decision is { Allowed: false }) throw new EnterprisePolicyException("WAID-POLICY-EXPORT-BLOCKED", $"Diagnostic export is blocked by {decision.Source}.", "Contact the organization policy administrator.");
         var exportDirectory = Path.Combine(dataDirectory, "Exports");
         Directory.CreateDirectory(exportDirectory);
         var timestamp = timeProvider.GetUtcNow();

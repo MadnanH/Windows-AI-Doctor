@@ -47,7 +47,7 @@ public sealed class LiveMonitoringException(string code, string message, string 
     public string RecoveryAction { get; } = recoveryAction;
 }
 
-public interface ILiveMonitoringPolicy { bool IsMonitoringAllowed(); }
+public interface ILiveMonitoringPolicy { bool IsMonitoringAllowed(); int? MaximumRetentionDays=>null; }
 public sealed class AllowLiveMonitoringPolicy : ILiveMonitoringPolicy { public bool IsMonitoringAllowed() => true; }
 
 public interface ILiveSignalCollector

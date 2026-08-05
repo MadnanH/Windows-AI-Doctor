@@ -2,13 +2,13 @@
 
 Last updated: 2026-08-05
 
-Current version: **0.34.0-dev**
+Current version: **0.35.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v32, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v33, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Secure Plugin SDK v2 with strict manifest certification, host/API/dependency compatibility, capability-to-permission enforcement, optional Authenticode and SHA-256 verification, controlled extension registration, collectible dependency isolation, quarantine, SQLite inventory, audited lifecycle management, and a reachable permission-reviewing Plugin Manager.
@@ -51,6 +51,7 @@ Active branch: `main`
 - Commercial hardening Prompt 31 Technician Dashboard: optional profile-based professional workspace composed from real scans, incidents, evidence, repairs, and reports; compact/detailed layouts, saved filters, separately persisted case notes/metadata, bounded data, accessible navigation, and unchanged simple home mode.
 - Commercial hardening Prompt 32 Portable Edition: pre-DI workspace resolution, isolated compatible schema-31 storage, write/permission probing, typed read-only failures, per-workspace process and cross-process locking, coexistence, marker-confined approved cleanup, portable publishing, and visible mode/path indicator.
 - Commercial hardening Prompt 33 Secure Plugin SDK and Certification: versioned API v2 contracts for scanners, report contributors, knowledge providers, and optional repair declarations; strict schema/certification, explicit permissions, dependency/integrity/signature checks, controlled registration, collectible isolation, failure quarantine, schema-32 inventory, audited Plugin Manager lifecycle, sample conformance, malicious fixtures, and certification documentation.
+- Commercial hardening Prompt 34 Enterprise Policy Mode: deterministic built-in/organization provider precedence, typed locked capability decisions for cloud, AI, repairs, exports, plugins, monitoring, portable mode, and diagnostics; fail-closed validation; retention ceilings; schema-33 snapshots/evaluations; audited refresh/administrative rollback; boundary enforcement; and a reachable explainable Policy Status page.
 
 ## Fully working features
 
@@ -58,6 +59,7 @@ Active branch: `main`
 - SQLite persistence for scans, diagnosis, repair history, schedules, approvals, settings, and health snapshots.
 - Scanner cancellation/failure isolation and user-visible degraded data states; unavailable data is never inferred as healthy.
 - Plugin SDK v2 certifies identity, compatibility, publisher, permissions, capabilities, dependencies, package containment, SHA-256, and optional Authenticode before code loading; Plugin Manager requires permission review and provides install, enable, disable, quarantine, status, and failure logs with SQLite inventory and audit history.
+- Enterprise policy is evaluated before portable startup and plugin loading and at AI, diagnostic, repair, export, plugin, and monitoring boundaries. Invalid policy blocks governed capabilities, effective source/locks are explainable, user controls cannot override blocked decisions, and snapshots contain no secrets.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
@@ -93,7 +95,6 @@ Active branch: `main`
 
 ## Partially working features
 
-- Plugin enable/disable persistence is implemented in the service layer; the Plugins page currently presents state and diagnostics, while changing state is performed by administration tooling and takes effect after restart.
 - Feature-flag resolution and UI are working; the cloud-provider flag is intentionally reserved and has no network provider implementation.
 - Automated accessibility checks validate navigation targets, identifiers, and XAML parseability; screen-reader, focus, high-contrast, and 200% scaling acceptance still requires archived manual evidence.
 - Packaging inputs and installed/portable publish paths are ready, but production MSIX signing and store/update distribution require protected release credentials and a release environment.
@@ -129,7 +130,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Diagnostic packages should still be reviewed before external sharing despite defense-in-depth redaction.
 - Append-only audit files are not cryptographically signed and can be altered by a local administrator. Audit-storage failure is reported and logged without crashing or silently changing a repair outcome.
 - Automated database tests cover fresh installs, schema 1 and 6 upgrades, interrupted migration, concurrent initialization, corruption, newer schemas, backup, restore, and retention. Live Settings recovery UI still requires manual Windows acceptance.
-- Machine and policy enforcement depends on deployment applying administrator-only ACLs to `%PROGRAMDATA%\Windows AI Doctor`; local administrators can change those files. Search, policy-lock, profile, and experimental-warning UI still require manual accessibility acceptance.
+- Machine and enterprise policy enforcement depends on deployment applying administrator-only ACLs to `%PROGRAMDATA%\Windows AI Doctor`; local administrators can change those files. The schema and deployment path are provided, but WAID does not act as a domain policy distribution system.
 - Scanner CPU and managed-memory deltas are process-level diagnostic estimates during parallel execution, not per-thread accounting. Provider-specific progress remains coarse until an individual scanner reports detailed stages.
 - Driver signature state comes from Windows signed-driver catalog metadata and is not a malware verdict. Driver-event attribution is intentionally limited to events whose sanitized text matches a known device; physical-device and OS-version acceptance remains outstanding.
 - Startup impact is often correlated from overall boot events because Windows does not expose uniform per-entry timing. Disable/rollback is deliberately simulation-only in Prompt 08; no startup state is modified.
@@ -169,12 +170,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 368/368 tests**
+**Passing - 374/374 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 114 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 169 passed
+- `WAID.Infrastructure.Tests`: 175 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -183,15 +184,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.34.0-dev - Secure Plugin SDK and Certification**
+**0.35.0-dev - Enterprise Policy Mode**
 
-Prompt 33 adds a stable permissioned SDK, pre-load certification, compatibility and dependency enforcement, integrity/signature policy, controlled extension registration, failure isolation and quarantine, durable inventory/audit state, a complete Plugin Manager, sample conformance, and certification guidance without weakening repair safeguards.
+Prompt 34 adds deterministic enterprise capability policy, fail-closed validation, effective source and lock explanations, retention ceilings, durable snapshots/evaluations, boundary enforcement, audited administration, and an accessible Policy Status page.
 
 ## Next milestone
 
-**Commercial hardening Prompt 34 - Enterprise Policy Mode**
+**Commercial hardening Prompt 35 - Command-Line Interface and Automation**
 
-Apply only Prompt 34 from the ordered commercial-grade prompt set. Preserve workspace isolation, plugin trust enforcement, explicit repair approval, audit immutability, privacy, and fail-closed recovery; restore/build/test independently and commit before continuing.
+Apply only Prompt 35 from the ordered commercial-grade prompt set. Preserve workspace isolation, plugin trust enforcement, explicit repair approval, audit immutability, privacy, and fail-closed recovery; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

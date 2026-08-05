@@ -1,0 +1,8 @@
+using System.Text.Json;
+using WAID.Application.Services;
+namespace WAID.Infrastructure.Persistence;
+public sealed class SqliteEnterprisePolicyRepository(WaidDatabase database):IEnterprisePolicyRepository
+{
+ public async Task SaveAsync(EnterprisePolicySnapshot snapshot,CancellationToken token){await using var c=database.OpenConnection();await using var q=c.CreateCommand();q.CommandText="INSERT INTO enterprise_policy_snapshots(id,evaluated_utc,state,fingerprint,snapshot_json)VALUES($id,$time,$state,$fingerprint,$json)";q.Parameters.AddWithValue("$id",snapshot.Id.ToString());q.Parameters.AddWithValue("$time",snapshot.EvaluatedAtUtc.ToString("O"));q.Parameters.AddWithValue("$state",(int)snapshot.State);q.Parameters.AddWithValue("$fingerprint",snapshot.Fingerprint);q.Parameters.AddWithValue("$json",JsonSerializer.Serialize(snapshot));await q.ExecuteNonQueryAsync(token);}
+ public async Task<IReadOnlyList<EnterprisePolicySnapshot>>GetRecentAsync(int count,CancellationToken token){if(count is<1 or>1000)throw new ArgumentOutOfRangeException(nameof(count));var result=new List<EnterprisePolicySnapshot>();await using var c=database.OpenConnection();await using var q=c.CreateCommand();q.CommandText="SELECT snapshot_json FROM enterprise_policy_snapshots ORDER BY evaluated_utc DESC LIMIT $count";q.Parameters.AddWithValue("$count",count);await using var r=await q.ExecuteReaderAsync(token);while(await r.ReadAsync(token)){var item=JsonSerializer.Deserialize<EnterprisePolicySnapshot>(r.GetString(0));if(item is not null)result.Add(item);}return result;}
+}

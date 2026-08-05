@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://waid.local/schemas/enterprise-policy-v1.schema.json",
+  "title":"WAID Enterprise Policy v1",
+  "type":"object","additionalProperties":false,
+  "required":["version","id","source","updatedAtUtc","rules"],
+  "properties":{
+    "version":{"const":1},"id":{"type":"string","minLength":1,"maxLength":100},"source":{"type":"string","minLength":1,"maxLength":200},"updatedAtUtc":{"type":"string","format":"date-time"},
+    "rules":{"type":"object","additionalProperties":false,"properties":{"cloudServices":{"type":"boolean"},"aiFeatures":{"type":"boolean"},"repairs":{"type":"boolean"},"exports":{"type":"boolean"},"plugins":{"type":"boolean"},"monitoring":{"type":"boolean"},"portableMode":{"type":"boolean"},"diagnostics":{"type":"boolean"}}},
+    "retention":{"type":["object","null"],"additionalProperties":false,"required":["diagnosticDays","auditDays","monitoringDays"],"properties":{"diagnosticDays":{"type":"integer","minimum":1,"maximum":365},"auditDays":{"type":"integer","minimum":30,"maximum":3650},"monitoringDays":{"type":"integer","minimum":1,"maximum":365}}}
+  }
+}

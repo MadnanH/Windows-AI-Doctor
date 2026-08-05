@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using WAID.Application.Abstractions;
+using WAID.Application.Services;
 using WAID.KnowledgeBase;
 
 namespace WAID.Infrastructure.Ai;
@@ -74,10 +75,12 @@ public sealed class ChatSafetyService : IChatSafetyService
 
 public sealed record ChatProviderPolicy(TimeSpan Timeout) { public static ChatProviderPolicy Default { get; } = new(TimeSpan.FromSeconds(15)); }
 
-public sealed class ChatAssistant(IChatEvidenceRetriever retrieval, IChatPromptBuilder prompts, IChatProvider provider, IChatSafetyService safety, IChatConversationRepository repository, TimeProvider time, ILogger<ChatAssistant> log, ChatProviderPolicy policy) : IChatAssistant
+public sealed class ChatAssistant(IChatEvidenceRetriever retrieval, IChatPromptBuilder prompts, IChatProvider provider, IChatSafetyService safety, IChatConversationRepository repository, TimeProvider time, ILogger<ChatAssistant> log, ChatProviderPolicy policy, IEnterprisePolicyService? enterprisePolicy=null) : IChatAssistant
 {
     public async Task<ChatConversation> AskAsync(Guid? id, string question, CancellationToken token)
     {
+        var decision=enterprisePolicy?.Evaluate(EnterpriseCapability.AiFeatures);
+        if(decision is {Allowed:false})throw new EnterprisePolicyException("WAID-POLICY-AI-BLOCKED",$"AI features are blocked by {decision.Source}.","Contact the organization policy administrator.");
         var sanitizedQuestion = safety.SanitizeQuestion(question);
         var context = safety.SanitizeEvidence(await retrieval.RetrieveAsync(sanitizedQuestion, token));
         var request = prompts.Build(sanitizedQuestion, context);

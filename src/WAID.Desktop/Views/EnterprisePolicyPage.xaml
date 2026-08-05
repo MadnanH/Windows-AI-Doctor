@@ -1,0 +1,12 @@
+<Page x:Class="WAID.Desktop.Views.EnterprisePolicyPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ScrollViewer><StackPanel Padding="32" Spacing="16" MaxWidth="1050">
+  <TextBlock Text="Enterprise Policy Status" Style="{StaticResource TitleTextBlockStyle}" AutomationProperties.AutomationId="EnterprisePolicyTitle"/>
+  <InfoBar IsOpen="True" Title="Effective organization policy" Message="{Binding Status}" IsClosable="False" AutomationProperties.AutomationId="EnterprisePolicyStatus"/>
+  <TextBlock Text="WAID resolves built-in defaults and administrator-deployed policy deterministically. Locked controls cannot be overridden by user settings, profiles, plugins, or portable mode." TextWrapping="Wrap"/>
+  <Button Content="Refresh policy" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="RefreshEnterprisePolicy"/>
+  <TextBlock Text="Effective capability decisions" Style="{StaticResource HeaderTextBlockStyle}"/><ListView ItemsSource="{Binding Rules}" SelectionMode="None" AutomationProperties.AutomationId="EnterprisePolicyRules"><ListView.ItemTemplate><DataTemplate><Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,3"><StackPanel><StackPanel Orientation="Horizontal" Spacing="12"><TextBlock Text="{Binding Capability}" FontWeight="SemiBold" Width="180"/><TextBlock Text="{Binding Status}" Width="80"/><TextBlock Text="{Binding Source}"/></StackPanel><TextBlock Text="{Binding Explanation}" TextWrapping="Wrap"/></StackPanel></Border></DataTemplate></ListView.ItemTemplate></ListView>
+  <TextBlock Text="Retention" Style="{StaticResource HeaderTextBlockStyle}"/><TextBlock Text="{Binding Retention}"/><TextBlock Text="Policy fingerprint" Style="{StaticResource HeaderTextBlockStyle}"/><TextBlock Text="{Binding Fingerprint}" TextWrapping="Wrap"/>
+  <TextBlock Text="Evaluation and rollback history" Style="{StaticResource HeaderTextBlockStyle}"/><ItemsControl ItemsSource="{Binding History}" AutomationProperties.AutomationId="EnterprisePolicyHistory"/>
+  <InfoBar IsOpen="True" Severity="Informational" Title="Administrator deployment" Message="Deploy enterprise-policy.json under the protected Windows AI Doctor ProgramData directory. Invalid or unreadable policy fails closed and is recorded in Logs &amp; Audit." IsClosable="False"/>
+ </StackPanel></ScrollViewer>
+</Page>

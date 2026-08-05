@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "example-corporate-policy",
+  "source": "Example IT deployment",
+  "updatedAtUtc": "2026-08-05T00:00:00Z",
+  "rules": {
+    "cloudServices": false,
+    "aiFeatures": true,
+    "repairs": false,
+    "exports": false,
+    "plugins": false,
+    "monitoring": true,
+    "portableMode": false,
+    "diagnostics": true
+  },
+  "retention": { "diagnosticDays": 7, "auditDays": 730, "monitoringDays": 14 }
+}

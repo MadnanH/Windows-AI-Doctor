@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using WAID.Application.Abstractions;
+using WAID.Application.Services;
 using WAID.Domain.Settings;
 
 namespace WAID.Desktop.ViewModels;
@@ -8,6 +9,7 @@ namespace WAID.Desktop.ViewModels;
 public sealed class SettingsViewModel : ViewModelBase
 {
     private readonly IConfigurationService _configuration;
+    private readonly IEnterprisePolicyService? _enterprisePolicy;
     private readonly IDatabaseMaintenanceService _database;
     private bool _startup, _ai, _telemetry, _experimental, _advancedCorrelation, _experimentalRepairPlanning, _cloudAi, _restoreApproved, _profileExperimentalApproved;
     private string _theme = "System", _status = "", _databaseState = "Checking…", _databaseDetail = "", _backupLocation = "", _migrationStatus = "", _restorePath = "", _searchText = "", _policyStatus = "No policy locks", _activeProfile = "None", _profilePath = "", _profileName = "My WAID Profile", _profileDirectory = "";
@@ -15,9 +17,9 @@ public sealed class SettingsViewModel : ViewModelBase
     private IReadOnlySet<string> _locks = new HashSet<string>();
     private Visibility _generalVisibility = Visibility.Visible, _privacyVisibility = Visibility.Visible, _experimentalVisibility = Visibility.Visible, _profilesVisibility = Visibility.Visible, _databaseVisibility = Visibility.Visible;
 
-    public SettingsViewModel(IConfigurationService configuration, IDatabaseMaintenanceService database)
+    public SettingsViewModel(IConfigurationService configuration, IDatabaseMaintenanceService database, IEnterprisePolicyService? enterprisePolicy=null)
     {
-        _configuration = configuration; _database = database;
+        _configuration = configuration; _database = database; _enterprisePolicy=enterprisePolicy;
         SaveCommand = new AsyncCommand(SaveAsync); ResetCommand = new AsyncCommand(ResetAsync); RefreshDatabaseCommand = new AsyncCommand(RefreshDatabaseAsync);
         BackupDatabaseCommand = new AsyncCommand(BackupDatabaseAsync); RestoreDatabaseCommand = new AsyncCommand(RestoreDatabaseAsync);
         ImportProfileCommand = new AsyncCommand(ImportProfileAsync); ExportProfileCommand = new AsyncCommand(ExportProfileAsync);
@@ -48,11 +50,13 @@ public sealed class SettingsViewModel : ViewModelBase
     public string ProfileDirectory { get => _profileDirectory; set => Set(ref _profileDirectory, value); }
     public string SearchText { get => _searchText; set { if (Set(ref _searchText, value)) ApplySearch(); } }
     public bool CanEditStartup => !_locks.Contains(SettingKeys.RunScansAtStartup);
-    public bool CanEditAi => !_locks.Contains(SettingKeys.EnableAiAnalysis);
+    public bool CanEditAi => !_locks.Contains(SettingKeys.EnableAiAnalysis) && Allowed(EnterpriseCapability.AiFeatures);
     public bool CanEditTelemetry => !_locks.Contains(SettingKeys.AllowTelemetry);
     public bool CanEditTheme => !_locks.Contains(SettingKeys.Theme);
     public bool CanEditTimeout => !_locks.Contains(SettingKeys.ScanTimeoutSeconds);
     public bool CanEditExperimental => !_locks.Contains(SettingKeys.EnableExperimentalFeatures);
+    public bool CanEditCloudAi => CanEditExperimental && Allowed(EnterpriseCapability.AiFeatures) && Allowed(EnterpriseCapability.CloudServices);
+    public bool CanExportProfiles => Allowed(EnterpriseCapability.Exports);
     public Visibility GeneralVisibility { get => _generalVisibility; private set => Set(ref _generalVisibility, value); }
     public Visibility PrivacyVisibility { get => _privacyVisibility; private set => Set(ref _privacyVisibility, value); }
     public Visibility ExperimentalVisibility { get => _experimentalVisibility; private set => Set(ref _experimentalVisibility, value); }
@@ -73,8 +77,8 @@ public sealed class SettingsViewModel : ViewModelBase
         var settings = snapshot.Settings; RunScansAtStartup = settings.RunScansAtStartup; EnableAiAnalysis = settings.EnableAiAnalysis; AllowTelemetry = settings.AllowTelemetry;
         Theme = settings.Theme; ScanTimeoutSeconds = settings.ScanTimeoutSeconds; EnableExperimentalFeatures = settings.EnableExperimentalFeatures;
         AdvancedEventCorrelation = snapshot.IsEnabled(FeatureFlags.AdvancedEventCorrelation); ExperimentalRepairPlanning = snapshot.IsEnabled(FeatureFlags.ExperimentalRepairPlanning); CloudAiProvider = snapshot.IsEnabled(FeatureFlags.CloudAiProvider);
-        _locks = snapshot.LockedSettings; ActiveProfile = snapshot.ActiveProfile ?? "None"; PolicyStatus = _locks.Count == 0 ? "No policy locks" : $"Managed by policy: {string.Join(", ", _locks.Order())}";
-        Notify(nameof(CanEditStartup)); Notify(nameof(CanEditAi)); Notify(nameof(CanEditTelemetry)); Notify(nameof(CanEditTheme)); Notify(nameof(CanEditTimeout)); Notify(nameof(CanEditExperimental));
+        _locks = snapshot.LockedSettings; ActiveProfile = snapshot.ActiveProfile ?? "None"; var enterpriseLocks=_enterprisePolicy?.Current.Rules.Where(x=>x.Value.Locked&&!x.Value.Allowed).Select(x=>x.Key.ToString()).ToArray()??[]; PolicyStatus = _locks.Count == 0 && enterpriseLocks.Length==0 ? "No policy locks" : $"Managed by policy: {string.Join(", ", _locks.Order().Concat(enterpriseLocks))}";
+        Notify(nameof(CanEditStartup)); Notify(nameof(CanEditAi)); Notify(nameof(CanEditTelemetry)); Notify(nameof(CanEditTheme)); Notify(nameof(CanEditTimeout)); Notify(nameof(CanEditExperimental)); Notify(nameof(CanEditCloudAi)); Notify(nameof(CanExportProfiles));
     }
 
     private async Task SaveAsync()
@@ -99,4 +103,5 @@ public sealed class SettingsViewModel : ViewModelBase
         var query = SearchText.Trim(); GeneralVisibility = Match(query, "general startup theme timeout scan local AI"); PrivacyVisibility = Match(query, "privacy telemetry diagnostics");
         ExperimentalVisibility = Match(query, "experimental feature flags event correlation repair cloud AI warning"); ProfilesVisibility = Match(query, "profiles import export reset policy lock"); DatabaseVisibility = Match(query, "database health backup restore migration recovery");
     }
+    private bool Allowed(EnterpriseCapability capability)=>_enterprisePolicy?.Evaluate(capability).Allowed??true;
 }

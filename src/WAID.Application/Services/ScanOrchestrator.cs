@@ -45,13 +45,16 @@ public sealed class ScanOrchestrator(
     ScannerPolicyRegistry? policies = null,
     IOperationContextAccessor? operationContext = null,
     IScanRunRepository? scanRuns = null,
-    IScanDataSanitizer? sanitizer = null)
+    IScanDataSanitizer? sanitizer = null,
+    IEnterprisePolicyService? enterprisePolicy = null)
 {
     private readonly ScannerPolicyRegistry _policies = policies ?? new(new(TimeSpan.FromSeconds(45)));
     private readonly IScanDataSanitizer _sanitizer = sanitizer ?? new PassthroughSanitizer();
 
     public async Task<ScanSession> RunAsync(bool isAdministrator, IProgress<ScanProgress>? progress, CancellationToken cancellationToken)
     {
+        var policyDecision=enterprisePolicy?.Evaluate(EnterpriseCapability.Diagnostics);
+        if(policyDecision is {Allowed:false})throw new EnterprisePolicyException("WAID-POLICY-DIAGNOSTICS-BLOCKED",$"Diagnostics are blocked by {policyDecision.Source}.","Contact the organization policy administrator.");
         using var operation = operationContext is null ? null : logger.BeginWaidOperation(operationContext, "Scan");
         var started = timeProvider.GetUtcNow(); var session = new ScanSession(Guid.NewGuid(), started);
         var plan = BuildPlan(scanners); var completed = new ConcurrentDictionary<string, ScannerExecutionRecord>(StringComparer.OrdinalIgnoreCase);

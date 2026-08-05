@@ -18,7 +18,8 @@ public sealed record WaidHostOptions(
     int TechnicalLogRetentionDays = 14,
     int AuditRetentionDays = 365,
     string? MachineConfigurationPath = null,
-    string? PolicyConfigurationPath = null)
+    string? PolicyConfigurationPath = null,
+    string? EnterprisePolicyPath = null)
 {
     public const int CurrentConfigurationVersion = 1;
 
@@ -35,7 +36,7 @@ public sealed record WaidHostOptions(
             throw new WaidStartupException("WAID-CONFIG-PUBLISHERS", "At least one valid plugin publisher must be allowed.", "Restore the default plugin security policy.");
         if (TechnicalLogRetentionDays is < 1 or > 90 || AuditRetentionDays is < 30 or > 3650)
             throw new WaidStartupException("WAID-CONFIG-RETENTION", "Log or audit retention is outside the supported range.", "Restore the default retention policy.");
-        if (MachineConfigurationPath is not null && !Path.IsPathFullyQualified(MachineConfigurationPath) || PolicyConfigurationPath is not null && !Path.IsPathFullyQualified(PolicyConfigurationPath))
+        if (MachineConfigurationPath is not null && !Path.IsPathFullyQualified(MachineConfigurationPath) || PolicyConfigurationPath is not null && !Path.IsPathFullyQualified(PolicyConfigurationPath) || EnterprisePolicyPath is not null && !Path.IsPathFullyQualified(EnterprisePolicyPath))
             throw new WaidStartupException("WAID-CONFIG-LAYER-PATH", "Machine and policy configuration paths must be absolute.", "Restore the default configuration paths.");
         return this;
     }
@@ -47,9 +48,10 @@ public sealed record WaidHostOptions(
         Path.GetFullPath(Environment.ProcessPath ?? throw new WaidStartupException("WAID-CONFIG-EXECUTABLE", "The executable path is unavailable.", "Restart or repair the application.")),
         new Version(1, 0, 0),
         ["WAID Engineering"], MachineConfigurationPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Windows AI Doctor", "machine-settings.json"),
-        PolicyConfigurationPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Windows AI Doctor", "policy-settings.json"));
+        PolicyConfigurationPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Windows AI Doctor", "policy-settings.json"),
+        EnterprisePolicyPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Windows AI Doctor", "enterprise-policy.json"));
 
-    public static WaidHostOptions CreatePortableDefaults(string workspaceDirectory) => new(CurrentConfigurationVersion,Path.GetFullPath(workspaceDirectory),Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"Plugins")),Path.GetFullPath(Environment.ProcessPath ?? throw new WaidStartupException("WAID-CONFIG-EXECUTABLE","The executable path is unavailable.","Restart WAID.")),new Version(1,0,0),["WAID Engineering"],MachineConfigurationPath:null,PolicyConfigurationPath:null);
+    public static WaidHostOptions CreatePortableDefaults(string workspaceDirectory) => new(CurrentConfigurationVersion,Path.GetFullPath(workspaceDirectory),Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"Plugins")),Path.GetFullPath(Environment.ProcessPath ?? throw new WaidStartupException("WAID-CONFIG-EXECUTABLE","The executable path is unavailable.","Restart WAID.")),new Version(1,0,0),["WAID Engineering"],MachineConfigurationPath:null,PolicyConfigurationPath:null,EnterprisePolicyPath:Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),"Windows AI Doctor","enterprise-policy.json"));
 
     private static void ValidateAbsoluteDirectory(string value, string name)
     {

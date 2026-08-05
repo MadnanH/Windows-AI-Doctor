@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using WAID.Application.Abstractions;
+using WAID.Application.Services;
 using WAID.Domain.Repairs;
 using WAID.Domain.Settings;
 
@@ -35,7 +36,8 @@ public sealed class ConfigurationService(
     string profileDirectory,
     TimeProvider timeProvider,
     ILogger<ConfigurationService> logger,
-    IAuditTrailService auditTrail) : IConfigurationService
+    IAuditTrailService auditTrail,
+    IEnterprisePolicyService? enterprisePolicy=null) : IConfigurationService
 {
     private static readonly JsonSerializerOptions Options = CreateOptions();
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -131,6 +133,8 @@ public sealed class ConfigurationService(
 
     public async Task<ConfigurationResult> ExportProfileAsync(string name, string directory, CancellationToken token)
     {
+        var exportDecision=enterprisePolicy?.Evaluate(EnterpriseCapability.Exports);
+        if(exportDecision is {Allowed:false})return ConfigurationResult.Failure("WAID-POLICY-EXPORT-BLOCKED",$"Profile export is blocked by {exportDecision.Source}.");
         if (string.IsNullOrWhiteSpace(name) || name.Length > 80 || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return ConfigurationResult.Failure("WAID-PROFILE-NAME", "Enter a valid profile name of 80 characters or fewer.");
         await _gate.WaitAsync(token).ConfigureAwait(false);
         try

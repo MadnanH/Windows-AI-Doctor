@@ -14,7 +14,7 @@ public sealed record DatabaseMigrationStatus(int FromVersion, int ToVersion, Dat
 
 public sealed class WaidDatabase
 {
-    public const int CurrentSchemaVersion = 32;
+    public const int CurrentSchemaVersion = 33;
     public const int WaidApplicationId = 1463896388;
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initializationGate = new(1, 1);
@@ -170,7 +170,7 @@ public sealed class WaidDatabase
     }
 
     private sealed record Migration(int Version, string Description, string Sql);
-    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state", "performance_samples", "performance_rollups", "performance_retention_jobs", "digital_twin_snapshots", "digital_twin_diffs", "digital_twin_retention_jobs", "scheduled_scan_history", "alert_deliveries", "alert_settings", "repair_orchestrations", "recovery_artifacts", "repair_audit_chain", "repair_outcome_aggregates", "technician_preferences", "technician_cases", "plugin_inventory"];
+    private static readonly string[] RequiredTables = ["scan_sessions", "findings", "settings", "repair_history", "diagnosis_reports", "health_snapshots", "scan_schedule", "repair_approvals", "evidence", "rollback_records", "timeline_events", "metrics", "chats", "policies", "plugins", "alerts", "reports", "audit_events", "schema_migrations", "configuration_state", "scanner_executions", "driver_analysis_runs", "boot_analysis_runs", "windows_update_analysis_runs", "storage_health_runs", "security_posture_runs", "chat_conversations", "network_health_runs", "evidence_graph_runs", "evidence_graph_nodes", "evidence_graph_edges", "repair_recommendation_runs", "predictive_health_runs", "monitoring_sessions", "monitoring_samples", "monitoring_gaps", "monitoring_collector_failures", "monitoring_retention", "timeline_incidents", "timeline_projection_state", "performance_samples", "performance_rollups", "performance_retention_jobs", "digital_twin_snapshots", "digital_twin_diffs", "digital_twin_retention_jobs", "scheduled_scan_history", "alert_deliveries", "alert_settings", "repair_orchestrations", "recovery_artifacts", "repair_audit_chain", "repair_outcome_aggregates", "technician_preferences", "technician_cases", "plugin_inventory", "enterprise_policy_snapshots"];
     private static readonly Migration[] Migrations =
     [
         new(1, "Core scans, evidence, and settings", """
@@ -351,5 +351,9 @@ public sealed class WaidDatabase
         new(32, "Certified plugin inventory, permissions, signatures, and failures", """
             CREATE TABLE IF NOT EXISTS plugin_inventory(id TEXT PRIMARY KEY,updated_utc TEXT NOT NULL,state INTEGER NOT NULL,certified INTEGER NOT NULL CHECK(certified IN(0,1)),inventory_json TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS ix_plugin_inventory_state_time ON plugin_inventory(state,updated_utc DESC);
+            """),
+        new(33, "Enterprise policy snapshots and evaluation history", """
+            CREATE TABLE IF NOT EXISTS enterprise_policy_snapshots(id TEXT PRIMARY KEY,evaluated_utc TEXT NOT NULL,state INTEGER NOT NULL,fingerprint TEXT NOT NULL,snapshot_json TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS ix_enterprise_policy_time ON enterprise_policy_snapshots(evaluated_utc DESC,state);
             """)    ];
 }

@@ -85,6 +85,7 @@ public static class DependencyInjection
             .AddSingleton<IRepairOrchestrationRepository, SqliteRepairOrchestrationRepository>()
             .AddSingleton<IRepairOutcomeRepository, SqliteRepairOutcomeRepository>()
             .AddSingleton<IPluginInventoryRepository, SqlitePluginInventoryRepository>()
+            .AddSingleton<IEnterprisePolicyRepository, SqliteEnterprisePolicyRepository>()
             .AddSingleton<ITechnicianWorkspaceRepository, SqliteTechnicianWorkspaceRepository>()
             .AddSingleton<IRepairOutcomeExportService>(provider=>new RepairOutcomeExportService(provider.GetRequiredService<IRepairOutcomeRepository>(),Path.Combine(options.DataDirectory,"Reports"),provider.GetRequiredService<TimeProvider>()))
             .AddSingleton<IRecoveryArtifactRepository, SqliteRecoveryArtifactRepository>();
@@ -100,12 +101,15 @@ public static class DependencyInjection
             .AddSingleton<IAuditTrailService>(_=>new LocalAuditTrailService(Path.Combine(options.DataDirectory,"Audit"),options.AuditRetentionDays,TimeProvider.System))
             .AddSingleton<ILocalDiagnosticsService>(provider=>new LocalDiagnosticsService(Path.Combine(options.DataDirectory,"logs"),Path.Combine(options.DataDirectory,"Exports"),provider.GetRequiredService<IAuditTrailService>()))
             .AddSingleton<IDatabaseMaintenanceService>(provider => new DatabaseMaintenanceService(db, Path.Combine(options.DataDirectory, "Backups", "Database"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<DatabaseMaintenanceService>>(), provider.GetRequiredService<IAuditTrailService>()))
+            .AddSingleton<IEnterprisePolicyProvider, BuiltInEnterprisePolicyProvider>()
+            .AddSingleton<IEnterprisePolicyProvider>(_=>new JsonEnterprisePolicyProvider(options.EnterprisePolicyPath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),"Windows AI Doctor","enterprise-policy.json")))
+            .AddSingleton<IEnterprisePolicyService, EnterprisePolicyService>()
             .AddSingleton<IConfigurationStateRepository, SqliteConfigurationStateRepository>()
             .AddSingleton<IConfigurationLayerSource>(_ => new LocalConfigurationLayerSource(
                 options.MachineConfigurationPath ?? Path.Combine(options.DataDirectory, "Configuration", "machine-settings.json"),
                 options.PolicyConfigurationPath ?? Path.Combine(options.DataDirectory, "Configuration", "policy-settings.json")))
             .AddSingleton<IConfigurationService>(provider => new ConfigurationService(provider.GetRequiredService<IConfigurationStateRepository>(), provider.GetRequiredService<IConfigurationLayerSource>(),
-                Path.Combine(options.DataDirectory, "Profiles"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<ConfigurationService>>(), provider.GetRequiredService<IAuditTrailService>()));
+                Path.Combine(options.DataDirectory, "Profiles"), provider.GetRequiredService<TimeProvider>(), provider.GetRequiredService<ILogger<ConfigurationService>>(), provider.GetRequiredService<IAuditTrailService>(),provider.GetRequiredService<IEnterprisePolicyService>()));
         modules.Add("persistence", "SQLite persistence"); return services;
     }
 
@@ -123,7 +127,7 @@ public static class DependencyInjection
     private static IServiceCollection AddWaidDiagnostics(this IServiceCollection services, WaidHostOptions options, WaidModuleCatalog modules)
     {
         services.AddSingleton<IKnowledgeRetrievalService>(_=>new OfflineKnowledgeRetrievalService(Path.Combine(options.DataDirectory,"Knowledge","index.json"),TimeProvider.System));
-        services.AddSingleton<IDiagnosticsExportService>(provider => new DiagnosticsExportService(options.DataDirectory, provider.GetRequiredService<IScanRepository>(), provider.GetRequiredService<IDiagnosisRepository>(), provider.GetRequiredService<IRepairHistoryRepository>(), provider.GetRequiredService<TimeProvider>()))
+        services.AddSingleton<IDiagnosticsExportService>(provider => new DiagnosticsExportService(options.DataDirectory, provider.GetRequiredService<IScanRepository>(), provider.GetRequiredService<IDiagnosisRepository>(), provider.GetRequiredService<IRepairHistoryRepository>(), provider.GetRequiredService<TimeProvider>(),provider.GetRequiredService<IEnterprisePolicyService>()))
             .AddSingleton<IDiagnosticReportExporter>(_ => new DiagnosticReportExporter(Path.Combine(options.DataDirectory, "Reports")))
             .AddSingleton<IPdfReportExporter>(_ => new PdfDiagnosticReportExporter(Path.Combine(options.DataDirectory, "Reports")))
             .AddSingleton<ISystemScanner, OperatingSystemScanner>().AddSingleton<ISystemScanner, WindowsEventViewerScanner>()
@@ -174,7 +178,7 @@ public static class DependencyInjection
             .AddSingleton<TechnicianDashboardService>()
             .AddSingleton(RepairOrchestrationOptions.Default).AddSingleton(RepairSafetyPolicy.Default).AddSingleton<IRepairSafetyScorer, DeterministicRepairSafetyScorer>().AddSingleton<IRepairSimulationEngine, DeterministicRepairSimulationEngine>().AddSingleton<IRepairValidator, DefaultRepairValidator>().AddSingleton<IRepairDependencyCatalog, EmptyRepairDependencyCatalog>().AddSingleton<RepairOrchestrator>()
             .AddSingleton<IAlertDeliveryChannel, InAppAlertChannel>().AddSingleton<IAlertPolicy, AllowConfiguredAlertPolicy>().AddSingleton<AlertManager>()
-            .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, AllowLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()
+            .AddSingleton<LiveSignalAggregator>().AddSingleton<LiveAlertEvaluator>().AddSingleton<ILiveMonitoringPolicy, EnterpriseLiveMonitoringPolicy>().AddSingleton<LiveMonitoringService>()
             .AddSingleton<ReliabilityTimelineProjector>().AddSingleton<ReliabilityTimelineExporter>()
             .AddSingleton<PerformanceAggregationEngine>().AddSingleton<PerformanceHistoryService>()
             .AddSingleton<ISystemSnapshotComponentProvider>(_=>new EnvironmentSnapshotComponentProvider("hardware"))
