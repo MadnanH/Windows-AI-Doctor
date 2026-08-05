@@ -3,10 +3,12 @@ using WAID.Application.Abstractions;
 using WAID.Application.Plugins;
 using WAID.Domain.Diagnostics;
 namespace WAID.Plugin.Sample;
-public sealed class SamplePlugin : IWaidPlugin
+public sealed class SamplePlugin : IWaidPluginV2
 {
     public PluginMetadata Metadata { get; }=new("com.waid.sample","WAID Sample Scanner",new(1,0,0),"WAID Engineering",new(1,0,0));
-    public void ConfigureServices(IServiceCollection services)=>services.AddSingleton<ISystemScanner,EnvironmentScanner>();
+    public PluginSdkDescriptor Sdk { get; }=new("2",new HashSet<PluginCapability>([PluginCapability.Scanner]),new HashSet<PluginPermission>([PluginPermission.EnvironmentRead]),[]);
+    public void Configure(IPluginServiceRegistry services)=>services.AddScanner<EnvironmentScanner>();
+    public void ConfigureServices(IServiceCollection services)=>throw new InvalidOperationException("API v2 plugins require the controlled registry.");
 }
 public sealed class EnvironmentScanner : ISystemScanner
 {

@@ -2,16 +2,16 @@
 
 Last updated: 2026-08-05
 
-Current version: **0.33.0-dev**
+Current version: **0.34.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v31, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v32, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
-- Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
+- Secure Plugin SDK v2 with strict manifest certification, host/API/dependency compatibility, capability-to-permission enforcement, optional Authenticode and SHA-256 verification, controlled extension registration, collectible dependency isolation, quarantine, SQLite inventory, audited lifecycle management, and a reachable permission-reviewing Plugin Manager.
 - HTML, JSON, ZIP, and real local PDF reports. PDFsharp 6.2.4 (MIT) produces paginated, versioned reports with the same sensitive-value exclusions and all diagnostic sections.
 - Explicit destructive-VM authorization guard requiring administrator access, disposable-VM and snapshot acknowledgements, a separate confirmation, and an exact confirmation phrase. Normal mode cannot authorize it.
 - Navigation automation identifiers, keyboard-native controls, theme/high-contrast-friendly UI, scalable text, a Plugins navigation target, PDF export control, and an automated all-page navigation/XAML smoke script.
@@ -50,12 +50,14 @@ Active branch: `main`
 - Commercial hardening Prompt 30 repair audit and outcomes: immutable decision/evidence/approval/execution/validation/rollback/feedback chain, validation-based outcome classification, rebuildable bounded explainable aggregates, schema-30 persistence, privacy-safe export, and accessible filtered Repair History.
 - Commercial hardening Prompt 31 Technician Dashboard: optional profile-based professional workspace composed from real scans, incidents, evidence, repairs, and reports; compact/detailed layouts, saved filters, separately persisted case notes/metadata, bounded data, accessible navigation, and unchanged simple home mode.
 - Commercial hardening Prompt 32 Portable Edition: pre-DI workspace resolution, isolated compatible schema-31 storage, write/permission probing, typed read-only failures, per-workspace process and cross-process locking, coexistence, marker-confined approved cleanup, portable publishing, and visible mode/path indicator.
+- Commercial hardening Prompt 33 Secure Plugin SDK and Certification: versioned API v2 contracts for scanners, report contributors, knowledge providers, and optional repair declarations; strict schema/certification, explicit permissions, dependency/integrity/signature checks, controlled registration, collectible isolation, failure quarantine, schema-32 inventory, audited Plugin Manager lifecycle, sample conformance, malicious fixtures, and certification documentation.
 
 ## Fully working features
 
 - Offline Scan -> Diagnose -> Recommend -> Confirm -> Repair -> Verify flow; no repair executes silently or from monitoring.
 - SQLite persistence for scans, diagnosis, repair history, schedules, approvals, settings, and health snapshots.
 - Scanner cancellation/failure isolation and user-visible degraded data states; unavailable data is never inferred as healthy.
+- Plugin SDK v2 certifies identity, compatibility, publisher, permissions, capabilities, dependencies, package containment, SHA-256, and optional Authenticode before code loading; Plugin Manager requires permission review and provides install, enable, disable, quarantine, status, and failure logs with SQLite inventory and audit history.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
@@ -111,9 +113,9 @@ No platform certification is claimed until a matching passing JSON report from `
 
 - Execute and archive the platform/hardware/accessibility/destructive validation matrix in supported disposable VMs and physical hardware.
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
-- UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
+- Organization-managed trusted-publisher policy editing remains deployment/configuration driven; Plugin Manager exposes install, compatibility, permission, enable, disable, quarantine, status, and logs.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-31 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -122,6 +124,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Scanner APIs and hardware providers vary by Windows edition, permissions, architecture, and hardware; explicit degraded results are not proof of a healthy subsystem.
 - Active plugins cannot safely unload until restart after registering services; rejected or failed collectible contexts are unloaded immediately.
 - Authenticode verification is optional policy and is not enabled without an organization-approved signing policy.
+- API v2 plugins execute in-process inside collectible dependency contexts; this prevents dependency collisions and isolates load failures but is not an operating-system security boundary. Only trusted, certified publishers should be approved. Active service registrations require restart to unload.
 - Minidump analysis remains read-only and metadata-focused; it is not a symbol debugger.
 - Diagnostic packages should still be reviewed before external sharing despite defense-in-depth redaction.
 - Append-only audit files are not cryptographically signed and can be altered by a local administrator. Audit-storage failure is reported and logged without crashing or silently changing a repair outcome.
@@ -166,12 +169,12 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 360/360 tests**
+**Passing - 368/368 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 114 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 161 passed
+- `WAID.Infrastructure.Tests`: 169 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
@@ -180,15 +183,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.33.0-dev - Portable Edition**
+**0.34.0-dev - Secure Plugin SDK and Certification**
 
-Prompt 32 adds no-install portable publishing, isolated chosen-workspace storage, portable-safe configuration, permission/read-only detection, per-workspace single-instance locking, coexistence, marker-confined cleanup, and a visible portable indicator without weakening repair safeguards.
+Prompt 33 adds a stable permissioned SDK, pre-load certification, compatibility and dependency enforcement, integrity/signature policy, controlled extension registration, failure isolation and quarantine, durable inventory/audit state, a complete Plugin Manager, sample conformance, and certification guidance without weakening repair safeguards.
 
 ## Next milestone
 
-**Commercial hardening Prompt 33 - Secure Plugin SDK and Certification**
+**Commercial hardening Prompt 34 - Enterprise Policy Mode**
 
-Apply only Prompt 33 from the ordered commercial-grade prompt set. Preserve workspace isolation, plugin trust enforcement, explicit repair approval, audit immutability, privacy, and fail-closed recovery; restore/build/test independently and commit before continuing.
+Apply only Prompt 34 from the ordered commercial-grade prompt set. Preserve workspace isolation, plugin trust enforcement, explicit repair approval, audit immutability, privacy, and fail-closed recovery; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

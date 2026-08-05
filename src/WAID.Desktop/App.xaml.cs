@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using WAID.Application.Services;
+using WAID.Application.Abstractions;
 using WAID.Desktop.ViewModels;
 using WAID.Infrastructure;
 using WAID.Infrastructure.Diagnostics;
@@ -32,9 +33,12 @@ public partial class App : Microsoft.UI.Xaml.Application
         {
             var options = _workspace.CreateHostOptions();
             var services = new ServiceCollection();
+            var pluginPolicy=new PluginSecurityPolicy(options.AllowedPluginPublishers,options.RequireSignedPlugins);
             services.AddSingleton<IWaidWorkspaceContext>(_workspace);
             services.AddWaidInfrastructure(options)
-                .AddWaidPlugins(new PluginSecurityPolicy(options.AllowedPluginPublishers, options.RequireSignedPlugins), options.PluginDirectory, options.HostVersion);
+                .AddWaidPlugins(pluginPolicy, options.PluginDirectory, options.HostVersion);
+            services.AddSingleton(pluginPolicy);
+            services.AddSingleton(provider=>new PluginManager(options.PluginDirectory,options.HostVersion,pluginPolicy,provider.GetRequiredService<PluginCatalog>(),provider.GetRequiredService<IPluginInventoryRepository>(),provider.GetRequiredService<IAuditTrailService>(),provider.GetRequiredService<TimeProvider>()));
             services.AddSingleton<TechnicianDashboardViewModel>().AddSingleton<DashboardViewModel>().AddSingleton<DiagnosisViewModel>().AddSingleton<SettingsViewModel>()
                 .AddSingleton<HistoryViewModel>().AddSingleton<RepairOrchestrationViewModel>().AddSingleton<NotificationCenterViewModel>().AddSingleton<DigitalTwinViewModel>().AddSingleton<PerformanceHistoryViewModel>().AddSingleton<ReliabilityTimelineViewModel>().AddSingleton<LiveMonitoringViewModel>().AddSingleton<PredictiveHealthViewModel>().AddSingleton<EvidenceExplorerViewModel>().AddSingleton<KnowledgeViewModel>().AddSingleton<OperationsViewModel>().AddSingleton<AuditViewModel>().AddSingleton<DriverHealthViewModel>().AddSingleton<BootHealthViewModel>().AddSingleton<UpdateHealthViewModel>().AddSingleton<StorageCenterViewModel>().AddSingleton<SecurityCenterViewModel>().AddSingleton<NetworkHealthViewModel>().AddSingleton<ChatViewModel>().AddSingleton<MainWindow>();
             _services = services.BuildValidatedWaidServiceProvider();
@@ -52,7 +56,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         if (_startupFailure is not null || _services is null) { ShowRecovery(_startupFailure ?? new("WAID-STARTUP-MISSING", "Application services are unavailable.", "Repair the application installation.")); return; }
-        try { await _services.GetRequiredService<RepairOrchestrator>().RecoverInterruptedAsync(CancellationToken.None); _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); }
+        try { await _services.GetRequiredService<PluginManager>().SynchronizeAsync(CancellationToken.None); await _services.GetRequiredService<RepairOrchestrator>().RecoverInterruptedAsync(CancellationToken.None); _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); }
         catch (Exception exception)
         {
             RecordFatal("Application launch failed", exception);

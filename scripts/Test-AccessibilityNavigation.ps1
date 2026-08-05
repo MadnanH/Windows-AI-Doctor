@@ -27,3 +27,6 @@ $evidence=Get-Content -Raw (Join-Path $root 'Views\EvidenceExplorerPage.xaml')
 @('EvidenceExplorerTitle','RefreshEvidenceGraph','EvidenceDomainFilter','EvidenceViewMode','EvidenceNodeList','EvidenceRelationshipList')|ForEach-Object{if($evidence-notmatch$_){throw "Missing evidence accessibility id $_"}}
 $knowledge=Get-Content -Raw (Join-Path $root 'Views\KnowledgePage.xaml')
 @('KnowledgeTitle','KnowledgeQuery','KnowledgeSearch','KnowledgeStatus','KnowledgeResults')|ForEach-Object{if($knowledge-notmatch$_){throw "Missing knowledge accessibility id $_"}}
+
+$plugins=Get-Content -Raw (Join-Path $root 'Views\PluginsPage.cs')
+@('PluginsPageTitle','PluginInstallPath','PreviewPluginInstall','ApprovePluginPermissions','InstallPluginFile','PluginManagerStatus')|ForEach-Object{if($plugins-notmatch$_){throw "Missing plugin manager accessibility id $_"}}

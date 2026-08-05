@@ -42,7 +42,7 @@ public static class DependencyInjection
     {
         var catalog = new PluginCatalog();
         foreach (IWaidPlugin plugin in new PluginLoader().Load(pluginDirectory, hostVersion, policy, catalog))
-            try { plugin.ConfigureServices(services); }
+            try { if(plugin is IWaidPluginV2 v2)v2.Configure(new ControlledPluginServiceRegistry(services,v2.Sdk));else plugin.ConfigureServices(services); }
             catch (Exception exception) { catalog.RecordRegistrationFailure(plugin.Metadata, exception); }
         services.AddSingleton(catalog);
         return services;
@@ -84,6 +84,7 @@ public static class DependencyInjection
             .AddSingleton<IAlertRepository, SqliteAlertRepository>()
             .AddSingleton<IRepairOrchestrationRepository, SqliteRepairOrchestrationRepository>()
             .AddSingleton<IRepairOutcomeRepository, SqliteRepairOutcomeRepository>()
+            .AddSingleton<IPluginInventoryRepository, SqlitePluginInventoryRepository>()
             .AddSingleton<ITechnicianWorkspaceRepository, SqliteTechnicianWorkspaceRepository>()
             .AddSingleton<IRepairOutcomeExportService>(provider=>new RepairOutcomeExportService(provider.GetRequiredService<IRepairOutcomeRepository>(),Path.Combine(options.DataDirectory,"Reports"),provider.GetRequiredService<TimeProvider>()))
             .AddSingleton<IRecoveryArtifactRepository, SqliteRecoveryArtifactRepository>();
