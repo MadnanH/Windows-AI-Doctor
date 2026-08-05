@@ -49,6 +49,8 @@ public sealed record WaidHostOptions(
         ["WAID Engineering"], MachineConfigurationPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Windows AI Doctor", "machine-settings.json"),
         PolicyConfigurationPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Windows AI Doctor", "policy-settings.json"));
 
+    public static WaidHostOptions CreatePortableDefaults(string workspaceDirectory) => new(CurrentConfigurationVersion,Path.GetFullPath(workspaceDirectory),Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"Plugins")),Path.GetFullPath(Environment.ProcessPath ?? throw new WaidStartupException("WAID-CONFIG-EXECUTABLE","The executable path is unavailable.","Restart WAID.")),new Version(1,0,0),["WAID Engineering"],MachineConfigurationPath:null,PolicyConfigurationPath:null);
+
     private static void ValidateAbsoluteDirectory(string value, string name)
     {
         if (string.IsNullOrWhiteSpace(value) || !Path.IsPathFullyQualified(value))

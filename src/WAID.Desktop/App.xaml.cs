@@ -17,19 +17,22 @@ public partial class App : Microsoft.UI.Xaml.Application
     private ILogger<App>? _logger;
     private WaidStartupException? _startupFailure;
     private Window? _recoveryWindow;
-    private readonly string _dataDirectory;
+    private string _dataDirectory=AppContext.BaseDirectory;
+    private IWaidWorkspaceContext? _workspace;
 
     public App()
     {
-        _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Windows AI Doctor");
+        _workspace=WaidWorkspaceContext.Resolve(Environment.GetCommandLineArgs().Skip(1).ToArray(),AppContext.BaseDirectory);
+        _dataDirectory=_workspace.Status.RootPath;
         UnhandledException += OnUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
         InitializeComponent();
         try
         {
-            var options = WaidHostOptions.CreateDesktopDefaults(_dataDirectory);
+            var options = _workspace.CreateHostOptions();
             var services = new ServiceCollection();
+            services.AddSingleton<IWaidWorkspaceContext>(_workspace);
             services.AddWaidInfrastructure(options)
                 .AddWaidPlugins(new PluginSecurityPolicy(options.AllowedPluginPublishers, options.RequireSignedPlugins), options.PluginDirectory, options.HostVersion);
             services.AddSingleton<TechnicianDashboardViewModel>().AddSingleton<DashboardViewModel>().AddSingleton<DiagnosisViewModel>().AddSingleton<SettingsViewModel>()
@@ -37,6 +40,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             _services = services.BuildValidatedWaidServiceProvider();
             _logger = _services.GetRequiredService<ILogger<App>>();
         }
+        catch (WaidWorkspaceException exception) { _startupFailure = new WaidStartupException(exception.Code,exception.Message,exception.RecoveryAction,exception); RecordFatal("Portable workspace validation failed",exception); }
         catch (WaidStartupException exception) { _startupFailure = exception; RecordFatal("Application configuration or service validation failed", exception); }
         catch (Exception exception)
         {

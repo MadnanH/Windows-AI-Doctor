@@ -27,6 +27,7 @@
       <NavigationViewItem Content="Logs &amp; Audit" Tag="audit" AutomationProperties.AutomationId="NavAudit"><NavigationViewItem.Icon><SymbolIcon Symbol="Document"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Plugins" Tag="plugins" AutomationProperties.AutomationId="NavPlugins"><NavigationViewItem.Icon><SymbolIcon Symbol="Library"/></NavigationViewItem.Icon></NavigationViewItem>
     </NavigationView.MenuItems>
+    <NavigationView.PaneFooter><TextBlock x:Name="WorkspaceIndicator" Margin="12" TextWrapping="Wrap" AutomationProperties.AutomationId="WorkspaceIndicator"/></NavigationView.PaneFooter>
     <Frame x:Name="ContentFrame"/>
   </NavigationView>
 </Window>

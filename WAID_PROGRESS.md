@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-05
 
-Current version: **0.32.0-dev**
+Current version: **0.33.0-dev**
 
 Active branch: `main`
 
@@ -49,6 +49,7 @@ Active branch: `main`
 - Commercial hardening Prompt 29 repair workflow UI: accessible end-to-end plan, evidence, simulation, approval, progress, restart, validation, rollback, recovery, and report surfaces; persisted UI-safe summaries, exact-action announcements, duplicate-command suppression, selection guards, and safe approval-stage restart resume.
 - Commercial hardening Prompt 30 repair audit and outcomes: immutable decision/evidence/approval/execution/validation/rollback/feedback chain, validation-based outcome classification, rebuildable bounded explainable aggregates, schema-30 persistence, privacy-safe export, and accessible filtered Repair History.
 - Commercial hardening Prompt 31 Technician Dashboard: optional profile-based professional workspace composed from real scans, incidents, evidence, repairs, and reports; compact/detailed layouts, saved filters, separately persisted case notes/metadata, bounded data, accessible navigation, and unchanged simple home mode.
+- Commercial hardening Prompt 32 Portable Edition: pre-DI workspace resolution, isolated compatible schema-31 storage, write/permission probing, typed read-only failures, per-workspace process and cross-process locking, coexistence, marker-confined approved cleanup, portable publishing, and visible mode/path indicator.
 
 ## Fully working features
 
@@ -86,12 +87,14 @@ Active branch: `main`
 
 - Repair History now presents filtered immutable lifecycle evidence, approval actor, execution and validation outcomes, rollback details, redacted export, and rebuildable descriptive outcome statistics that cannot authorize or generate repair behavior.
 
+- Portable mode confines application-owned writable paths to the selected workspace and preserves all repair safeguards; installed mode remains unchanged.
+
 ## Partially working features
 
 - Plugin enable/disable persistence is implemented in the service layer; the Plugins page currently presents state and diagnostics, while changing state is performed by administration tooling and takes effect after restart.
 - Feature-flag resolution and UI are working; the cloud-provider flag is intentionally reserved and has no network provider implementation.
 - Automated accessibility checks validate navigation targets, identifiers, and XAML parseability; screen-reader, focus, high-contrast, and 200% scaling acceptance still requires archived manual evidence.
-- Packaging inputs and publish paths are ready, but production MSIX signing and store/update distribution require protected release credentials and a release environment.
+- Packaging inputs and installed/portable publish paths are ready, but production MSIX signing and store/update distribution require protected release credentials and a release environment.
 
 ## Features requiring real-hardware testing
 
@@ -115,6 +118,7 @@ No platform certification is claimed until a matching passing JSON report from `
 ## Known limitations
 
 - Scheduled monitoring remains in-process and cannot wake a closed application.
+- Portable workspace selection is command-line/marker driven in this milestone; the recovery UI provides actionable permission failures, while a graphical folder picker before DI startup remains future UX work. Removable-media disconnect, filesystem ACL variants, and cross-session mutex behavior require real-Windows validation.
 - Scanner APIs and hardware providers vary by Windows edition, permissions, architecture, and hardware; explicit degraded results are not proof of a healthy subsystem.
 - Active plugins cannot safely unload until restart after registering services; rejected or failed collectible contexts are unloaded immediately.
 - Authenticode verification is optional policy and is not enabled without an organization-approved signing policy.
@@ -162,28 +166,29 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 356/356 tests**
+**Passing - 360/360 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 114 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 157 passed
+- `WAID.Infrastructure.Tests`: 161 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
 
+
 ## Current version
 
-**0.32.0-dev - Technician Dashboard**
+**0.33.0-dev - Portable Edition**
 
-Prompt 31 adds an optional professional multi-incident workspace using existing real services, compact/detailed presentation profiles, saved filters, local case notes and IDs, bounded responsive collections, and accessible navigation while preserving the uncluttered simple Dashboard.
+Prompt 32 adds no-install portable publishing, isolated chosen-workspace storage, portable-safe configuration, permission/read-only detection, per-workspace single-instance locking, coexistence, marker-confined cleanup, and a visible portable indicator without weakening repair safeguards.
 
 ## Next milestone
 
-**Commercial hardening Prompt 32 - Portable Edition**
+**Commercial hardening Prompt 33 - Secure Plugin SDK and Certification**
 
-Apply only Prompt 32 from the ordered commercial-grade prompt set. Preserve simple mode, profile-not-role semantics, bounded data, privacy, audit immutability, explicit repair approval, and fail-closed recovery; restore/build/test independently and commit before continuing.
+Apply only Prompt 33 from the ordered commercial-grade prompt set. Preserve workspace isolation, plugin trust enforcement, explicit repair approval, audit immutability, privacy, and fail-closed recovery; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 
