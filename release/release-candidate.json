@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "candidateId": "v1.0-readiness-2026-08-06",
+  "productVersion": "0.40.0-dev",
+  "scopeState": "frozen-except-release-blocker-fixes",
+  "decisionPolicy": {
+    "goRequiresAllRequiredControls": true,
+    "blockingSeverities": ["critical", "high"],
+    "allowedDecisions": ["GO", "NO-GO"]
+  },
+  "automaticControls": [
+    { "id": "AUTO-FULL-BUILD", "severity": "critical", "description": "Restore, warning-free Release build, all non-destructive tests, and repository quality gates" },
+    { "id": "AUTO-PACKAGING", "severity": "critical", "description": "Installed and portable x64/ARM64 publish, integrity, dependency, labeling, and native x64 launch checks" },
+    { "id": "AUTO-PRIVACY", "severity": "critical", "description": "Release evidence rejects secret-bearing field names and local user-profile paths" },
+    { "id": "AUTO-SCOPE", "severity": "high", "description": "Release manifest, version contract, and required documentation are internally consistent" }
+  ],
+  "evidenceControls": [
+    { "id": "WIN10-X64", "scenario": "Windows10", "severity": "high", "description": "Windows 10 x64 launch, navigation, scanners, offline AI, reports, and recovery UI" },
+    { "id": "WIN11-X64", "scenario": "Windows11", "severity": "high", "description": "Windows 11 x64 launch, navigation, scanners, monitoring, policy, plugins, and reports" },
+    { "id": "WIN11-ARM64", "scenario": "Windows11Arm64", "severity": "high", "description": "Native Windows 11 ARM64 launch and scanner validation" },
+    { "id": "STANDARD-USER", "scenario": "StandardUser", "severity": "high", "description": "Least-privilege operation and actionable elevation boundaries" },
+    { "id": "ADMINISTRATOR", "scenario": "Administrator", "severity": "high", "description": "Administrator safeguards with elevation only at repair execution" },
+    { "id": "OFFLINE", "scenario": "Offline", "severity": "high", "description": "Offline scan, diagnosis, knowledge, plugin, monitoring, and report behavior" },
+    { "id": "UNSUPPORTED-HARDWARE", "scenario": "UnsupportedHardware", "severity": "high", "description": "Unavailable APIs and hardware remain explicit and non-fatal" },
+    { "id": "ACCESSIBILITY", "scenario": "Accessibility", "severity": "high", "description": "Keyboard, Narrator, high contrast, 200% scaling, localization, and first-run validation" },
+    { "id": "SIGNED-PACKAGE", "scenario": "SignedPackageLifecycle", "severity": "critical", "description": "Trusted signature plus clean install, upgrade preservation, repair install, downgrade block, uninstall choices, and portable coexistence" },
+    { "id": "DESTRUCTIVE-RECOVERY", "scenario": "DestructiveRepairRollback", "severity": "critical", "description": "Disposable snapshotted VM repair, restart, validation, crash recovery, and rollback" },
+    { "id": "HARDWARE-MATRIX", "scenario": "HardwareProviders", "severity": "high", "description": "SMART/NVMe, GPU, battery, Defender, network, Reliability Monitor, and dump-provider variants" },
+    { "id": "LONG-SOAK", "scenario": "LongSoak", "severity": "high", "description": "Release-hardware startup, CPU, memory, handles, database P95, reports, monitoring, sleep/wake, and crash recovery soak" },
+    { "id": "CI-RELEASE-GATE", "scenario": "CiReleaseGate", "severity": "critical", "description": "Successful immutable CI release-gate run for the exact commit" },
+    { "id": "SECURITY-REVIEW", "scenario": "SecurityReview", "severity": "critical", "description": "Vulnerability, secret, privacy, policy, plugin, export, and repair-boundary review for the exact commit" }
+  ]
+}

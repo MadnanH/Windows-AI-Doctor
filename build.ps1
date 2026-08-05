@@ -27,4 +27,6 @@ if($LASTEXITCODE){exit $LASTEXITCODE}
 & (Join-Path $root 'scripts\Test-AccessibilityNavigation.ps1')
 if($LASTEXITCODE){exit $LASTEXITCODE}
 & (Join-Path $root 'scripts\Test-Packaging.ps1')
+if($LASTEXITCODE){exit $LASTEXITCODE}
+& (Join-Path $root 'scripts\Test-ReleaseCandidate.ps1')
 exit $LASTEXITCODE

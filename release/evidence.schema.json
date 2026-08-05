@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WAID release evidence",
+  "type": "object",
+  "required": ["SchemaVersion", "CandidateId", "ProductVersion", "Commit", "Scenario", "TimestampUtc", "Passed"],
+  "properties": {
+    "SchemaVersion": { "const": 2 },
+    "CandidateId": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "ProductVersion": { "type": "string", "minLength": 1, "maxLength": 50 },
+    "Commit": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+    "Scenario": {
+      "enum": ["Windows10", "Windows11", "Windows11Arm64", "Administrator", "StandardUser", "Offline", "UnsupportedHardware", "Accessibility", "SignedPackageLifecycle", "DestructiveRepairRollback", "HardwareProviders", "LongSoak", "CiReleaseGate", "SecurityReview"]
+    },
+    "TimestampUtc": { "type": "string", "format": "date-time" },
+    "Passed": { "type": "boolean" },
+    "ArtifactSha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" }
+  },
+  "additionalProperties": true
+}

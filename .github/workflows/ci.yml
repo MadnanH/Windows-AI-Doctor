@@ -84,6 +84,7 @@ jobs:
       - run: pwsh scripts/Test-QualityPolicy.ps1
       - run: pwsh scripts/Validate-KnowledgeBase.ps1
       - run: pwsh scripts/Test-AccessibilityNavigation.ps1
+      - run: pwsh scripts/Test-ReleaseCandidate.ps1
       - run: dotnet list WindowsAIDoctor.sln package --vulnerable --include-transitive
 
   coverage:

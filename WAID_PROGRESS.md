@@ -57,6 +57,7 @@ Active branch: `main`
 - Commercial hardening Prompt 37 Automated Test Strategy and Quality Gates: explicit ten-layer test taxonomy, deterministic shared fixtures, isolated temporary SQLite/workspaces, architecture and critical-path gates, Windows integration separation, packaging/security/performance checks, measured coverage enforcement, flaky-test governance, and a fail-closed disposable-VM destructive-test runner.
 - Commercial hardening Prompt 38 Performance Optimization and Soak Validation: documented startup, memory, CPU, scan, database, report, monitoring, and responsiveness budgets; bounded privacy-safe ActivitySource observations; production startup/scan/query/report/monitoring markers; allocation-free indexed history downsampling; representative 250,000-point regression data; managed-memory soak checks; and a blocking repeated performance gate.
 - Commercial hardening Prompt 39 Installer, Packaging, Signing, and Update Readiness: versioned release contract; installed/portable x64 and ARM64 publish matrix; unsigned-development channel labels; per-file SHA-256 artifact manifests; parameterized full-trust MSIX rendering/build stages; external certificate subject validation and signature verification; upgrade/repair/downgrade/uninstall/coexistence lifecycle contracts; package smoke checks; and visible version/channel messaging.
+- Commercial hardening Prompt 40 Release Candidate Validation and v1.0 Readiness: scope-frozen release manifest; reproducible full build and x64/ARM64 artifact harness; privacy-validating external evidence ingestion; fail-closed critical/high controls; release checklist, validation matrix, known issues, security review, and release notes; and an explicit evidence-backed NO-GO decision.
 
 ## Fully working features
 
@@ -70,6 +71,7 @@ Active branch: `main`
 - Quality gates classify and independently run unit, integration, Windows integration, UI, security, performance, packaging, architecture, and critical-path checks. Normal automation excludes destructive tests; those require a Windows administrator in a disposable snapshotted VM plus multiple explicit acknowledgements. Test fixtures use unique confined temporary workspaces and pooling-disabled SQLite connections.
 - Performance budgets are centralized and validated at startup. Timing and gauge observations retain only bounded identifier names, values, units, timestamps, and pass/fail state; they never include paths, arguments, evidence, or user content. Large performance-history rendering now uses a single bounded indexed pass while preserving peaks and deterministic ordering.
 - Release publishing produces self-contained installed and portable layouts for x64 and ARM64 with stable identity rules, explicit channel/version metadata, dependency checks, and file hashes. MSIX packing and signing are separate fail-closed stages; production credentials must stay outside the repository, and unsigned development status is visible in both artifacts and the application shell.
+- Release-candidate validation now derives GO/NO-GO from versioned automatic and external-evidence controls. Missing, failed, wrong-commit, or privacy-invalid evidence blocks release; successful source tests alone cannot certify v1.0.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
@@ -108,6 +110,7 @@ Active branch: `main`
 - Feature-flag resolution and UI are working; the cloud-provider flag is intentionally reserved and has no network provider implementation.
 - Automated accessibility checks validate navigation targets, identifiers, and XAML parseability; screen-reader, focus, high-contrast, and 200% scaling acceptance still requires archived manual evidence.
 - Installed/portable x64 and ARM64 artifacts, lifecycle contracts, MSIX rendering/build scripts, signing integration, and smoke gates are ready. Final branded PNG identity assets, production certificate signing, trusted install/upgrade/uninstall evidence, and distribution still require the protected release environment and disposable VM matrix.
+- Prompt 40 automatic validation is fully passing, but the v1.0 decision is NO-GO with 15 missing high/critical external-evidence controls covering exact-commit CI, security review, signed lifecycle, supported Windows, privilege/offline/provider scenarios, accessibility/localization, destructive recovery, hardware, and long soak.
 - Aggregate line coverage is enforced at a measured 60% regression floor (currently 68.18%). This is a quality regression signal, not proof that every Windows provider or safety path is exhaustively exercised.
 - Automated synthetic performance and soak gates are working; release-grade startup, CPU, memory, handle, database P95, monitoring, report, and UI measurements still require the supported real-hardware matrix.
 
@@ -177,6 +180,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Automated coverage is an aggregate line metric and does not replace real Windows 10/11, ARM64, hardware-provider, accessibility, soak, or destructive-repair validation. The destructive runner intentionally fails closed because no destructive test is registered in this release.
 - Performance thresholds are regression budgets, not guarantees for every device. CI uses deterministic synthetic histories and bounded managed-memory checks; process working set, CPU, handles, provider latency, rendering responsiveness, sleep/wake behavior, and multi-hour leak detection require controlled real-Windows soak runs.
 - Development artifacts are intentionally unsigned and cannot establish publisher trust. Production MSIX packing/signing was not executed because final identity PNGs, an external trusted certificate, and disposable release VMs are not available in source control; no installation or signature certification is claimed.
+- The v1.0 readiness decision is NO-GO. All four automatic controls pass, but 15 required external controls have no acceptable evidence; the harness intentionally returns exit code 2 until those blockers are resolved.
 
 ## Build status
 
@@ -186,6 +190,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Compiler errors: 0
 - x64 installed and portable self-contained publish/launch smoke: passing
 - ARM64 installed and portable self-contained publish/integrity smoke: passing
+- Prompt 40 automatic release controls: 4/4 passing; evidence decision: NO-GO (15 blockers)
 - Last verified: 2026-08-06
 - Runtime/platform certification: not claimed; archived manual evidence is required
 
@@ -200,7 +205,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
-- Quality policy and packaging gates: passed
+- Quality policy, packaging, and release-candidate regression gates: passed
 - Aggregate line coverage: 68.18% (4,452/6,530), exceeding the 60% floor
 - Performance suite: 13 tests passed across 5 consecutive soak iterations
 
@@ -208,15 +213,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.40.0-dev - Installer, Packaging, Signing, and Update Readiness**
+**0.40.0-dev - Release Candidate Validation and v1.0 Readiness**
 
-Prompt 39 adds reproducible installed/portable architecture outputs, unsigned labeling and hash manifests, parameterized MSIX and protected signing stages, tested version/uninstall/coexistence contracts, package smoke gates, and visible release-channel messaging.
+Prompt 40 freezes candidate scope except for release-blocker fixes, validates every automatic build and artifact control, rejects sensitive or stale evidence, and records an explicit NO-GO until every required high/critical external control passes.
 
 ## Next milestone
 
-**Commercial hardening Prompt 40 - Release Candidate Validation and v1.0 Readiness**
+**Release blocker remediation and protected validation**
 
-Apply only Prompt 40 from the ordered commercial-grade prompt set. Preserve all safety, privacy, packaging, and quality gates; validate the complete release candidate honestly, and do not claim v1.0 certification without the required signed-artifact and real-Windows evidence.
+Supply final package identity/signing inputs in the protected environment and execute the exact-commit CI, Windows 10/11/ARM64, privilege/offline/provider, accessibility/localization, destructive recovery, hardware, security, and long-soak controls. Re-run the decision harness; do not publish v1.0 unless it emits GO.
 
 ## Update procedure
 
