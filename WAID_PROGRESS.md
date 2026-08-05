@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-05
 
-Current version: **0.29.0-dev**
+Current version: **0.30.0-dev**
 
 Active branch: `main`
 
@@ -46,6 +46,7 @@ Active branch: `main`
 - Commercial hardening Prompt 26 repair simulation: read-only versioned dry runs, deterministic canonical fingerprints, exact/estimated/unknown typed effects, assumptions and warnings, expiry and changed-definition invalidation, schema-27 metadata, production module declarations, and an expanded before/after Repair Lifecycle preview.
 - Commercial hardening Prompt 27 recovery system: capability-tiered restore points and resource artifacts, preflight space and ACL enforcement, SHA-256 item and manifest integrity, idempotent creation, verified rollback outcomes, schema-28 persistence, root-confined expiry cleanup, audited explicit rollback, and recovery-readiness UI.
 - Commercial hardening Prompt 28 repair safety scoring: deterministic versioned impact/reversibility/privilege/downtime/data/uncertainty/validation factors, fixed weighted rubric, non-weakenable confirmation thresholds, restrictive policy precedence, schema-29 decisions and exceptions, audited revalidation, and consistent factor UI.
+- Commercial hardening Prompt 29 repair workflow UI: accessible end-to-end plan, evidence, simulation, approval, progress, restart, validation, rollback, recovery, and report surfaces; persisted UI-safe summaries, exact-action announcements, duplicate-command suppression, selection guards, and safe approval-stage restart resume.
 
 ## Fully working features
 
@@ -141,6 +142,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Dry-run effects describe declared repair behavior and cannot predict exact command output or every Windows side effect. Built-in duration is estimated, storage use may be unknown, previews expire after 15 minutes, and real behavior still requires disposable-VM validation.
 - Registry rollback verification relies on successful Windows provider import rather than a complete post-import value comparison. Restore Point availability, ACL behavior, locked resources, junctions, disk-space races, interruptions, large directory trees, and rollback require disposable-VM and real-hardware validation.
 - Safety weights are transparent conservative rules, not repair failure probabilities. The default policy preserves baseline gates but does not add enterprise policy-file deployment; organization-specific policy rollout and manual High/Critical UX validation remain outstanding.
+- Automated repair-workflow accessibility checks cover parseability, stable automation IDs, live regions, and theme-resource use. Narrator, keyboard focus order, high contrast, 200% scaling, cancellation timing, and restart/rollback behavior still require disposable-VM validation.
 
 ## Build status
 
@@ -150,15 +152,15 @@ No platform certification is claimed until a matching passing JSON report from `
 - Compiler errors: 0
 - x64 self-contained publish: passing
 - ARM64 compile: passing
-- Last verified: 2026-07-29
+- Last verified: 2026-08-05
 - Runtime/platform certification: not claimed; archived manual evidence is required
 
 ## Test status
 
-**Passing - 346/346 tests**
+**Passing - 347/347 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 106 passed
+- `WAID.Application.Tests`: 107 passed
 - `WAID.Diagnosis.Tests`: 75 passed
 - `WAID.Infrastructure.Tests`: 155 passed
 - Failed: 0
@@ -167,15 +169,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.29.0-dev - Repair Safety Scoring and Policy Gates**
+**0.30.0-dev - Repair Workflow UI and Accessibility**
 
-Prompt 28 adds deterministic explainable safety factors, fixed weighted scores, baseline confirmation thresholds, restrictive non-weakenable policy precedence, durable policy decisions/exceptions, pre-execution revalidation, auditing, and consistent UI presentation.
+Prompt 29 adds an interruption-safe accessible repair workflow, persisted UI-safe backend summaries, approval-stage restart resume without execution, exact-action live announcements, plain/technical views, navigation guards, and complete plan-to-report UI coverage.
 
 ## Next milestone
 
-**Commercial hardening Prompt 29 - Repair Workflow UI and Accessibility**
+**Commercial hardening Prompt 30 - Audit Trail and Outcome Learning**
 
-Apply only Prompt 29 from the ordered commercial-grade prompt set. Preserve deterministic scoring, non-weakenable policy gates, validated recovery capabilities, stale dry-run rejection, explicit approval, least privilege, audit history, and fail-closed lifecycle recovery; restore/build/test independently and commit before continuing.
+Apply only Prompt 30 from the ordered commercial-grade prompt set. Preserve explicit approval, non-weakenable policy gates, fail-closed recovery, evidence provenance, privacy-safe persistence, and the accessible repair workflow; restore/build/test independently and commit before continuing.
 ## Update procedure
 
 Update completed, remaining, build/test status, version, limitations, and next milestone in the same commit as every milestone.
