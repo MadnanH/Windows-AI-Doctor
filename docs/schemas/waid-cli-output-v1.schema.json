@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windowsaidoctor.example/schemas/waid-cli-output-v1.schema.json",
+  "title": "Windows AI Doctor CLI output envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "command", "succeeded", "exitCode", "completedAtUtc", "data", "error"],
+  "properties": {
+    "schemaVersion": { "const": "waid-cli-1.0" },
+    "command": { "type": "string", "minLength": 1 },
+    "succeeded": { "type": "boolean" },
+    "exitCode": { "type": "integer", "enum": [0, 2, 3, 4, 5, 6, 7, 8, 10] },
+    "completedAtUtc": { "type": "string", "format": "date-time" },
+    "data": {},
+    "error": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message", "recoveryAction"],
+          "properties": {
+            "code": { "type": "string", "minLength": 1 },
+            "message": { "type": "string", "minLength": 1 },
+            "recoveryAction": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    }
+  }
+}

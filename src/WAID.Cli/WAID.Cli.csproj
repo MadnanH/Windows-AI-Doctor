@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>waid</AssemblyName>
+    <RootNamespace>WAID.Cli</RootNamespace>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="..\WAID.Application\WAID.Application.csproj"/><ProjectReference Include="..\WAID.Infrastructure\WAID.Infrastructure.csproj"/></ItemGroup>
+  <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App"/></ItemGroup>
+</Project>

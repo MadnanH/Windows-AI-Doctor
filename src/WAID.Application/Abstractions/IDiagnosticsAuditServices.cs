@@ -3,7 +3,7 @@ using WAID.Domain.Repairs;
 
 namespace WAID.Application.Abstractions;
 
-public enum AuditActor { User, Application, Scheduler, Plugin }
+public enum AuditActor { User, Application, Scheduler, Plugin, Cli }
 public enum AuditResult { Requested, Approved, Rejected, Succeeded, Failed, Cancelled, RolledBack }
 
 public sealed record AuditRecord(Guid Id, DateTimeOffset TimestampUtc, AuditActor Actor, string Action, string Target,

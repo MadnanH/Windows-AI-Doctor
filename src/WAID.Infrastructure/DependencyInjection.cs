@@ -10,6 +10,7 @@ using WAID.Diagnosis;
 using WAID.EventAnalysis;
 using WAID.Health;
 using WAID.Infrastructure.Ai;
+using WAID.Infrastructure.Automation;
 using WAID.Infrastructure.Configuration;
 using WAID.Infrastructure.Diagnostics;
 using WAID.Infrastructure.Persistence;
@@ -146,6 +147,7 @@ public static class DependencyInjection
         services.AddSingleton<IStorageEvidenceProvider, WindowsStorageEvidenceProvider>().AddSingleton<ICleanupEstimator, SafeCleanupEstimator>().AddSingleton<ILargeFolderAnalyzer, LargeFolderAnalyzer>().AddSingleton<IStorageHealthCenter, StorageHealthCenter>();
         services.AddSingleton<ISecurityPostureProvider, WindowsSecurityPostureProvider>().AddSingleton<ISecurityPostureAnalyzer, SecurityPostureAnalyzer>();
         services.AddSingleton<INetworkEvidenceProvider, WindowsNetworkEvidenceProvider>().AddSingleton<INetworkDiagnosticCenter>(provider => new NetworkDiagnosticCenter(provider.GetRequiredService<INetworkEvidenceProvider>(), provider.GetRequiredService<INetworkHealthRepository>(), provider.GetRequiredService<ILogger<NetworkDiagnosticCenter>>(), Path.Combine(options.DataDirectory, "Reports")));
+        services.AddSingleton<IWaidCliRuntime,WaidCliRuntime>();
         services.AddSingleton(ChatProviderPolicy.Default).AddSingleton<IChatEvidenceRetriever, WaidChatEvidenceRetriever>().AddSingleton<IChatPromptBuilder, GroundedChatPromptBuilder>().AddSingleton<IChatSafetyService, ChatSafetyService>().AddSingleton<IChatProvider, OfflineChatProvider>().AddSingleton<IChatAssistant, ChatAssistant>();
         modules.Add("diagnostics", "Windows diagnostics"); return services;
     }

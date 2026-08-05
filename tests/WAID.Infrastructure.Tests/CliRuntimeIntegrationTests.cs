@@ -1,0 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
+using WAID.Application.Services;
+using WAID.Infrastructure;
+using WAID.Infrastructure.Plugins;
+namespace WAID.Infrastructure.Tests;
+public sealed class CliRuntimeIntegrationTests
+{
+ [Fact]public async Task Status_and_policy_commands_use_real_composition_persistence_and_audit()
+ {var root=Path.Combine(Path.GetTempPath(),$"waid-cli-integration-{Guid.NewGuid():N}");Directory.CreateDirectory(root);try{var options=new WaidHostOptions(1,root,Path.Combine(root,"Plugins"),Environment.ProcessPath!,new Version(1,0,0),["WAID Engineering"],MachineConfigurationPath:Path.Combine(root,"machine.json"),PolicyConfigurationPath:Path.Combine(root,"settings-policy.json"),EnterprisePolicyPath:Path.Combine(root,"enterprise-policy.json"));var services=new ServiceCollection();services.AddWaidInfrastructure(options).AddWaidPlugins(new PluginSecurityPolicy(options.AllowedPluginPublishers),options.PluginDirectory,options.HostVersion);await using var provider=services.BuildValidatedWaidServiceProvider();var policy=provider.GetRequiredService<IEnterprisePolicyService>();await policy.RefreshAsync(CancellationToken.None);var runtime=provider.GetRequiredService<IWaidCliRuntime>();var status=await runtime.ExecuteAsync(new("status",null,new Dictionary<string,string>(),CliOutputFormat.Json,false),null,CancellationToken.None);var policyResult=await runtime.ExecuteAsync(new("policy",null,new Dictionary<string,string>{{"refresh","true"}},CliOutputFormat.Json,false),null,CancellationToken.None);Assert.True(status.Succeeded);Assert.True(policyResult.Succeeded);Assert.True(File.Exists(Path.Combine(root,"waid.db")));Assert.NotEmpty(Directory.GetFiles(Path.Combine(root,"Audit"),"audit-*.jsonl"));}finally{Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();if(Directory.Exists(root))Directory.Delete(root,true);}}
+}
