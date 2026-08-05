@@ -2,6 +2,7 @@ using WAID.Application.Abstractions;
 using WAID.Application.Services;
 using WAID.Domain.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
+using WAID.Testing;
 namespace WAID.Application.Tests;
 public sealed class ScanOrchestratorTests
 {
@@ -81,9 +82,10 @@ public sealed class ScanOrchestratorTests
     [Fact] public async Task Parallelism_is_bounded_and_independent_scanners_overlap()
     {
         var tracker = new ConcurrencyTracker(); var scanners = Enumerable.Range(0, 4).Select(index => new ConcurrentScanner($"parallel-{index}", tracker)).ToArray();
-        var policies = new ScannerPolicyRegistry(new(TimeSpan.FromSeconds(1)), maximumParallelism: 2); var started = DateTime.UtcNow;
-        await new ScanOrchestrator(scanners, new RecordingRepository(), TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, policies).RunAsync(false, null, CancellationToken.None);
-        Assert.Equal(2, tracker.Peak); Assert.True(DateTime.UtcNow - started < TimeSpan.FromMilliseconds(500));
+        var policies = new ScannerPolicyRegistry(new(TimeSpan.FromSeconds(5)), maximumParallelism: 2);
+        var run = new ScanOrchestrator(scanners, new RecordingRepository(), TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, policies).RunAsync(false, null, CancellationToken.None);
+        using var watchdog=new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await tracker.WaitForPeakAsync(2,watchdog.Token);Assert.Equal(2,tracker.Peak);tracker.Release();await run;
     }
 
     private static ScanOrchestrator CreateOrchestrator(IEnumerable<ISystemScanner> scanners, IScanRepository repository) =>
@@ -104,7 +106,7 @@ public sealed class ScanOrchestratorTests
     private sealed class SlowScanner : ISystemScanner
     {
         public string Id => "slow"; public string DisplayName => "Slow";
-        public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) { await Task.Delay(TimeSpan.FromSeconds(2), token); return []; }
+        public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context, CancellationToken token) { await Task.Delay(Timeout.InfiniteTimeSpan, token); return []; }
     }
     private sealed class PermissionScanner : ISystemScanner
     {
@@ -117,9 +119,9 @@ public sealed class ScanOrchestratorTests
     { public int Attempts { get; private set; } public string Id=>"retry"; public string DisplayName=>"Retry"; public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token) { Attempts++; if(Attempts==1)throw new IOException("transient"); return Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>([]); } }
     private sealed class AdministratorScanner:ISystemScanner
     { public string Id=>"administrator";public string DisplayName=>"Administrator";public bool WasRun{get;private set;}public ScannerMetadata Metadata=>new(Id,DisplayName,"administrator test","Test",new(1,0),[ScannerPrerequisites.Administrator],[]);public Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token){WasRun=true;return Task.FromResult<IReadOnlyCollection<DiagnosticFinding>>([]);} }
-    private sealed class ConcurrencyTracker { private int _active,_peak; public int Peak=>_peak; public void Enter(){var active=Interlocked.Increment(ref _active);int current;while(active>(current=_peak))Interlocked.CompareExchange(ref _peak,active,current);} public void Exit()=>Interlocked.Decrement(ref _active); }
+    private sealed class ConcurrencyTracker { private readonly AsyncTestGate _release=new();private readonly TaskCompletionSource<int> _peakReached=new(TaskCreationOptions.RunContinuationsAsynchronously);private int _active,_peak; public int Peak=>_peak; public void Enter(){var active=Interlocked.Increment(ref _active);int current;while(active>(current=_peak))Interlocked.CompareExchange(ref _peak,active,current);if(active>=2)_peakReached.TrySetResult(active);} public void Exit()=>Interlocked.Decrement(ref _active);public async Task WaitForPeakAsync(int expected,CancellationToken token){var peak=await _peakReached.Task.WaitAsync(token);Assert.True(peak>=expected);}public Task WaitAsync(CancellationToken token)=>_release.WaitForReleaseAsync(token);public void Release()=>_release.Release(); }
     private sealed class ConcurrentScanner(string id,ConcurrencyTracker tracker):ISystemScanner
-    { public string Id=>id;public string DisplayName=>id;public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token){tracker.Enter();try{await Task.Delay(60,token);return [];}finally{tracker.Exit();}} }
+    { public string Id=>id;public string DisplayName=>id;public async Task<IReadOnlyCollection<DiagnosticFinding>> ScanAsync(ScanContext context,CancellationToken token){tracker.Enter();try{await tracker.WaitAsync(token);return [];}finally{tracker.Exit();}} }
     private sealed class RecordingRunRepository : IScanRunRepository
     { public IReadOnlyList<ScannerExecutionRecord> Executions { get; private set; }=[]; public Task SaveAsync(ScanSession session,IReadOnlyCollection<ScannerExecutionRecord> executions,CancellationToken token){Executions=executions.ToArray();return Task.CompletedTask;} public Task<IReadOnlyList<ScannerExecutionRecord>> GetExecutionsAsync(Guid sessionId,CancellationToken token)=>Task.FromResult(Executions); }
     private sealed class RecordingRepository : IScanRepository

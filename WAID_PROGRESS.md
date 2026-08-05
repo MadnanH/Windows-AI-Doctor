@@ -1,8 +1,8 @@
 # WAID Development Progress
 
-Last updated: 2026-08-05
+Last updated: 2026-08-06
 
-Current version: **0.37.0-dev**
+Current version: **0.38.0-dev**
 
 Active branch: `main`
 
@@ -54,6 +54,7 @@ Active branch: `main`
 - Commercial hardening Prompt 34 Enterprise Policy Mode: deterministic built-in/organization provider precedence, typed locked capability decisions for cloud, AI, repairs, exports, plugins, monitoring, portable mode, and diagnostics; fail-closed validation; retention ceilings; schema-33 snapshots/evaluations; audited refresh/administrative rollback; boundary enforcement; and a reachable explainable Policy Status page.
 - Commercial hardening Prompt 35 Command-Line Interface and Automation: a thin waid executable over shared production services for status, scans, findings, reports, timelines, policy, plugins, and repair plans; human and schema-versioned JSON output; stable exit codes; cancellation/progress separation; CLI audit attribution; explicit plan-bound repair approval; x64/ARM64 publishing; and operator/schema documentation.
 - Commercial hardening Prompt 36 Remote Diagnostic Package and Case Exchange: selected scans, findings, crash metadata, diagnosis, timeline, repair history, sanitized logs, system summary, and notes in AES-256-GCM encrypted offline packages; versioned manifests and per-entry hashes; standard/maximum redaction; bounded no-extraction validation; strict temporary review mode; policy/audit integration; and an accessible export/import wizard.
+- Commercial hardening Prompt 37 Automated Test Strategy and Quality Gates: explicit ten-layer test taxonomy, deterministic shared fixtures, isolated temporary SQLite/workspaces, architecture and critical-path gates, Windows integration separation, packaging/security/performance checks, measured coverage enforcement, flaky-test governance, and a fail-closed disposable-VM destructive-test runner.
 
 ## Fully working features
 
@@ -64,6 +65,7 @@ Active branch: `main`
 - Enterprise policy is evaluated before portable startup and plugin loading and at AI, diagnostic, repair, export, plugin, and monitoring boundaries. Invalid policy blocks governed capabilities, effective source/locks are explainable, user controls cannot override blocked decisions, and snapshots contain no secrets.
 - The local CLI runs the same registered scanners, repositories, policy engine, plugin inventory, exporters, and repair orchestrator as the desktop app. Machine-readable stdout remains separate from progress, every command is audited as the CLI actor without arguments, and no repair executes without the exact current plan ID plus all explicit approval gates.
 - Case Exchange creates authenticated encrypted .waidcase packages with explicit content selection and redaction preview. Imports authenticate and validate every bounded entry and hash without extraction, persist nothing, run nothing, expose a permanent untrusted review banner, and cannot approve repairs or mutate local diagnostic state.
+- Quality gates classify and independently run unit, integration, Windows integration, UI, security, performance, packaging, architecture, and critical-path checks. Normal automation excludes destructive tests; those require a Windows administrator in a disposable snapshotted VM plus multiple explicit acknowledgements. Test fixtures use unique confined temporary workspaces and pooling-disabled SQLite connections.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
@@ -102,6 +104,7 @@ Active branch: `main`
 - Feature-flag resolution and UI are working; the cloud-provider flag is intentionally reserved and has no network provider implementation.
 - Automated accessibility checks validate navigation targets, identifiers, and XAML parseability; screen-reader, focus, high-contrast, and 200% scaling acceptance still requires archived manual evidence.
 - Packaging inputs and installed/portable publish paths are ready, but production MSIX signing and store/update distribution require protected release credentials and a release environment.
+- Aggregate line coverage is enforced at a measured 60% regression floor (currently 68.09%). This is a quality regression signal, not proof that every Windows provider or safety path is exhaustively exercised.
 
 ## Features requiring real-hardware testing
 
@@ -118,6 +121,8 @@ No platform certification is claimed until a matching passing JSON report from `
 
 - Execute and archive the platform/hardware/accessibility/destructive validation matrix in supported disposable VMs and physical hardware.
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
+- Register and execute destructive repair tests only in an approved disposable, snapshotted VM; none are enabled in routine or release CI.
+- Configure repository branch protection to require the `release-gate` workflow; the workflow is implemented, but repository policy is managed outside this source tree.
 - Organization-managed trusted-publisher policy editing remains deployment/configuration driven; Plugin Manager exposes install, compatibility, permission, enable, disable, quarantine, status, and logs.
 - Detailed multi-report diagnosis and repair-event history drill-down.
 - Implement repositories for remaining reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
@@ -162,6 +167,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Safety weights are transparent conservative rules, not repair failure probabilities. The default policy preserves baseline gates but does not add enterprise policy-file deployment; organization-specific policy rollout and manual High/Critical UX validation remain outstanding.
 - Repair outcome rates describe retained validation-backed observations, not future success probability. Aggregate rebuild is bounded to 10,000 audit entries; long-term retention calibration and cross-version cohort analysis remain outstanding.
 - Automated repair-workflow accessibility checks cover parseability, stable automation IDs, live regions, and theme-resource use. Narrator, keyboard focus order, high contrast, 200% scaling, cancellation timing, and restart/rollback behavior still require disposable-VM validation.
+- Automated coverage is an aggregate line metric and does not replace real Windows 10/11, ARM64, hardware-provider, accessibility, soak, or destructive-repair validation. The destructive runner intentionally fails closed because no destructive test is registered in this release.
 
 ## Build status
 
@@ -171,34 +177,36 @@ No platform certification is claimed until a matching passing JSON report from `
 - Compiler errors: 0
 - x64 self-contained publish: passing
 - ARM64 compile: passing
-- Last verified: 2026-08-05
+- Last verified: 2026-08-06
 - Runtime/platform certification: not claimed; archived manual evidence is required
 
 ## Test status
 
-**Passing - 395/395 tests**
+**Passing - 399/399 tests**
 
 - `WAID.Domain.Tests`: 10 passed
 - `WAID.Application.Tests`: 124 passed
 - `WAID.Diagnosis.Tests`: 75 passed
-- `WAID.Infrastructure.Tests`: 186 passed
+- `WAID.Infrastructure.Tests`: 190 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
+- Quality policy and packaging gates: passed
+- Aggregate line coverage: 68.09% (4,373/6,422), exceeding the 60% floor
 
 
 
 ## Current version
 
-**0.37.0-dev - Remote Diagnostic Package and Case Exchange**
+**0.38.0-dev - Automated Test Strategy and Quality Gates**
 
-Prompt 36 adds encrypted redacted offline case packages, versioned manifests and hashes, bounded no-extraction validation, strict review-only import, audit and policy enforcement, and an accessible content/redaction/encryption/review wizard.
+Prompt 37 adds deterministic isolated fixtures, explicit test-layer ownership, critical-path and architecture gates, coverage and flaky-test governance, packaging/security/performance validation, CI diagnostics, and a separately authorized destructive-VM test path.
 
 ## Next milestone
 
-**Commercial hardening Prompt 37 - Automated Test Strategy and Quality Gates**
+**Commercial hardening Prompt 38 - Performance Optimization and Soak Validation**
 
-Apply only Prompt 37 from the ordered commercial-grade prompt set. Preserve deterministic offline tests, warning-free builds, platform boundaries, security regression coverage, and honest real-hardware limitations; restore/build/test independently and commit before continuing.
+Apply only Prompt 38 from the ordered commercial-grade prompt set. Preserve all established correctness and safety gates, measure before optimizing, keep behavior deterministic, and report real-hardware limitations honestly; restore/build/test independently and commit before continuing.
 
 ## Update procedure
 

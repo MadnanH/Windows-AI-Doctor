@@ -8,15 +8,18 @@ using WAID.EventAnalysis;
 using WAID.Health;
 using WAID.Infrastructure.Persistence;
 using WAID.KnowledgeBase;
+using WAID.Testing;
 
 namespace WAID.Infrastructure.Tests;
 
+[Trait("Category","CriticalPath")]
 public sealed class CompleteWorkflowTests
 {
     [Fact]
     public async Task Scan_diagnose_recommend_confirm_repair_and_verify_complete_workflow()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"waid-workflow-{Guid.NewGuid():N}.db");
+        using var workspace = new IsolatedTestWorkspace("critical-workflow");
+        var path = workspace.PathFor("waid.db");
         try
         {
             var database = new WaidDatabase($"Data Source={path};Foreign Keys=True;Pooling=False");
@@ -55,7 +58,6 @@ public sealed class CompleteWorkflowTests
         finally
         {
             Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-            if (File.Exists(path)) File.Delete(path);
         }
     }
 

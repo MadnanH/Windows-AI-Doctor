@@ -10,6 +10,7 @@ using WAID.KnowledgeBase;
 
 namespace WAID.Infrastructure.Tests;
 
+[Trait("Category","Architecture")]
 public sealed class ArchitectureDependencyTests
 {
     private static readonly IReadOnlyDictionary<string, string[]> Allowed = new Dictionary<string, string[]>(StringComparer.Ordinal)

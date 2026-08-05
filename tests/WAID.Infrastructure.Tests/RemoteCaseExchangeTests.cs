@@ -12,6 +12,7 @@ using WAID.Infrastructure.Diagnostics;
 
 namespace WAID.Infrastructure.Tests;
 
+[Trait("Category","Security")]
 public sealed class RemoteCaseExchangeTests
 {
     private const string Password = "correct horse battery staple";

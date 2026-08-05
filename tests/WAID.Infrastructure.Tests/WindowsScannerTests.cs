@@ -4,6 +4,7 @@ using WAID.Infrastructure.PowerShell;
 
 namespace WAID.Infrastructure.Tests;
 
+[Trait("Category","WindowsIntegration")]
 public sealed class WindowsScannerTests
 {
     [Theory]

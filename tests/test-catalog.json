@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "layers": [
+    { "name": "Unit", "environment": "Any OS", "blocking": true, "scope": "Domain, application, diagnosis, deterministic algorithms", "command": "dotnet test tests/WAID.Domain.Tests && dotnet test tests/WAID.Application.Tests && dotnet test tests/WAID.Diagnosis.Tests" },
+    { "name": "Integration", "environment": "Windows CI", "blocking": true, "scope": "SQLite, composition, persistence, exports, plugins", "command": "dotnet test tests/WAID.Infrastructure.Tests --filter Category!=WindowsIntegration&Category!=DestructiveVm" },
+    { "name": "WindowsIntegration", "environment": "Windows CI", "blocking": true, "scope": "Windows-targeted adapters with controlled inputs", "command": "dotnet test tests/WAID.Infrastructure.Tests --filter Category=WindowsIntegration" },
+    { "name": "UI", "environment": "Windows CI and manual Windows matrix", "blocking": true, "scope": "XAML parseability, navigation, automation IDs, accessibility", "command": "pwsh scripts/Test-AccessibilityNavigation.ps1" },
+    { "name": "Security", "environment": "Windows CI", "blocking": true, "scope": "Redaction, package integrity, plugin trust, policy and repair guards", "command": "dotnet test WindowsAIDoctor.sln --filter Category=Security" },
+    { "name": "Performance", "environment": "Windows CI", "blocking": true, "scope": "Deterministic bounds, aggregation and downsampling invariants", "command": "dotnet test tests/WAID.Application.Tests --filter Category=Performance" },
+    { "name": "Packaging", "environment": "Windows CI", "blocking": true, "scope": "x64 publish, ARM64 compile, manifest and artifact contract", "command": "pwsh scripts/Test-Packaging.ps1" },
+    { "name": "Architecture", "environment": "Windows CI", "blocking": true, "scope": "Dependency direction, acyclic graph, DI composition", "command": "dotnet test tests/WAID.Infrastructure.Tests --filter Category=Architecture" },
+    { "name": "CriticalPath", "environment": "Windows CI", "blocking": true, "scope": "Scan, diagnose, recommend, confirm, repair, verify", "command": "dotnet test tests/WAID.Infrastructure.Tests --filter Category=CriticalPath" },
+    { "name": "DestructiveVm", "environment": "Disposable snapshotted Windows VM only", "blocking": false, "scope": "Real restore, backup, repair, restart and rollback", "command": "pwsh scripts/Invoke-DestructiveVmTests.ps1 with every explicit gate" }
+  ]
+}

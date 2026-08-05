@@ -7,70 +7,136 @@ on:
 permissions:
   contents: read
 
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
 jobs:
-  verify:
-    name: Build and test
+  unit:
+    name: Unit tests (platform-independent)
     runs-on: windows-2022
-
+    timeout-minutes: 15
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: dotnet restore WindowsAIDoctor.sln
+      - run: dotnet test tests/WAID.Domain.Tests/WAID.Domain.Tests.csproj -c Release --filter "Category!=DestructiveVm" --logger "trx;LogFileName=domain.trx" --results-directory artifacts/test-results/unit
+      - run: dotnet test tests/WAID.Application.Tests/WAID.Application.Tests.csproj -c Release --filter "Category!=DestructiveVm" --logger "trx;LogFileName=application.trx" --results-directory artifacts/test-results/unit
+      - run: dotnet test tests/WAID.Diagnosis.Tests/WAID.Diagnosis.Tests.csproj -c Release --filter "Category!=DestructiveVm" --logger "trx;LogFileName=diagnosis.trx" --results-directory artifacts/test-results/unit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: unit-test-diagnostics, path: artifacts/test-results/unit }
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
+  integration:
+    name: Integration tests (isolated workspaces)
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: dotnet restore WindowsAIDoctor.sln
+      - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
+      - run: dotnet test tests/WAID.Infrastructure.Tests/WAID.Infrastructure.Tests.csproj -c Release --no-build --filter "Category!=WindowsIntegration&Category!=DestructiveVm" --logger "trx;LogFileName=integration.trx" --results-directory artifacts/test-results/integration --blame-hang-timeout 5m
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: integration-test-diagnostics, path: artifacts/test-results/integration }
 
-      - name: Restore dependencies
-        run: dotnet restore WindowsAIDoctor.sln
+  critical:
+    name: Critical workflow and security gates
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: dotnet restore WindowsAIDoctor.sln
+      - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
+      - run: dotnet test WindowsAIDoctor.sln -c Release --no-build --filter "Category=CriticalPath|Category=Security" --logger "trx;LogFileName=critical.trx" --results-directory artifacts/test-results/critical
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: critical-test-diagnostics, path: artifacts/test-results/critical }
 
-      - name: Build solution
-        run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
+  windows-integration:
+    name: Windows integration tests
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: dotnet restore WindowsAIDoctor.sln
+      - run: dotnet test tests/WAID.Infrastructure.Tests/WAID.Infrastructure.Tests.csproj -c Release --filter "Category=WindowsIntegration" --logger "trx;LogFileName=windows-integration.trx" --results-directory artifacts/test-results/windows
 
-      - name: Run tests
-        run: dotnet test WindowsAIDoctor.sln -c Release --no-build
+  quality:
+    name: Architecture, UI, performance, and static quality
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: dotnet restore WindowsAIDoctor.sln
+      - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
+      - run: dotnet test tests/WAID.Infrastructure.Tests/WAID.Infrastructure.Tests.csproj -c Release --no-build --filter "Category=Architecture"
+      - run: dotnet test tests/WAID.Application.Tests/WAID.Application.Tests.csproj -c Release --no-build --filter "Category=Performance"
+      - run: pwsh scripts/Test-QualityPolicy.ps1
+      - run: pwsh scripts/Validate-KnowledgeBase.ps1
+      - run: pwsh scripts/Test-AccessibilityNavigation.ps1
+      - run: dotnet list WindowsAIDoctor.sln package --vulnerable --include-transitive
 
-      - name: Validate knowledge base
-        run: pwsh scripts/Validate-KnowledgeBase.ps1
+  coverage:
+    name: Coverage gate
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: dotnet restore WindowsAIDoctor.sln
+      - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
+      - run: dotnet test WindowsAIDoctor.sln -c Release --no-build --filter "Category!=DestructiveVm" --collect "XPlat Code Coverage" --results-directory artifacts/test-results/coverage
+      - run: pwsh scripts/Test-CoverageGate.ps1 -ResultsDirectory artifacts/test-results/coverage -MinimumLinePercent 60
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: coverage-reports, path: artifacts/test-results/coverage }
 
-      - name: Test accessibility navigation
-        run: pwsh scripts/Test-AccessibilityNavigation.ps1
-
-      - name: Check vulnerable packages
-        run: dotnet list WindowsAIDoctor.sln package --vulnerable --include-transitive
-
-      - name: Publish Windows x64
-        run: >
-          dotnet publish
-          src/WAID.Desktop/WAID.Desktop.csproj
-          -c Release
-          -r win-x64
-          --self-contained true
-          --no-restore
-
-      - name: Build Windows ARM64
-        run: >
-          dotnet build
-          src/WAID.Desktop/WAID.Desktop.csproj
-          -c Release
-          -p:Platform=ARM64
-          -r win-arm64
+  packaging:
+    name: Packaging and architecture matrix
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - run: pwsh scripts/Test-Packaging.ps1
+      - run: pwsh ./publish.ps1 -Platform x64
+      - run: dotnet build src/WAID.Desktop/WAID.Desktop.csproj -c Release -p:Platform=ARM64 -r win-arm64
+      - run: dotnet build src/WAID.Cli/WAID.Cli.csproj -c Release -p:Platform=ARM64 -r win-arm64
+      - uses: actions/upload-artifact@v4
+        with: { name: unsigned-win-x64, path: artifacts/publish/installed/win-x64 }
 
   gitleaks:
     name: Secret scanning
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: read
-
+    permissions: { contents: read, pull-requests: read }
     steps:
-      - name: Checkout full Git history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v3
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-gate:
+    name: Required release gate
+    if: always()
+    needs: [unit, integration, critical, windows-integration, quality, coverage, packaging, gitleaks]
+    runs-on: windows-2022
+    steps:
+      - name: Require every non-destructive gate
+        shell: pwsh
+        run: |
+          $results='${{ join(needs.*.result, ',') }}'.Split(',')
+          if($results|Where-Object{$_ -ne 'success'}){throw "Release blocked by gate results: $($results -join ', ')"}
+          Write-Host 'All required non-destructive release gates passed.'

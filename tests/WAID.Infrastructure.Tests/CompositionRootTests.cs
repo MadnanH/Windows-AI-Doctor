@@ -5,6 +5,7 @@ using WAID.Infrastructure.Plugins;
 
 namespace WAID.Infrastructure.Tests;
 
+[Trait("Category","Architecture")]
 public sealed class CompositionRootTests
 {
     [Theory]

@@ -1,6 +1,7 @@
 using WAID.Application.Abstractions;
 using WAID.Application.Services;
 namespace WAID.Application.Tests;
+[Trait("Category","Security")]
 public sealed class DestructiveVmTestGuardTests
 {
     [Fact]public async Task Normal_mode_can_never_authorize_destructive_validation()=>await Assert.ThrowsAsync<InvalidOperationException>(()=>new DestructiveVmTestGuard(new Admin(true)).AuthorizeAsync(new(false,true,true,true,"RUN DESTRUCTIVE VM TEST"),CancellationToken.None));

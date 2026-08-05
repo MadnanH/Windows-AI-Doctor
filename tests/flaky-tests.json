@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "policy": "Quarantine requires owner, issue, reason, and expiryUtc. CI never retries a failing test automatically.",
+  "tests": []
+}

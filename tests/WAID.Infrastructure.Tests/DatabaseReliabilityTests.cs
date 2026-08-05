@@ -5,6 +5,7 @@ using WAID.Infrastructure.Persistence;
 
 namespace WAID.Infrastructure.Tests;
 
+[Trait("Category","Integration")]
 public sealed class DatabaseReliabilityTests
 {
     [Fact]

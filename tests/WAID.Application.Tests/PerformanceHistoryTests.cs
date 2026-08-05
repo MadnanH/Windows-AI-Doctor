@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;using WAID.Application.Services;namespace WAID.Application.Tests;public sealed class PerformanceHistoryTests
+using System.Diagnostics;using WAID.Application.Services;namespace WAID.Application.Tests;[Trait("Category","Performance")]
+public sealed class PerformanceHistoryTests
 {private readonly PerformanceAggregationEngine _engine=new();private static readonly DateTimeOffset Start=new(2026,3,8,0,0,0,TimeSpan.Zero);
  [Fact]public void Hourly_aggregation_calculates_values_quality_and_coverage(){var samples=new[]{S(Start,10),S(Start.AddMinutes(10),20),S(Start.AddMinutes(20),null,MetricQuality.Unavailable)};var x=Assert.Single(_engine.Aggregate(PerformanceMetricKind.CpuUtilization,samples,MetricResolution.Hourly));Assert.Equal(10,x.Minimum);Assert.Equal(20,x.Maximum);Assert.Equal(15,x.Average);Assert.Equal(2,x.SampleCount);Assert.Equal(66.67,x.CoveragePercent,2);}
  [Fact]public void Timezone_and_dst_offsets_bucket_by_utc_instant(){var a=S(new DateTimeOffset(2026,3,8,1,30,0,TimeSpan.FromHours(-5)),10);var b=S(new DateTimeOffset(2026,3,8,3,30,0,TimeSpan.FromHours(-4)),20);var rollups=_engine.Aggregate(PerformanceMetricKind.CpuUtilization,[a,b],MetricResolution.Hourly);Assert.Equal(2,rollups.Count);Assert.All(rollups,x=>Assert.Equal(TimeSpan.Zero,x.PeriodStartUtc.Offset));}
