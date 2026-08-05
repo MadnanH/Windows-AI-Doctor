@@ -8,15 +8,16 @@ using WAID.Application.Services;
 
 namespace WAID.Infrastructure.Diagnostics;
 
-public sealed class DiagnosticReportExporter(string outputDirectory) : IDiagnosticReportExporter
+public sealed class DiagnosticReportExporter(string outputDirectory, IPerformanceTelemetry? performance = null) : IDiagnosticReportExporter
 {
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private static readonly Regex SensitiveName = new("(?i)(password|token|secret|product.?key|cookie|serial|device.?id|authorization)", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
     private static readonly Regex SensitiveValue = new("(?i)(password|token|secret|product.?key|authorization|cookie)\\s*[:=]\\s*[^\\s;,]+", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
-    public Task<string> ExportJsonAsync(DiagnosticReportData report, CancellationToken token) => WriteAsync("json", SerializeSafe(report), token);
-    public Task<string> ExportHtmlAsync(DiagnosticReportData report, CancellationToken token) => WriteAsync("html", RenderHtml(report), token);
+    public async Task<string> ExportJsonAsync(DiagnosticReportData report, CancellationToken token) { using var measurement=performance?.Measure("report.json",PerformanceArea.Report); return await WriteAsync("json", SerializeSafe(report), token).ConfigureAwait(false); }
+    public async Task<string> ExportHtmlAsync(DiagnosticReportData report, CancellationToken token) { using var measurement=performance?.Measure("report.html",PerformanceArea.Report); return await WriteAsync("html", RenderHtml(report), token).ConfigureAwait(false); }
     public async Task<string> ExportPackageAsync(DiagnosticReportData report, CancellationToken token)
     {
+        using var measurement=performance?.Measure("report.package",PerformanceArea.Report);
         Directory.CreateDirectory(outputDirectory); var path = Path.Combine(outputDirectory, Name("zip"));
         await using var file = new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, true);
         using var archive = new ZipArchive(file, ZipArchiveMode.Create);

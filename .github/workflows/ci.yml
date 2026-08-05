@@ -80,7 +80,7 @@ jobs:
       - run: dotnet restore WindowsAIDoctor.sln
       - run: dotnet build WindowsAIDoctor.sln -c Release --no-restore
       - run: dotnet test tests/WAID.Infrastructure.Tests/WAID.Infrastructure.Tests.csproj -c Release --no-build --filter "Category=Architecture"
-      - run: dotnet test tests/WAID.Application.Tests/WAID.Application.Tests.csproj -c Release --no-build --filter "Category=Performance"
+      - run: pwsh scripts/Test-PerformanceBudgets.ps1 -Configuration Release -SoakIterations 5
       - run: pwsh scripts/Test-QualityPolicy.ps1
       - run: pwsh scripts/Validate-KnowledgeBase.ps1
       - run: pwsh scripts/Test-AccessibilityNavigation.ps1

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
@@ -15,6 +16,7 @@ namespace WAID.Desktop;
 
 public partial class App : Microsoft.UI.Xaml.Application
 {
+    private readonly Stopwatch _startupWatch = Stopwatch.StartNew();
     private ServiceProvider? _services;
     private ILogger<App>? _logger;
     private WaidStartupException? _startupFailure;
@@ -60,7 +62,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         if (_startupFailure is not null || _services is null) { ShowRecovery(_startupFailure ?? new("WAID-STARTUP-MISSING", "Application services are unavailable.", "Repair the application installation.")); return; }
-        try { await _services.GetRequiredService<IEnterprisePolicyService>().RefreshAsync(CancellationToken.None); await _services.GetRequiredService<PluginManager>().SynchronizeAsync(CancellationToken.None); await _services.GetRequiredService<RepairOrchestrator>().RecoverInterruptedAsync(CancellationToken.None); _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); }
+        try { await _services.GetRequiredService<IEnterprisePolicyService>().RefreshAsync(CancellationToken.None); await _services.GetRequiredService<PluginManager>().SynchronizeAsync(CancellationToken.None); await _services.GetRequiredService<RepairOrchestrator>().RecoverInterruptedAsync(CancellationToken.None); _services.GetRequiredService<ScheduledScanLoopService>().Start(); _services.GetRequiredService<MainWindow>().Activate(); _startupWatch.Stop(); _services.GetRequiredService<IPerformanceTelemetry>().Observe("desktop.startup",PerformanceArea.Startup,_startupWatch.Elapsed.TotalMilliseconds); }
         catch (Exception exception)
         {
             RecordFatal("Application launch failed", exception);

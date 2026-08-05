@@ -22,7 +22,7 @@ public sealed class ScanCoordinator(ScanOrchestrator orchestrator)
 public sealed class BackgroundHealthMonitoringService(
     ScanCoordinator scans, DiagnosisEngine diagnosis, IHealthSnapshotRepository snapshots,
     ISystemConditionService conditions, TimeProvider timeProvider,
-    ILogger<BackgroundHealthMonitoringService> logger) : IAsyncDisposable
+    ILogger<BackgroundHealthMonitoringService> logger, IPerformanceTelemetry? performance = null) : IAsyncDisposable
 {
     private CancellationTokenSource? _cancellation;
     private Task? _worker;
@@ -51,6 +51,7 @@ public sealed class BackgroundHealthMonitoringService(
 
     public async Task<HealthSnapshot?> RefreshAsync(CancellationToken token)
     {
+        using var measurement = performance?.Measure("monitoring.refresh", PerformanceArea.Monitoring);
         var session = await scans.TryRunAsync(false, null, token).ConfigureAwait(false);
         if (session is null) return null;
         var report = await diagnosis.DiagnoseAsync(session.Findings, token).ConfigureAwait(false);

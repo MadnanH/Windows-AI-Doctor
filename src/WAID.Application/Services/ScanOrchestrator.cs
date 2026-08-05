@@ -46,13 +46,15 @@ public sealed class ScanOrchestrator(
     IOperationContextAccessor? operationContext = null,
     IScanRunRepository? scanRuns = null,
     IScanDataSanitizer? sanitizer = null,
-    IEnterprisePolicyService? enterprisePolicy = null)
+    IEnterprisePolicyService? enterprisePolicy = null,
+    IPerformanceTelemetry? performance = null)
 {
     private readonly ScannerPolicyRegistry _policies = policies ?? new(new(TimeSpan.FromSeconds(45)));
     private readonly IScanDataSanitizer _sanitizer = sanitizer ?? new PassthroughSanitizer();
 
     public async Task<ScanSession> RunAsync(bool isAdministrator, IProgress<ScanProgress>? progress, CancellationToken cancellationToken)
     {
+        using var measurement = performance?.Measure("scan.complete", PerformanceArea.Scan);
         var policyDecision=enterprisePolicy?.Evaluate(EnterpriseCapability.Diagnostics);
         if(policyDecision is {Allowed:false})throw new EnterprisePolicyException("WAID-POLICY-DIAGNOSTICS-BLOCKED",$"Diagnostics are blocked by {policyDecision.Source}.","Contact the organization policy administrator.");
         using var operation = operationContext is null ? null : logger.BeginWaidOperation(operationContext, "Scan");

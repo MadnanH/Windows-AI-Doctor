@@ -20,6 +20,8 @@ if($LASTEXITCODE){exit $LASTEXITCODE}
 if($LASTEXITCODE){exit $LASTEXITCODE}
 & (Join-Path $root 'scripts\Test-QualityPolicy.ps1')
 if($LASTEXITCODE){exit $LASTEXITCODE}
+& (Join-Path $root 'scripts\Test-PerformanceBudgets.ps1') -Configuration $Configuration -DotNetExecutable $DotNetExecutable -SoakIterations 1
+if($LASTEXITCODE){exit $LASTEXITCODE}
 & (Join-Path $root 'scripts\Validate-KnowledgeBase.ps1') -DotNetExecutable $DotNetExecutable
 if($LASTEXITCODE){exit $LASTEXITCODE}
 & (Join-Path $root 'scripts\Test-AccessibilityNavigation.ps1')
