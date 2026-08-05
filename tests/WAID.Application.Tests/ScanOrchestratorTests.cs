@@ -42,7 +42,7 @@ public sealed class ScanOrchestratorTests
         var policy = new ScannerPolicyRegistry(new ScannerExecutionPolicy(TimeSpan.FromMilliseconds(20)));
         var orchestrator = new ScanOrchestrator([new SlowScanner(), new FakeScanner()], repository, TimeProvider.System, NullLogger<ScanOrchestrator>.Instance, policy);
         var result = await orchestrator.RunAsync(false, null, CancellationToken.None);
-        var timeout = Assert.Single(result.Findings.Where(f => f.Code == "SCANNER_TIMED_OUT"));
+        var timeout = Assert.Single(result.Findings, f => f.Code == "SCANNER_TIMED_OUT");
         Assert.Equal("TimedOut", timeout.Evidence["status"]);
         Assert.Contains(result.Findings, f => f.Code == "TEST001");
     }
