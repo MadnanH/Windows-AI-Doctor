@@ -2,13 +2,13 @@
 
 Last updated: 2026-08-05
 
-Current version: **0.31.0-dev**
+Current version: **0.32.0-dev**
 
 Active branch: `main`
 
 ## Completed modules
 
-- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v30, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
+- Clean Architecture .NET 8/WinUI 3 solution, MVVM, dependency injection, SQLite schema v31, Serilog, offline diagnosis, 18 production scanners, monitoring, scheduling, crash analysis, evidence collection, repair approval, rollback, and repair history.
 - Scanner execution policies with validated metadata, prerequisites and dependencies, bounded parallelism, configurable timeouts, one bounded read-only retry, and explicit lifecycle states. Failures are isolated, completed cancellation results are retained, and unavailable data is never inferred as healthy.
 - Version 2 knowledge documents with startup/build validation, required-field and duplicate checks, repair-map validation, unsupported-version rejection, and deterministic legacy-array migration.
 - Manifest-based plugin loading with API/host compatibility checks, collectible dependency contexts, publisher allow-list, optional Authenticode enforcement, persistent disabled state, failure quarantine diagnostics, service-registration isolation, and a reachable Plugins page.
@@ -48,6 +48,7 @@ Active branch: `main`
 - Commercial hardening Prompt 28 repair safety scoring: deterministic versioned impact/reversibility/privilege/downtime/data/uncertainty/validation factors, fixed weighted rubric, non-weakenable confirmation thresholds, restrictive policy precedence, schema-29 decisions and exceptions, audited revalidation, and consistent factor UI.
 - Commercial hardening Prompt 29 repair workflow UI: accessible end-to-end plan, evidence, simulation, approval, progress, restart, validation, rollback, recovery, and report surfaces; persisted UI-safe summaries, exact-action announcements, duplicate-command suppression, selection guards, and safe approval-stage restart resume.
 - Commercial hardening Prompt 30 repair audit and outcomes: immutable decision/evidence/approval/execution/validation/rollback/feedback chain, validation-based outcome classification, rebuildable bounded explainable aggregates, schema-30 persistence, privacy-safe export, and accessible filtered Repair History.
+- Commercial hardening Prompt 31 Technician Dashboard: optional profile-based professional workspace composed from real scans, incidents, evidence, repairs, and reports; compact/detailed layouts, saved filters, separately persisted case notes/metadata, bounded data, accessible navigation, and unchanged simple home mode.
 
 ## Fully working features
 
@@ -109,7 +110,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Production certificate-backed MSIX signing, distribution, upgrade, and uninstall validation.
 - UI controls for changing persisted plugin enable/disable state and trusted-publisher policy.
 - Detailed multi-report diagnosis and repair-event history drill-down.
-- Implement repositories for remaining schema-30 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
+- Implement repositories for remaining schema-31 reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
 
 ## Known limitations
 
@@ -161,27 +162,29 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Test status
 
-**Passing - 353/353 tests**
+**Passing - 356/356 tests**
 
 - `WAID.Domain.Tests`: 10 passed
-- `WAID.Application.Tests`: 111 passed
+- `WAID.Application.Tests`: 114 passed
 - `WAID.Diagnosis.Tests`: 75 passed
 - `WAID.Infrastructure.Tests`: 157 passed
 - Failed: 0
 - Skipped: 0
 - Accessibility navigation smoke: passed
 
+
 ## Current version
 
-**0.31.0-dev - Audit Trail and Outcome Learning**
+**0.32.0-dev - Technician Dashboard**
 
-Prompt 30 adds a separate immutable repair audit chain, validation-based outcome evaluation, deterministic rebuildable statistics, privacy-safe export, and an accessible filtered Repair History view. Statistics remain descriptive and cannot create, choose, approve, or execute repairs.
+Prompt 31 adds an optional professional multi-incident workspace using existing real services, compact/detailed presentation profiles, saved filters, local case notes and IDs, bounded responsive collections, and accessible navigation while preserving the uncluttered simple Dashboard.
 
 ## Next milestone
 
-**Commercial hardening Prompt 31 - Technician Dashboard**
+**Commercial hardening Prompt 32 - Portable Edition**
 
-Apply only Prompt 31 from the ordered commercial-grade prompt set. Preserve audit immutability, validation-based outcome interpretation, privacy, explicit approval, non-weakenable safety policy, and fail-closed recovery; restore/build/test independently and commit before continuing.
+Apply only Prompt 32 from the ordered commercial-grade prompt set. Preserve simple mode, profile-not-role semantics, bounded data, privacy, audit immutability, explicit repair approval, and fail-closed recovery; restore/build/test independently and commit before continuing.
+
 ## Update procedure
 
 Update completed, remaining, build/test status, version, limitations, and next milestone in the same commit as every milestone.

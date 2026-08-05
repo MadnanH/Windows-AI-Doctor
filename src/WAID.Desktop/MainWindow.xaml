@@ -2,6 +2,7 @@
   <NavigationView x:Name="Navigation" IsBackButtonVisible="Collapsed" IsSettingsVisible="True" PaneDisplayMode="LeftCompact" SelectionChanged="OnSelectionChanged" AutomationProperties.AutomationId="MainNavigation">
     <NavigationView.MenuItems>
       <NavigationViewItem Content="Dashboard" Tag="dashboard" AutomationProperties.AutomationId="NavDashboard"><NavigationViewItem.Icon><SymbolIcon Symbol="Home"/></NavigationViewItem.Icon></NavigationViewItem>
+      <NavigationViewItem Content="Technician Dashboard" Tag="technician" AutomationProperties.AutomationId="NavTechnician"><NavigationViewItem.Icon><SymbolIcon Symbol="People"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Driver Health" Tag="drivers" AutomationProperties.AutomationId="NavDrivers"><NavigationViewItem.Icon><SymbolIcon Symbol="Setting"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Boot Health" Tag="boot" AutomationProperties.AutomationId="NavBoot"><NavigationViewItem.Icon><SymbolIcon Symbol="Clock"/></NavigationViewItem.Icon></NavigationViewItem>
       <NavigationViewItem Content="Update Health" Tag="updates" AutomationProperties.AutomationId="NavUpdates"><NavigationViewItem.Icon><SymbolIcon Symbol="Sync"/></NavigationViewItem.Icon></NavigationViewItem>
