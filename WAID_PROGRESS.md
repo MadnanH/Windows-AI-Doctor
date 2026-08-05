@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-06
 
-Current version: **0.39.0-dev**
+Current version: **0.40.0-dev**
 
 Active branch: `main`
 
@@ -56,6 +56,7 @@ Active branch: `main`
 - Commercial hardening Prompt 36 Remote Diagnostic Package and Case Exchange: selected scans, findings, crash metadata, diagnosis, timeline, repair history, sanitized logs, system summary, and notes in AES-256-GCM encrypted offline packages; versioned manifests and per-entry hashes; standard/maximum redaction; bounded no-extraction validation; strict temporary review mode; policy/audit integration; and an accessible export/import wizard.
 - Commercial hardening Prompt 37 Automated Test Strategy and Quality Gates: explicit ten-layer test taxonomy, deterministic shared fixtures, isolated temporary SQLite/workspaces, architecture and critical-path gates, Windows integration separation, packaging/security/performance checks, measured coverage enforcement, flaky-test governance, and a fail-closed disposable-VM destructive-test runner.
 - Commercial hardening Prompt 38 Performance Optimization and Soak Validation: documented startup, memory, CPU, scan, database, report, monitoring, and responsiveness budgets; bounded privacy-safe ActivitySource observations; production startup/scan/query/report/monitoring markers; allocation-free indexed history downsampling; representative 250,000-point regression data; managed-memory soak checks; and a blocking repeated performance gate.
+- Commercial hardening Prompt 39 Installer, Packaging, Signing, and Update Readiness: versioned release contract; installed/portable x64 and ARM64 publish matrix; unsigned-development channel labels; per-file SHA-256 artifact manifests; parameterized full-trust MSIX rendering/build stages; external certificate subject validation and signature verification; upgrade/repair/downgrade/uninstall/coexistence lifecycle contracts; package smoke checks; and visible version/channel messaging.
 
 ## Fully working features
 
@@ -68,6 +69,7 @@ Active branch: `main`
 - Case Exchange creates authenticated encrypted .waidcase packages with explicit content selection and redaction preview. Imports authenticate and validate every bounded entry and hash without extraction, persist nothing, run nothing, expose a permanent untrusted review banner, and cannot approve repairs or mutate local diagnostic state.
 - Quality gates classify and independently run unit, integration, Windows integration, UI, security, performance, packaging, architecture, and critical-path checks. Normal automation excludes destructive tests; those require a Windows administrator in a disposable snapshotted VM plus multiple explicit acknowledgements. Test fixtures use unique confined temporary workspaces and pooling-disabled SQLite connections.
 - Performance budgets are centralized and validated at startup. Timing and gauge observations retain only bounded identifier names, values, units, timestamps, and pass/fail state; they never include paths, arguments, evidence, or user content. Large performance-history rendering now uses a single bounded indexed pass while preserving peaks and deterministic ordering.
+- Release publishing produces self-contained installed and portable layouts for x64 and ARM64 with stable identity rules, explicit channel/version metadata, dependency checks, and file hashes. MSIX packing and signing are separate fail-closed stages; production credentials must stay outside the repository, and unsigned development status is visible in both artifacts and the application shell.
 - Plugin failures cannot terminate startup; rejected contexts unload, while active plugin unload correctly requires restart because registered services may retain plugin types.
 - Redacted local HTML, JSON, ZIP, and PDF export, including version, date, system summary, scores, findings, evidence, root causes, confidence, repair ordering, history, limitations, redaction notice, and PDF page numbers.
 - Searchable local technical logs and security audit history with expandable sanitized detail; repair requests, approval decisions, outcomes, and rollback activity carry correlation and operation identifiers.
@@ -105,7 +107,7 @@ Active branch: `main`
 
 - Feature-flag resolution and UI are working; the cloud-provider flag is intentionally reserved and has no network provider implementation.
 - Automated accessibility checks validate navigation targets, identifiers, and XAML parseability; screen-reader, focus, high-contrast, and 200% scaling acceptance still requires archived manual evidence.
-- Packaging inputs and installed/portable publish paths are ready, but production MSIX signing and store/update distribution require protected release credentials and a release environment.
+- Installed/portable x64 and ARM64 artifacts, lifecycle contracts, MSIX rendering/build scripts, signing integration, and smoke gates are ready. Final branded PNG identity assets, production certificate signing, trusted install/upgrade/uninstall evidence, and distribution still require the protected release environment and disposable VM matrix.
 - Aggregate line coverage is enforced at a measured 60% regression floor (currently 68.18%). This is a quality regression signal, not proof that every Windows provider or safety path is exhaustively exercised.
 - Automated synthetic performance and soak gates are working; release-grade startup, CPU, memory, handle, database P95, monitoring, report, and UI measurements still require the supported real-hardware matrix.
 
@@ -127,6 +129,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Register and execute destructive repair tests only in an approved disposable, snapshotted VM; none are enabled in routine or release CI.
 - Configure repository branch protection to require the `release-gate` workflow; the workflow is implemented, but repository policy is managed outside this source tree.
 - Execute and archive long-duration soak baselines on supported Windows 10 x64, Windows 11 x64, and Windows 11 ARM64 release hardware.
+- Supply final approved package identity assets and protected certificate/publisher values, then archive signed MSIX clean-install, upgrade, repair-install, downgrade-block, uninstall, coexistence, offline, and signature-trust VM evidence.
 - Organization-managed trusted-publisher policy editing remains deployment/configuration driven; Plugin Manager exposes install, compatibility, permission, enable, disable, quarantine, status, and logs.
 - Detailed multi-report diagnosis and repair-event history drill-down.
 - Implement repositories for remaining reserved tables only as their owning commercial-hardening prompts add real use cases; no disconnected or speculative repository APIs were added.
@@ -173,6 +176,7 @@ No platform certification is claimed until a matching passing JSON report from `
 - Automated repair-workflow accessibility checks cover parseability, stable automation IDs, live regions, and theme-resource use. Narrator, keyboard focus order, high contrast, 200% scaling, cancellation timing, and restart/rollback behavior still require disposable-VM validation.
 - Automated coverage is an aggregate line metric and does not replace real Windows 10/11, ARM64, hardware-provider, accessibility, soak, or destructive-repair validation. The destructive runner intentionally fails closed because no destructive test is registered in this release.
 - Performance thresholds are regression budgets, not guarantees for every device. CI uses deterministic synthetic histories and bounded managed-memory checks; process working set, CPU, handles, provider latency, rendering responsiveness, sleep/wake behavior, and multi-hour leak detection require controlled real-Windows soak runs.
+- Development artifacts are intentionally unsigned and cannot establish publisher trust. Production MSIX packing/signing was not executed because final identity PNGs, an external trusted certificate, and disposable release VMs are not available in source control; no installation or signature certification is claimed.
 
 ## Build status
 
@@ -180,8 +184,8 @@ No platform certification is claimed until a matching passing JSON report from `
 
 - Compiler warnings: 0
 - Compiler errors: 0
-- x64 self-contained publish: passing
-- ARM64 compile: passing
+- x64 installed and portable self-contained publish/launch smoke: passing
+- ARM64 installed and portable self-contained publish/integrity smoke: passing
 - Last verified: 2026-08-06
 - Runtime/platform certification: not claimed; archived manual evidence is required
 
@@ -204,15 +208,15 @@ No platform certification is claimed until a matching passing JSON report from `
 
 ## Current version
 
-**0.39.0-dev - Performance Optimization and Soak Validation**
+**0.40.0-dev - Installer, Packaging, Signing, and Update Readiness**
 
-Prompt 38 adds explicit performance budgets and production profiling markers, optimizes a verified large-history allocation/scaling bottleneck, and blocks regressions with representative large datasets, peak-preservation checks, managed-memory validation, and repeated soak execution.
+Prompt 39 adds reproducible installed/portable architecture outputs, unsigned labeling and hash manifests, parameterized MSIX and protected signing stages, tested version/uninstall/coexistence contracts, package smoke gates, and visible release-channel messaging.
 
 ## Next milestone
 
-**Commercial hardening Prompt 39 - Installer, Packaging, Signing, and Update Readiness**
+**Commercial hardening Prompt 40 - Release Candidate Validation and v1.0 Readiness**
 
-Apply only Prompt 39 from the ordered commercial-grade prompt set. Preserve existing installed and portable behavior, protected signing boundaries, deterministic release gates, and honest credential/hardware limitations; restore/build/test independently and commit before continuing.
+Apply only Prompt 40 from the ordered commercial-grade prompt set. Preserve all safety, privacy, packaging, and quality gates; validate the complete release candidate honestly, and do not claim v1.0 certification without the required signed-artifact and real-Windows evidence.
 
 ## Update procedure
 

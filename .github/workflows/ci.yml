@@ -112,8 +112,13 @@ jobs:
         with: { dotnet-version: 8.0.x }
       - run: pwsh scripts/Test-Packaging.ps1
       - run: pwsh ./publish.ps1 -Platform x64
-      - run: dotnet build src/WAID.Desktop/WAID.Desktop.csproj -c Release -p:Platform=ARM64 -r win-arm64
-      - run: dotnet build src/WAID.Cli/WAID.Cli.csproj -c Release -p:Platform=ARM64 -r win-arm64
+      - run: pwsh scripts/Test-PublishedArtifact.ps1 -ArtifactPath artifacts/publish/installed/win-x64
+      - run: pwsh ./publish.ps1 -Platform x64 -Portable
+      - run: pwsh scripts/Test-PublishedArtifact.ps1 -ArtifactPath artifacts/publish/portable/win-x64
+      - run: pwsh ./publish.ps1 -Platform ARM64
+      - run: pwsh scripts/Test-PublishedArtifact.ps1 -ArtifactPath artifacts/publish/installed/win-arm64 -SkipLaunch
+      - run: pwsh ./publish.ps1 -Platform ARM64 -Portable
+      - run: pwsh scripts/Test-PublishedArtifact.ps1 -ArtifactPath artifacts/publish/portable/win-arm64 -SkipLaunch
       - uses: actions/upload-artifact@v4
         with: { name: unsigned-win-x64, path: artifacts/publish/installed/win-x64 }
 

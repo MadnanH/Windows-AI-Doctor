@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "identity": "WindowsAIDoctor",
+  "displayName": "Windows AI Doctor",
+  "publisherEnvironmentVariable": "WAID_RELEASE_PUBLISHER",
+  "architectures": ["x64", "ARM64"],
+  "channels": ["dev", "beta", "stable"],
+  "minimumWindowsVersion": "10.0.17763.0",
+  "installedDataLocation": "%LOCALAPPDATA%\\Windows AI Doctor",
+  "portableDataLocation": "<selected workspace>",
+  "defaultUninstallDataAction": "retain",
+  "explicitUninstallDataActions": ["retain", "remove"],
+  "upgradePolicy": "same identity and architecture; strictly lower package versions are blocked",
+  "signingPolicy": "production MSIX artifacts require an external protected certificate whose subject exactly matches the manifest publisher"
+}
